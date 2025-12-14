@@ -6,9 +6,12 @@ Exporta los handlers HTTP para la API.
 """
 
 from .auth import AuthHandler, SessionStore, session_store
+from .courses import CoursesHandler
 
 __all__ = [
     "AuthHandler",
     "SessionStore",
     "session_store",
+    "CoursesHandler",
 ]
+

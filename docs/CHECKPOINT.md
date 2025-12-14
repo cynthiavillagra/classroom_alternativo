@@ -1,18 +1,18 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 13:01
+> **Última actualización:** 2025-12-14 13:10
 > **Fase actual:** 4-A (Setup Local y Backend con Construcción Incremental)
 
 ---
 
 ## ⏸️ PUNTO DE CONTROL ACTUAL
 
-**Estado:** He completado el **REFACTOR de auth.py (ítem 22)** a Python POO puro.
+**Estado:** He completado **courses.py (ítem 23)** con Python POO puro.
 
-**Próximo paso:** Continuar con el ítem **23** (**courses.py**) de la API Routes.
+**Próximo paso:** Continuar con el ítem **24** (**materials.py**) de la API Routes.
 
 **Instrucción para la IA si la sesión se reinicia:**
-> "Analiza los archivos existentes y continúa con el ítem **23** (**courses.py**) de la API Routes, asegurando que use Python POO puro sin frameworks."
+> "Analiza los archivos existentes y continúa con el ítem **24** (**materials.py**) de la API Routes, asegurando que use Python POO puro sin frameworks."
 
 ---
 
@@ -24,8 +24,8 @@
 | 04-13 | Domain Layer | ✅ Completado |
 | 14-19 | Infrastructure | ✅ Completado |
 | 20-21 | Application | ✅ Completado |
-| 22 | API: auth.py | ✅ Completado (refactor POO) |
-| 23 | API: courses.py | ⏳ Pendiente |
+| 22 | API: auth.py | ✅ Completado (POO puro) |
+| 23 | API: courses.py | ✅ Completado (POO puro) |
 | 24 | API: materials.py | ⏳ Pendiente |
 
 ---
