@@ -294,4 +294,16 @@ Desarrollado como proyecto educativo para aprender:
 
 - [Google Classroom API Documentation](https://developers.google.com/classroom)
 - [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Python Documentation](https://docs.python.org/3/)
+
+---
+
+## 🤖 AI Stack
+
+> Generado mediante metodología **SDLC V5** usando **Google Antigravity + Claude Opus 4.5**.
+
+Este proyecto fue desarrollado con asistencia de IA siguiendo:
+- Metodología de desarrollo incremental con pruebas atómicas
+- Documentación técnica con trazabilidad completa
+- Checkpoints de persistencia para continuidad entre sesiones
+
