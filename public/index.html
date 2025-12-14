@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Explorer</title>
+    <meta name="description" content="Explorador avanzado de materiales de Google Classroom">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Paso 1: Header con navegación -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <header class="header">
+        <div class="header__logo">
+            <span class="header__icon">📚</span>
+            <h1 class="header__title">Classroom Explorer</h1>
+        </div>
+        <nav class="header__nav">
+            <a href="/login" class="btn btn--primary" id="loginBtn">Iniciar Sesión</a>
+            <span class="user-info" id="userInfo" style="display: none;">
+                <span id="userName">Usuario</span>
+                <a href="/api/auth/logout" class="btn btn--secondary">Cerrar Sesión</a>
+            </span>
+        </nav>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Paso 2: Hero section -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <main class="main">
+        <section class="hero">
+            <div class="hero__content">
+                <h2 class="hero__title">Explora tus materiales de Classroom</h2>
+                <p class="hero__subtitle">
+                    Visualiza, filtra y organiza los materiales de tus cursos 
+                    de Google Classroom de forma más eficiente.
+                </p>
+                <div class="hero__actions">
+                    <a href="/api/auth/login" class="btn btn--large btn--primary">
+                        🚀 Comenzar con Google
+                    </a>
+                </div>
+            </div>
+            <div class="hero__features">
+                <div class="feature-card">
+                    <span class="feature-card__icon">📚</span>
+                    <h3>Vista de Cursos</h3>
+                    <p>Lista todos tus cursos activos y archivados</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-card__icon">📄</span>
+                    <h3>Materiales</h3>
+                    <p>Explora PDFs, videos, tareas y más</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-card__icon">🔍</span>
+                    <h3>Filtros</h3>
+                    <p>Busca por tipo, fecha o palabra clave</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- Paso 3: Sección de estado de API -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="api-status">
+            <h3>Estado del Sistema</h3>
+            <div class="status-grid">
+                <div class="status-item" id="statusAuth">
+                    <span class="status-icon">⏳</span>
+                    <span>Auth API</span>
+                </div>
+                <div class="status-item" id="statusCourses">
+                    <span class="status-icon">⏳</span>
+                    <span>Courses API</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- Paso 4: Footer -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+        <p>
+            Classroom Explorer — Python POO sin frameworks
+            <br>
+            <small>🤖 AI Stack: SDLC V5 + Google Antigravity + Claude Opus 4.5</small>
+        </p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

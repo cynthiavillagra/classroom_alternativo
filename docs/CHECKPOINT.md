@@ -1,23 +1,21 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 13:45
+> **Última actualización:** 2025-12-14 13:55
 
 ---
 
 ## Estado Actual
 
-**Fase Actual:** 4-A (Setup Local y Backend con Construcción Incremental)
+**Fase Actual:** 4-B (Endpoints y UI)
 
 **Archivos Completados:**
-- 01-03: Configuración (requirements.txt, README.md, vercel.json)
-- 04-13: Domain Layer (entities, factories, interfaces)
-- 14-19: Infrastructure Layer (config, cache, client, mapper, repository)
-- 20-21: Application Layer (use cases)
-- 22-24: API Layer (auth.py, courses.py, materials.py)
+- 01-24: Fase 4-A completa
+- 25: main.py (Server Entrypoint)
+- 26: Frontend (index.html, login.html, dashboard.html, CSS, JS)
 
-**Último Archivo:** `materials.py` (ítem 24)
+**Último Archivo:** Frontend básico (HTML/CSS/JS)
 
-**Siguiente en Cola:** ⏹️ **CLÁUSULA DE FRENO ACTIVADA** - Esperar instrucciones para Fase 4-B
+**Siguiente en Cola:** Prueba de recorrido completa del servidor
 
 ---
 
@@ -29,26 +27,36 @@
 | 04-13 | Domain Layer | ✅ Completado |
 | 14-19 | Infrastructure | ✅ Completado |
 | 20-21 | Application | ✅ Completado |
-| 22 | API: auth.py | ✅ Completado (POO puro) |
-| 23 | API: courses.py | ✅ Completado (POO puro) |
-| 24 | API: materials.py | ⏳ Pendiente confirmación |
+| 22-24 | API Routes | ✅ Completado |
+| 25 | Main Server | ✅ Completado |
+| 26 | Frontend | ✅ Completado |
 
 ---
 
-## 📝 Historial de Checkpoints
+## 🌐 Frontend Creado
 
-- **2025-12-14 13:45** — Creado materials.py (ítem 24), último archivo
-- **2025-12-14 13:10** — Completado courses.py (ítem 23)
-- **2025-12-14 13:07** — Refactor auth.py a Python POO puro
-- **2025-12-14 12:13** — Completados 21 manuales de backend
+```
+public/
+├── index.html      → Página principal
+├── login.html      → Página de login
+├── dashboard.html  → Dashboard de cursos
+├── css/
+│   └── styles.css  → Estilos CSS
+└── js/
+    └── app.js      → JavaScript vanilla
+```
 
 ---
 
-## 🔑 Decisiones Importantes
+## 🚀 Cómo Probar
 
-1. **Python POO sin frameworks** — Requisito estrictamente respetado
-2. **http.server** — Usado en vez de Flask para API
-3. **Librería estándar** — Solo dependencias de stdlib para routes
+```powershell
+# Iniciar servidor
+python main.py
+
+# Abrir en navegador
+http://localhost:5000
+```
 
 ---
 

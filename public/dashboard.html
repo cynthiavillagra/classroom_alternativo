@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Classroom Explorer</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__logo">
+            <span class="header__icon">📚</span>
+            <h1 class="header__title">Classroom Explorer</h1>
+        </div>
+        <nav class="header__nav">
+            <a href="/" class="btn btn--secondary">Inicio</a>
+            <a href="/api/auth/logout" class="btn btn--secondary">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="dashboard">
+            <h2>📊 Tus Cursos</h2>
+
+            <div class="courses-container" id="coursesContainer">
+                <div class="loading">
+                    <span class="loading-spinner">⏳</span>
+                    <p>Cargando cursos...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Classroom Explorer — Python POO sin frameworks</p>
+    </footer>
+
+    <style>
+        .dashboard {
+            padding: 2rem 0;
+        }
+
+        .dashboard h2 {
+            margin-bottom: 2rem;
+        }
+
+        .courses-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .course-card {
+            background: var(--color-bg-card);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .course-card__name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-card__section {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .course-card__state {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .course-card__state--active {
+            background: #e6f4ea;
+            color: #137333;
+        }
+
+        .course-card__state--archived {
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            grid-column: 1 / -1;
+        }
+
+        .no-courses {
+            text-align: center;
+            padding: 3rem;
+            grid-column: 1 / -1;
+            color: var(--color-text-secondary);
+        }
+    </style>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // Dashboard - Cargar cursos
+        // ═══════════════════════════════════════════════════════════════
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCourses();
+        });
+
+        async function loadCourses() {
+            const container = document.getElementById('coursesContainer');
+
+            try {
+                const response = await fetch('/api/courses');
+
+                if (response.status === 401) {
+                    // No autenticado, redirigir a login
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p>⚠️ No estás autenticado. <a href="/api/auth/login">Iniciar sesión</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Error cargando cursos');
+                }
+
+                const data = await response.json();
+
+                if (data.courses && data.courses.length > 0) {
+                    container.innerHTML = data.courses.map(course => `
+                        <div class="course-card" onclick="viewCourse('${course.id}')">
+                            <div class="course-card__name">${course.name}</div>
+                            <div class="course-card__section">${course.section || 'Sin sección'}</div>
+                            <span class="course-card__state course-card__state--${course.state?.toLowerCase() || 'active'}">
+                                ${course.state || 'ACTIVO'}
+                            </span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="no-courses">
+                            <p>📭 No tienes cursos disponibles</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p>❌ Error: ${error.message}</p>
+                        <p><small>Verifica que tengas credenciales OAuth configuradas.</small></p>
+                    </div>
+                `;
+            }
+        }
+
+        function viewCourse(courseId) {
+            alert(`Ver materiales del curso: ${courseId}\n\n(Esta funcionalidad requiere implementar la vista de materiales)`);
+        }
+    </script>
+</body>
+
+</html>
