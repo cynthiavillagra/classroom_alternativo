@@ -1,74 +1,67 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 15:45
+> **Última actualización:** 2025-12-14 15:50
 
 ---
 
 ## Estado Actual
 
-**Fase Actual:** ✅ **FASE 4-B COMPLETADA**
+**Fase Actual:** ✅ **FASE 5 COMPLETADA — QA FORMAL**
 
-**Endpoints Verificados:**
-- ✅ `GET /` → 200 (Página principal)
-- ✅ `GET /docs` → 200 (Visor documentación)
-- ✅ `GET /api/docs?file=X` → 200 (API documentación)
-- ✅ `GET /api/auth/me` → 401 (Correcto: no autenticado)
+**Tests Ejecutados:** 39 tests pasados ✅
 
 ---
 
-## 📊 Resumen del Proyecto
+## 📊 Suite de Tests
 
-### Archivos Generados
-
-| Capa | Cantidad | Estado |
-|------|----------|--------|
-| Configuración | 5 | ✅ |
-| Domain Layer | 10 | ✅ |
-| Infrastructure | 6 | ✅ |
-| Application | 2 | ✅ |
-| API Routes | 3 | ✅ |
-| Server + Bridge | 1 | ✅ |
-| Frontend | 4 | ✅ |
-| **Total** | **31** | ✅ |
-
-### Manuales Técnicos
-
-- 27 manuales en `docs/manual/`
-- Todos con:
-  - Trazabilidad (HU, CA)
-  - Construcción incremental
-  - Prueba de fuego
-  - Análisis dual
-  - Troubleshooting (para deploy)
+| Archivo | Tests | Estado |
+|---------|-------|--------|
+| `test_domain.py` | 8 | ✅ |
+| `test_factories.py` | 4 | ✅ |
+| `test_infrastructure.py` | 8 | ✅ |
+| `test_routes.py` | 9 | ✅ |
+| `test_integration.py` | 10 | ✅ |
+| **Total** | **39** | ✅ |
 
 ---
 
-## 🚀 Cómo Ejecutar
+## 🚀 Comandos de Ejecución
 
-### Desarrollo Local
 ```powershell
-python main.py
-# http://localhost:5000
-```
+# Ejecutar todos los tests
+pytest tests/ -v
 
-### Deploy Vercel
-```powershell
-vercel --prod
-```
+# Con cobertura
+pytest tests/ -v --cov=api
 
-### Prueba Rápida
-```powershell
-python main.py --test
+# Solo un archivo
+pytest tests/test_domain.py -v
 ```
 
 ---
 
-## 📋 Siguiente Paso
+## 📋 Entregables de Fase 5
 
-**Opciones:**
-1. Fase 5: Testing Formal (pytest)
-2. Deploy a Vercel
-3. Configurar credenciales Google reales
+- ✅ `docs/05_test_plan.md` — Plan de pruebas
+- ✅ `tests/__init__.py` — Paquete de tests
+- ✅ `tests/conftest.py` — Fixtures compartidas
+- ✅ `tests/test_domain.py` — Tests de entidades
+- ✅ `tests/test_factories.py` — Tests de factories
+- ✅ `tests/test_infrastructure.py` — Tests de infra
+- ✅ `tests/test_routes.py` — Tests de handlers
+- ✅ `tests/test_integration.py` — Tests de integración
+
+---
+
+## ✅ Proyecto Listo para Deploy
+
+| Requisito | Estado |
+|-----------|--------|
+| Código completo | ✅ |
+| Tests pasando | ✅ |
+| Documentación | ✅ |
+| Endpoints verificados | ✅ |
+| VercelBridge | ✅ |
 
 ---
 
