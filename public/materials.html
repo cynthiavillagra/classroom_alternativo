@@ -108,6 +108,16 @@
             color: #ef6c00;
         }
 
+        .material-card__type--announcement {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .material-card__type--document {
+            background: #e8eaf6;
+            color: #3f51b5;
+        }
+
         .material-card__title {
             font-size: 1.1rem;
             font-weight: 600;
@@ -263,24 +273,32 @@
 
         function getTypeClass(type) {
             const types = {
-                'ASSIGNMENT': 'assignment',
-                'VIDEO': 'video',
-                'PDF': 'file',
-                'FILE': 'file',
-                'LINK': 'link'
+                'assignment': 'assignment',
+                'video': 'video',
+                'pdf': 'file',
+                'file': 'file',
+                'link': 'link',
+                'announcement': 'announcement',
+                'document': 'document',
+                'form': 'link',
+                'image': 'file'
             };
-            return types[type] || 'file';
+            return types[type?.toLowerCase()] || 'file';
         }
 
         function getTypeIcon(type) {
             const icons = {
-                'ASSIGNMENT': '📝',
-                'VIDEO': '🎬',
-                'PDF': '📄',
-                'FILE': '📁',
-                'LINK': '🔗'
+                'assignment': '📝',
+                'video': '🎬',
+                'pdf': '📄',
+                'file': '📁',
+                'link': '🔗',
+                'announcement': '📢',
+                'document': '📝',
+                'form': '📋',
+                'image': '🖼️'
             };
-            return icons[type] || '📄';
+            return icons[type?.toLowerCase()] || '📄';
         }
 
         function formatDate(dateStr) {

@@ -61,14 +61,22 @@ class Config:
     
     # ─────────────────────────────────────────────────────────
     # Google Classroom API
+    # Referencia de scopes: https://developers.google.com/identity/protocols/oauth2/scopes?hl=es-419
     # ─────────────────────────────────────────────────────────
     CLASSROOM_API_BASE_URL: str = 'https://classroom.googleapis.com/v1'
     OAUTH_SCOPES: List[str] = [
+        # Autenticación básica
         'openid',
         'email',
         'profile',
+        # Classroom: Ver cursos
         'https://www.googleapis.com/auth/classroom.courses.readonly',
-        'https://www.googleapis.com/auth/classroom.coursework.me.readonly'
+        # Classroom: Ver tareas (courseWork)
+        'https://www.googleapis.com/auth/classroom.coursework.me.readonly',
+        # Classroom: Ver materiales de referencia (courseWorkMaterials)
+        'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
+        # Classroom: Ver publicaciones/anuncios (announcements)
+        'https://www.googleapis.com/auth/classroom.announcements.readonly'
     ]
     
     # ─────────────────────────────────────────────────────────

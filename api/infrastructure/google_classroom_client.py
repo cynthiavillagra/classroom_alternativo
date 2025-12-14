@@ -144,6 +144,29 @@ class GoogleClassroomClient:
         
         return self._make_request('GET', url, headers)
     
+    def list_announcements(
+        self,
+        course_id: str,
+        access_token: str
+    ) -> Dict[str, Any]:
+        """
+        Lista los anuncios (announcements) de un curso.
+        
+        Args:
+            course_id: ID del curso
+            access_token: Token de acceso
+        
+        Returns:
+            dict: Respuesta con lista de announcements
+        """
+        url = f"{self.base_url}/courses/{course_id}/announcements"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/json'
+        }
+        
+        return self._make_request('GET', url, headers)
+    
     def _make_request(
         self,
         method: str,

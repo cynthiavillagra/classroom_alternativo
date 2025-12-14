@@ -61,13 +61,16 @@ Para cada una:
 1. Click **"Agregar o quitar scopes"**
 2. Busca y agrega estos scopes:
 
-```
-https://www.googleapis.com/auth/classroom.courses.readonly
-https://www.googleapis.com/auth/classroom.course-work.readonly
-https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly
-https://www.googleapis.com/auth/userinfo.email
-https://www.googleapis.com/auth/userinfo.profile
-```
+| Scope | Descripción |
+|-------|-------------|
+| `classroom.courses.readonly` | Ver clases de Google Classroom |
+| `classroom.coursework.me.readonly` | Ver tareas y trabajos del curso |
+| `classroom.courseworkmaterials.readonly` | Ver materiales de referencia |
+| `classroom.announcements.readonly` | Ver publicaciones/anuncios |
+| `userinfo.email` | Ver email del usuario |
+| `userinfo.profile` | Ver perfil del usuario |
+
+> 📚 **Referencia completa de scopes:** [Google OAuth 2.0 Scopes](https://developers.google.com/identity/protocols/oauth2/scopes?hl=es-419)
 
 3. Click **"Actualizar"** → **"Guardar y continuar"**
 

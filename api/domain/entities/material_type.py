@@ -49,6 +49,7 @@ class MaterialType(Enum):
     IMAGE = "image"
     ASSIGNMENT = "assignment"
     FILE = "file"
+    ANNOUNCEMENT = "announcement"  # Publicaciones/Anuncios
     
     # ───────────────────────────────────────────────────────────
     # Paso 3: Métodos helper para UI
@@ -68,7 +69,8 @@ class MaterialType(Enum):
             MaterialType.FORM: "Formulario",
             MaterialType.IMAGE: "Imagen",
             MaterialType.ASSIGNMENT: "Tarea",
-            MaterialType.FILE: "Archivo"
+            MaterialType.FILE: "Archivo",
+            MaterialType.ANNOUNCEMENT: "Publicación"
         }
         return labels.get(self, "Desconocido")
     
@@ -87,7 +89,8 @@ class MaterialType(Enum):
             MaterialType.FORM: "📋",
             MaterialType.IMAGE: "🖼️",
             MaterialType.ASSIGNMENT: "✏️",
-            MaterialType.FILE: "📎"
+            MaterialType.FILE: "📎",
+            MaterialType.ANNOUNCEMENT: "📢"
         }
         return icons.get(self, "📎")
     
@@ -106,7 +109,8 @@ class MaterialType(Enum):
             MaterialType.FORM: "#F39C12",       # Naranja
             MaterialType.IMAGE: "#E67E22",      # Naranja oscuro
             MaterialType.ASSIGNMENT: "#2ECC71", # Verde
-            MaterialType.FILE: "#95A5A6"        # Gris
+            MaterialType.FILE: "#95A5A6",       # Gris
+            MaterialType.ANNOUNCEMENT: "#3498DB" # Azul (publicaciones)
         }
         return colors.get(self, "#95A5A6")
     

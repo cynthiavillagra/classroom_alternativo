@@ -123,7 +123,7 @@ class GoogleClassroomRepository(ClassroomRepository):
                 for item in course_work_response.get('courseWork', []):
                     material = self.mapper.api_material_to_domain(item, course_id)
                     materials.append(material)
-            except GoogleAPIError:
+            except Exception:
                 # Si falla, continuamos sin courseWork
                 pass
             
@@ -135,8 +135,20 @@ class GoogleClassroomRepository(ClassroomRepository):
                 for item in materials_response.get('courseWorkMaterial', []):
                     material = self.mapper.api_material_to_domain(item, course_id)
                     materials.append(material)
-            except GoogleAPIError:
+            except Exception:
                 # Si falla, continuamos sin courseWorkMaterials
+                pass
+            
+            # Obtener announcements (publicaciones)
+            try:
+                announcements_response = self.client.list_announcements(
+                    course_id, access_token
+                )
+                for item in announcements_response.get('announcements', []):
+                    material = self.mapper.api_announcement_to_domain(item, course_id)
+                    materials.append(material)
+            except Exception:
+                # Si falla, continuamos sin announcements
                 pass
             
             # Ordenar por fecha de creación (más reciente primero)

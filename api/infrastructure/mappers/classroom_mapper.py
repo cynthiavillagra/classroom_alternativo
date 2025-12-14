@@ -122,6 +122,65 @@ class ClassroomMapper:
             'max_points': api_data.get('maxPoints')
         })
     
+    def api_announcement_to_domain(
+        self,
+        api_data: Dict[str, Any],
+        course_id: str
+    ) -> Material:
+        """
+        Convierte un anuncio (announcement) de la API de Google a entidad Material.
+        
+        Args:
+            api_data: Respuesta de la API de Google (announcement)
+            course_id: ID del curso al que pertenece
+        
+        Returns:
+            Material: Entidad de dominio con tipo ANNOUNCEMENT
+        """
+        # Los anuncios tienen texto en 'text' en lugar de 'title'
+        text = api_data.get('text', 'Sin contenido')
+        # Tomar las primeras 100 caracteres como título
+        title = text[:100] + '...' if len(text) > 100 else text
+        
+        # Extraer URL del primer material adjunto si existe
+        url = ''
+        materials_data = api_data.get('materials', [])
+        if materials_data:
+            url = self._extract_single_material_url(materials_data[0])
+        
+        # Extraer fechas
+        created_at = self._parse_google_timestamp(
+            api_data.get('creationTime', datetime.now().isoformat())
+        )
+        updated_at = self._parse_google_timestamp(
+            api_data.get('updateTime', datetime.now().isoformat())
+        )
+        
+        return MaterialFactory.create_from_dict({
+            'id': api_data.get('id', ''),
+            'course_id': course_id,
+            'title': title,
+            'description': text,  # El texto completo va en description
+            'type': MaterialType.ANNOUNCEMENT.value,
+            'url': url,
+            'created_at': created_at.isoformat(),
+            'updated_at': updated_at.isoformat(),
+            'due_date': None,
+            'max_points': None
+        })
+    
+    def _extract_single_material_url(self, material_data: Dict[str, Any]) -> str:
+        """Extrae URL de un solo material adjunto."""
+        if 'driveFile' in material_data:
+            return material_data['driveFile'].get('driveFile', {}).get('alternateLink', '')
+        if 'youtubeVideo' in material_data:
+            return f"https://youtube.com/watch?v={material_data['youtubeVideo'].get('id', '')}"
+        if 'link' in material_data:
+            return material_data['link'].get('url', '')
+        if 'form' in material_data:
+            return material_data['form'].get('formUrl', '')
+        return ''
+    
     def _detect_material_type(self, api_data: Dict[str, Any]) -> MaterialType:
         """
         Detecta el tipo de material basándose en la estructura de la API.

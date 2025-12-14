@@ -154,7 +154,14 @@ class Material:
         if not self.has_due_date():
             return False
         
-        return datetime.now() > self.due_date
+        # [FIX] Usar datetime con timezone para comparar con due_date que tiene timezone
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        # Si due_date no tiene timezone, asumir UTC
+        due = self.due_date
+        if due.tzinfo is None:
+            due = due.replace(tzinfo=timezone.utc)
+        return now > due
     
     def days_until_due(self) -> Optional[int]:
         """
@@ -171,7 +178,13 @@ class Material:
         if not self.has_due_date():
             return None
         
-        delta = self.due_date - datetime.now()
+        # [FIX] Usar datetime con timezone
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        due = self.due_date
+        if due.tzinfo is None:
+            due = due.replace(tzinfo=timezone.utc)
+        delta = due - now
         return delta.days
     
     def get_type_label(self) -> str:
