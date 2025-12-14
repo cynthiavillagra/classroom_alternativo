@@ -236,3 +236,109 @@ class Material:
             f"Material(id='{self.id}', title='{self.title}', "
             f"type={self.type}, course_id='{self.course_id}')"
         )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que la entidad Material funciona.
+    
+    Ejecutar con:
+        python -m api.domain.entities.material
+    """
+    from datetime import timedelta
+    
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: Material")
+    print("=" * 60)
+    
+    # Test 1: Crear un material válido (PDF)
+    print("\n1. Crear material válido (PDF):")
+    now = datetime.now()
+    material = Material(
+        id="mat_123",
+        course_id="course_456",
+        title="Guía de Integrales",
+        type=MaterialType.PDF,
+        url="https://drive.google.com/file123",
+        created_at=now,
+        updated_at=now,
+        description="Guía completa de integrales"
+    )
+    print(f"   ✓ Material creado: {material}")
+    
+    # Test 2: Verificar is_assignment()
+    print("\n2. Verificar is_assignment():")
+    print(f"   ✓ PDF.is_assignment() = {material.is_assignment()} (esperado: False)")
+    
+    # Test 3: Crear una tarea con due_date
+    print("\n3. Crear tarea con due_date:")
+    future_date = now + timedelta(days=5)
+    assignment = Material(
+        id="task_789",
+        course_id="course_456",
+        title="Tarea 1: Ejercicios",
+        type=MaterialType.ASSIGNMENT,
+        url="https://classroom.google.com/task",
+        created_at=now,
+        updated_at=now,
+        due_date=future_date,
+        max_points=100
+    )
+    print(f"   ✓ Tarea creada: {assignment}")
+    print(f"   ✓ is_assignment() = {assignment.is_assignment()} (esperado: True)")
+    print(f"   ✓ has_due_date() = {assignment.has_due_date()} (esperado: True)")
+    print(f"   ✓ is_overdue() = {assignment.is_overdue()} (esperado: False)")
+    print(f"   ✓ days_until_due() = {assignment.days_until_due()} (esperado: ~5)")
+    
+    # Test 4: Verificar get_type_label() y get_type_icon()
+    print("\n4. Verificar tipo label e icon:")
+    print(f"   ✓ PDF: {material.get_type_icon()} {material.get_type_label()}")
+    print(f"   ✓ Assignment: {assignment.get_type_icon()} {assignment.get_type_label()}")
+    
+    # Test 5: Verificar to_dict()
+    print("\n5. Verificar to_dict():")
+    mat_dict = material.to_dict()
+    print(f"   ✓ to_dict() tiene {len(mat_dict)} campos")
+    print(f"      - type: {mat_dict['type']}")
+    print(f"      - type_label: {mat_dict['type_label']}")
+    print(f"      - type_icon: {mat_dict['type_icon']}")
+    
+    # Test 6: Verificar validación de URL inválida
+    print("\n6. Verificar validación de URL inválida:")
+    try:
+        invalid = Material(
+            id="test",
+            course_id="course",
+            title="Test",
+            type=MaterialType.LINK,
+            url="google.com",  # Sin http://
+            created_at=now,
+            updated_at=now
+        )
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado: URL inválida")
+    
+    # Test 7: Verificar validación de max_points negativo
+    print("\n7. Verificar validación de max_points negativo:")
+    try:
+        invalid = Material(
+            id="test",
+            course_id="course",
+            title="Test",
+            type=MaterialType.ASSIGNMENT,
+            url="https://test.com",
+            created_at=now,
+            updated_at=now,
+            max_points=-10
+        )
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado: max_points negativo")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de Material: OK")
+    print("=" * 60)

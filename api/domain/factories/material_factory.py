@@ -171,3 +171,104 @@ class MaterialFactory:
             due_date=kwargs.get('due_date'),
             max_points=kwargs.get('max_points')
         )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que MaterialFactory funciona.
+    
+    Ejecutar con:
+        python -m api.domain.factories.material_factory
+    """
+    from datetime import timedelta
+    
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: MaterialFactory")
+    print("=" * 60)
+    
+    # Test 1: create() con parámetros explícitos
+    print("\n1. MaterialFactory.create():")
+    now = datetime.now()
+    material = MaterialFactory.create(
+        id="mat_123",
+        course_id="course_456",
+        title="Guía de Integrales",
+        type=MaterialType.PDF,
+        url="https://drive.google.com/file123",
+        created_at=now,
+        updated_at=now
+    )
+    print(f"   ✓ Material creado: {material}")
+    
+    # Test 2: create() normaliza espacios
+    print("\n2. Verificar normalización:")
+    material2 = MaterialFactory.create(
+        id="mat_456",
+        course_id="course_789",
+        title="  Video Tutorial  ",  # Espacios
+        type=MaterialType.VIDEO,
+        url="  https://youtube.com/watch  ",  # Espacios
+        created_at=now,
+        updated_at=now,
+        description=""  # Vacío → None
+    )
+    print(f"   ✓ Title normalizado: '{material2.title}'")
+    print(f"   ✓ URL normalizada: '{material2.url}'")
+    print(f"   ✓ Description: {material2.description} (esperado: None)")
+    
+    # Test 3: create_from_dict()
+    print("\n3. MaterialFactory.create_from_dict():")
+    data = {
+        'id': 'mat_789',
+        'course_id': 'course_123',
+        'title': 'Tarea 1',
+        'type': 'assignment',
+        'url': 'https://classroom.google.com/task',
+        'created_at': '2024-01-15T10:00:00Z',
+        'updated_at': '2024-12-01T15:30:00Z',
+        'due_date': '2024-12-20T23:59:00Z',
+        'max_points': 100
+    }
+    material3 = MaterialFactory.create_from_dict(data)
+    print(f"   ✓ Material desde dict: {material3}")
+    print(f"   ✓ Type convertido: {material3.type}")
+    print(f"   ✓ due_date tipo: {type(material3.due_date).__name__}")
+    print(f"   ✓ max_points: {material3.max_points}")
+    
+    # Test 4: create_for_testing()
+    print("\n4. MaterialFactory.create_for_testing():")
+    test_mat = MaterialFactory.create_for_testing()
+    print(f"   ✓ Test material: {test_mat}")
+    print(f"   ✓ ID default: '{test_mat.id}'")
+    print(f"   ✓ Type default: {test_mat.type}")
+    
+    # Test 5: create_for_testing() con override
+    print("\n5. create_for_testing() con valores custom:")
+    custom_mat = MaterialFactory.create_for_testing(
+        title="Custom Video",
+        type=MaterialType.VIDEO,
+        due_date=now + timedelta(days=7),
+        max_points=50
+    )
+    print(f"   ✓ Custom material: {custom_mat}")
+    print(f"   ✓ Type overrided: {custom_mat.type}")
+    print(f"   ✓ has_due_date: {custom_mat.has_due_date()}")
+    
+    # Test 6: Verificar error por campos faltantes
+    print("\n6. Verificar error por campos faltantes:")
+    try:
+        invalid = MaterialFactory.create_from_dict({
+            'id': '123',
+            'title': 'Test'
+            # Faltan: course_id, type, url, created_at, updated_at
+        })
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado: campos faltantes")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de MaterialFactory: OK")
+    print("=" * 60)

@@ -10,8 +10,18 @@ POR QUÉ SÍ usar interfaces (Ports):
 ✅ Invierte las dependencias (Dependency Inversion Principle)
 """
 
-from .classroom_repository import ClassroomRepository
+from .classroom_repository import (
+    ClassroomRepository,
+    RepositoryError,
+    CourseNotFoundError,
+    MaterialNotFoundError,
+    UnauthorizedError
+)
 
 __all__ = [
     "ClassroomRepository",
+    "RepositoryError",
+    "CourseNotFoundError",
+    "MaterialNotFoundError",
+    "UnauthorizedError",
 ]

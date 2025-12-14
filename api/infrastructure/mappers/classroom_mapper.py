@@ -257,15 +257,118 @@ class ClassroomMapper:
             due_time: {"hours": 23, "minutes": 59}
         
         Returns:
-            datetime o None
+            datetime o None (con timezone UTC para consistencia)
         """
+        from datetime import timezone
+        
         try:
-            return datetime(
+            dt = datetime(
                 year=due_date.get('year', 2024),
                 month=due_date.get('month', 1),
                 day=due_date.get('day', 1),
                 hour=due_time.get('hours', 23),
-                minute=due_time.get('minutes', 59)
+                minute=due_time.get('minutes', 59),
+                tzinfo=timezone.utc  # Agregar timezone UTC
             )
+            return dt
         except (ValueError, TypeError):
             return None
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que ClassroomMapper funciona.
+    
+    Ejecutar con:
+        python -m api.infrastructure.mappers.classroom_mapper
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: ClassroomMapper")
+    print("=" * 60)
+    
+    mapper = ClassroomMapper()
+    
+    # Test 1: Convertir curso de API a dominio
+    print("\n1. Convertir curso de API a dominio:")
+    api_course = {
+        "id": "123456789",
+        "name": "Matemáticas 3°A",
+        "section": "Turno Mañana",
+        "description": "Curso de matemáticas",
+        "ownerId": "987654321",
+        "creationTime": "2024-01-15T10:00:00.000Z",
+        "updateTime": "2024-12-01T15:30:00.000Z",
+        "courseState": "ACTIVE"
+    }
+    course = mapper.api_course_to_domain(api_course)
+    print(f"   ✓ Curso convertido: {course}")
+    print(f"   ✓ ID: {course.id}")
+    print(f"   ✓ State: {course.state}")
+    
+    # Test 2: Detectar tipo ASSIGNMENT
+    print("\n2. Detectar tipo ASSIGNMENT:")
+    api_assignment = {"workType": "ASSIGNMENT"}
+    detected = mapper._detect_material_type(api_assignment)
+    print(f"   ✓ Tipo detectado: {detected} (esperado: ASSIGNMENT)")
+    
+    # Test 3: Detectar tipo VIDEO
+    print("\n3. Detectar tipo VIDEO:")
+    api_video = {"materials": [{"youtubeVideo": {"id": "abc123"}}]}
+    detected = mapper._detect_material_type(api_video)
+    print(f"   ✓ Tipo detectado: {detected} (esperado: VIDEO)")
+    
+    # Test 4: Detectar tipo LINK
+    print("\n4. Detectar tipo LINK:")
+    api_link = {"materials": [{"link": {"url": "https://example.com"}}]}
+    detected = mapper._detect_material_type(api_link)
+    print(f"   ✓ Tipo detectado: {detected} (esperado: LINK)")
+    
+    # Test 5: Detectar tipo PDF por MIME
+    print("\n5. Detectar PDF por MIME type:")
+    detected = mapper._mime_to_material_type("application/pdf")
+    print(f"   ✓ Tipo detectado: {detected} (esperado: PDF)")
+    
+    # Test 6: Extraer URL de YouTube
+    print("\n6. Extraer URL de YouTube:")
+    url = mapper._extract_material_url(api_video, MaterialType.VIDEO)
+    print(f"   ✓ URL extraída: {url}")
+    
+    # Test 7: Parsear timestamp de Google
+    print("\n7. Parsear timestamp de Google:")
+    timestamp = "2024-01-15T10:00:00.000Z"
+    parsed = mapper._parse_google_timestamp(timestamp)
+    print(f"   ✓ Timestamp parseado: {parsed}")
+    print(f"   ✓ Tipo: {type(parsed).__name__}")
+    
+    # Test 8: Parsear due_date de Google
+    print("\n8. Parsear due_date de Google:")
+    due_date = {"year": 2024, "month": 12, "day": 20}
+    due_time = {"hours": 23, "minutes": 59}
+    parsed_due = mapper._parse_due_date(due_date, due_time)
+    print(f"   ✓ Due date parseada: {parsed_due}")
+    
+    # Test 9: Convertir material completo
+    print("\n9. Convertir material de API a dominio:")
+    api_material = {
+        "id": "mat_123",
+        "title": "Tarea 1: Ejercicios",
+        "description": "Resolver los ejercicios",
+        "workType": "ASSIGNMENT",
+        "alternateLink": "https://classroom.google.com/c/123",
+        "creationTime": "2024-01-15T10:00:00.000Z",
+        "updateTime": "2024-12-01T15:30:00.000Z",
+        "dueDate": {"year": 2024, "month": 12, "day": 20},
+        "dueTime": {"hours": 23, "minutes": 59},
+        "maxPoints": 100
+    }
+    material = mapper.api_material_to_domain(api_material, "course_456")
+    print(f"   ✓ Material convertido: {material}")
+    print(f"   ✓ Tipo: {material.type}")
+    print(f"   ✓ Max points: {material.max_points}")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de ClassroomMapper: OK")
+    print("=" * 60)

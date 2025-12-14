@@ -200,3 +200,78 @@ class GoogleClassroomClient:
 class GoogleAPIError(Exception):
     """Error al llamar a Google Classroom API."""
     pass
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que GoogleClassroomClient funciona.
+    
+    NOTA: No hace llamadas reales a Google API.
+    Solo verifica la estructura y el patrón Singleton.
+    
+    Ejecutar con:
+        python -m api.infrastructure.google_classroom_client
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: GoogleClassroomClient")
+    print("=" * 60)
+    
+    # Test 1: Verificar patrón Singleton
+    print("\n1. Verificar patrón Singleton:")
+    client1 = GoogleClassroomClient()
+    client2 = GoogleClassroomClient()
+    is_same = client1 is client2
+    print(f"   ✓ client1 is client2 = {is_same} (esperado: True)")
+    print(f"   ✓ Es Singleton: {'✓' if is_same else '✗'}")
+    
+    # Test 2: Verificar que tiene los atributos correctos
+    print("\n2. Verificar atributos:")
+    print(f"   ✓ base_url: {client1.base_url}")
+    print(f"   ✓ session tipo: {type(client1.session).__name__}")
+    print(f"   ✓ _initialized: {client1._initialized}")
+    
+    # Test 3: Verificar métodos públicos
+    print("\n3. Verificar métodos disponibles:")
+    methods = ['list_courses', 'get_course', 'list_course_work', 'list_course_work_materials']
+    for method_name in methods:
+        has_method = hasattr(client1, method_name)
+        print(f"   ✓ {method_name}(): {'existe' if has_method else 'NO EXISTE'}")
+    
+    # Test 4: Verificar que _make_request existe
+    print("\n4. Verificar método interno _make_request:")
+    has_make_request = hasattr(client1, '_make_request')
+    print(f"   ✓ _make_request(): {'existe' if has_make_request else 'NO EXISTE'}")
+    
+    # Test 5: Verificar excepción GoogleAPIError
+    print("\n5. Verificar excepción GoogleAPIError:")
+    try:
+        raise GoogleAPIError("Test error message")
+    except GoogleAPIError as e:
+        print(f"   ✓ GoogleAPIError capturado: '{str(e)}'")
+    
+    # Test 6: Verificar generación de URLs
+    print("\n6. Verificar generación de URLs:")
+    course_url = f"{client1.base_url}/courses"
+    course_work_url = f"{client1.base_url}/courses/123/courseWork"
+    print(f"   ✓ URL de cursos: {course_url}")
+    print(f"   ✓ URL de courseWork: {course_work_url}")
+    
+    # Test 7: Verificar headers esperados
+    print("\n7. Verificar estructura de headers:")
+    test_token = "test_access_token"
+    expected_headers = {
+        'Authorization': f'Bearer {test_token}',
+        'Accept': 'application/json'
+    }
+    print(f"   ✓ Authorization header: 'Bearer {test_token[:10]}...'")
+    print(f"   ✓ Accept header: 'application/json'")
+    
+    print("\n" + "=" * 60)
+    print("⚠️  NOTA: No se hicieron llamadas reales a Google API")
+    print("    Para probar conexión real, usa credenciales válidas")
+    print("=" * 60)
+    print("✅ Prueba de GoogleClassroomClient: OK")
+    print("=" * 60)

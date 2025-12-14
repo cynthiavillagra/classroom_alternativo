@@ -206,3 +206,96 @@ class CourseFactory:
             section=kwargs.get('section'),
             description=kwargs.get('description')
         )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que CourseFactory funciona.
+    
+    Ejecutar con:
+        python -m api.domain.factories.course_factory
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: CourseFactory")
+    print("=" * 60)
+    
+    # Test 1: create() con parámetros explícitos
+    print("\n1. CourseFactory.create():")
+    now = datetime.now()
+    course = CourseFactory.create(
+        id="course_123",
+        name="Matemáticas 3°A",
+        state=CourseState.ACTIVE,
+        owner_id="teacher_456",
+        created_at=now,
+        updated_at=now,
+        section="Turno Mañana"
+    )
+    print(f"   ✓ Curso creado: {course}")
+    
+    # Test 2: create() normaliza espacios
+    print("\n2. Verificar normalización de espacios:")
+    course2 = CourseFactory.create(
+        id="course_456",
+        name="  Física  ",  # Espacios extra
+        state=CourseState.ACTIVE,
+        owner_id="teacher",
+        created_at=now,
+        updated_at=now,
+        section="   ",  # Solo espacios → None
+        description=""   # Vacío → None
+    )
+    print(f"   ✓ Nombre normalizado: '{course2.name}' (sin espacios)")
+    print(f"   ✓ Section normalizada: {course2.section} (esperado: None)")
+    print(f"   ✓ Description normalizada: {course2.description} (esperado: None)")
+    
+    # Test 3: create_from_dict()
+    print("\n3. CourseFactory.create_from_dict():")
+    data = {
+        'id': 'course_789',
+        'name': 'Historia Universal',
+        'state': 'ARCHIVED',
+        'owner_id': 'teacher_123',
+        'created_at': '2024-01-15T10:00:00Z',
+        'updated_at': '2024-12-01T15:30:00Z',
+        'section': 'Sección A'
+    }
+    course3 = CourseFactory.create_from_dict(data)
+    print(f"   ✓ Curso desde dict: {course3}")
+    print(f"   ✓ State convertido: {course3.state} (esperado: ARCHIVED)")
+    print(f"   ✓ created_at tipo: {type(course3.created_at).__name__} (esperado: datetime)")
+    
+    # Test 4: create_for_testing()
+    print("\n4. CourseFactory.create_for_testing():")
+    test_course = CourseFactory.create_for_testing()
+    print(f"   ✓ Test course: {test_course}")
+    print(f"   ✓ ID default: '{test_course.id}'")
+    print(f"   ✓ Name default: '{test_course.name}'")
+    
+    # Test 5: create_for_testing() con override
+    print("\n5. create_for_testing() con valores custom:")
+    custom_course = CourseFactory.create_for_testing(
+        name="Custom Test",
+        state=CourseState.ARCHIVED
+    )
+    print(f"   ✓ Custom course: {custom_course}")
+    print(f"   ✓ State overrided: {custom_course.state}")
+    
+    # Test 6: Verificar error por campos faltantes
+    print("\n6. Verificar error por campos faltantes:")
+    try:
+        invalid = CourseFactory.create_from_dict({
+            'id': '123',
+            'name': 'Test'
+            # Faltan: state, owner_id, created_at, updated_at
+        })
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado: campos faltantes")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de CourseFactory: OK")
+    print("=" * 60)

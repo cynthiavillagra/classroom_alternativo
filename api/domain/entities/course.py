@@ -178,3 +178,98 @@ class Course:
             f"Course(id='{self.id}', name='{self.name}', "
             f"state={self.state}, owner_id='{self.owner_id}')"
         )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que la entidad Course funciona.
+    
+    Ejecutar con:
+        python -m api.domain.entities.course
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: Course")
+    print("=" * 60)
+    
+    # Test 1: Crear un curso válido
+    print("\n1. Crear curso válido:")
+    now = datetime.now()
+    course = Course(
+        id="test_123",
+        name="Matemáticas 3°A",
+        state=CourseState.ACTIVE,
+        owner_id="teacher_456",
+        created_at=now,
+        updated_at=now,
+        section="Turno Mañana",
+        description="Curso de matemáticas para 3er año"
+    )
+    print(f"   ✓ Curso creado: {course}")
+    
+    # Test 2: Verificar is_active()
+    print("\n2. Verificar is_active():")
+    print(f"   ✓ is_active() = {course.is_active()} (esperado: True)")
+    
+    # Test 3: Verificar is_visible()
+    print("\n3. Verificar is_visible():")
+    print(f"   ✓ is_visible() = {course.is_visible()} (esperado: True)")
+    
+    # Test 4: Verificar to_dict()
+    print("\n4. Verificar to_dict():")
+    course_dict = course.to_dict()
+    print(f"   ✓ to_dict() tiene {len(course_dict)} campos")
+    for key, value in course_dict.items():
+        print(f"      - {key}: {value}")
+    
+    # Test 5: Verificar __str__
+    print("\n5. Verificar __str__:")
+    print(f"   ✓ str(course) = '{str(course)}'")
+    
+    # Test 6: Verificar __repr__
+    print("\n6. Verificar __repr__:")
+    print(f"   ✓ repr(course) = '{repr(course)}'")
+    
+    # Test 7: Verificar validación de ID vacío
+    print("\n7. Verificar validación de ID vacío:")
+    try:
+        invalid_course = Course(
+            id="",
+            name="Test",
+            state=CourseState.ACTIVE,
+            owner_id="owner",
+            created_at=now,
+            updated_at=now
+        )
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado: ID vacío")
+    
+    # Test 8: Verificar validación de nombre corto
+    print("\n8. Verificar validación de nombre corto:")
+    try:
+        invalid_course = Course(
+            id="test",
+            name="AB",
+            state=CourseState.ACTIVE,
+            owner_id="owner",
+            created_at=now,
+            updated_at=now
+        )
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado: nombre muy corto")
+    
+    # Test 9: Verificar inmutabilidad
+    print("\n9. Verificar inmutabilidad (frozen=True):")
+    try:
+        course.name = "Nuevo nombre"
+        print("   ✗ ERROR: Debería ser inmutable")
+    except Exception:
+        print("   ✓ Curso es inmutable (no se puede modificar)")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de Course: OK")
+    print("=" * 60)

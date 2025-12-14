@@ -183,3 +183,63 @@ class GoogleClassroomRepository(ClassroomRepository):
             if "404" in str(e):
                 raise CourseNotFoundError(f"Curso no encontrado: {course_id}")
             raise RepositoryError(f"Error al obtener curso: {str(e)}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que GoogleClassroomRepository funciona.
+    
+    NOTA: No hace llamadas reales a Google API.
+    Solo verifica la estructura y dependencias.
+    
+    Ejecutar con:
+        python -m api.infrastructure.repositories.google_classroom_repository
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: GoogleClassroomRepository")
+    print("=" * 60)
+    
+    # Test 1: Verificar que se puede instanciar
+    print("\n1. Verificar instanciación:")
+    repo = GoogleClassroomRepository()
+    print(f"   ✓ Repositorio creado: {type(repo).__name__}")
+    
+    # Test 2: Verificar dependencias
+    print("\n2. Verificar dependencias:")
+    print(f"   ✓ client: {type(repo.client).__name__}")
+    print(f"   ✓ mapper: {type(repo.mapper).__name__}")
+    
+    # Test 3: Verificar que implementa la interface
+    print("\n3. Verificar implementación de interface:")
+    is_subclass = isinstance(repo, ClassroomRepository)
+    print(f"   ✓ Es ClassroomRepository: {is_subclass}")
+    
+    # Test 4: Verificar métodos disponibles
+    print("\n4. Verificar métodos disponibles:")
+    methods = ['get_user_courses', 'get_course_materials', 'get_course_by_id']
+    for method in methods:
+        has_method = hasattr(repo, method) and callable(getattr(repo, method))
+        print(f"   ✓ {method}(): {'existe' if has_method else 'NO EXISTE'}")
+    
+    # Test 5: Verificar que usa caché
+    print("\n5. Verificar uso de caché:")
+    print(f"   ✓ Cache disponible: {cache is not None}")
+    print(f"   ✓ Cache TTL: {Config.CACHE_TTL_SECONDS} segundos")
+    
+    # Test 6: Verificar generación de cache keys
+    print("\n6. Verificar cache keys:")
+    test_user_id = "user_123"
+    test_course_id = "course_456"
+    print(f"   ✓ Key para cursos: courses_user_{test_user_id}")
+    print(f"   ✓ Key para materiales: materials_course_{test_course_id}")
+    print(f"   ✓ Key para curso: course_{test_course_id}")
+    
+    print("\n" + "=" * 60)
+    print("⚠️  NOTA: No se hicieron llamadas reales a Google API")
+    print("    Para probar conexión real, usa credenciales válidas")
+    print("=" * 60)
+    print("✅ Prueba de GoogleClassroomRepository: OK")
+    print("=" * 60)

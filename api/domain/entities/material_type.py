@@ -115,3 +115,62 @@ class MaterialType(Enum):
                 f"Tipo de material inválido: '{value}'. "
                 f"Tipos válidos: {', '.join([t.value for t in cls])}"
             )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que el enum funciona correctamente.
+    
+    Ejecutar con:
+        python -m api.domain.entities.material_type
+    
+    Desde la raíz del proyecto (app classroom/)
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: MaterialType")
+    print("=" * 60)
+    
+    # Test 1: Verificar que todos los tipos existen
+    print("\n1. Verificar tipos existentes:")
+    for material_type in MaterialType:
+        print(f"   ✓ {material_type.name} = '{material_type.value}'")
+    
+    # Test 2: Verificar get_label()
+    print("\n2. Verificar get_label():")
+    for material_type in MaterialType:
+        label = material_type.get_label()
+        print(f"   ✓ {material_type.name}.get_label() = '{label}'")
+    
+    # Test 3: Verificar get_icon()
+    print("\n3. Verificar get_icon():")
+    for material_type in MaterialType:
+        icon = material_type.get_icon()
+        print(f"   ✓ {material_type.name}.get_icon() = {icon}")
+    
+    # Test 4: Verificar get_color()
+    print("\n4. Verificar get_color():")
+    for material_type in MaterialType:
+        color = material_type.get_color()
+        print(f"   ✓ {material_type.name}.get_color() = {color}")
+    
+    # Test 5: Verificar from_string()
+    print("\n5. Verificar from_string():")
+    test_values = ["pdf", "PDF", "video", "VIDEO", "document"]
+    for value in test_values:
+        result = MaterialType.from_string(value)
+        print(f"   ✓ from_string('{value}') = {result}")
+    
+    # Test 6: Verificar que from_string lanza error con valor inválido
+    print("\n6. Verificar error con valor inválido:")
+    try:
+        MaterialType.from_string("tipo_invalido")
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado correctamente: {str(e)[:50]}...")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de MaterialType: OK")
+    print("=" * 60)

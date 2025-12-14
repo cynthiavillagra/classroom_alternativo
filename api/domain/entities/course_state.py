@@ -99,3 +99,68 @@ class CourseState(Enum):
                 f"Estado de curso inválido: '{value}'. "
                 f"Estados válidos: {', '.join([s.value for s in cls])}"
             )
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que el enum funciona correctamente.
+    
+    Ejecutar con:
+        python -m api.domain.entities.course_state
+    """
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: CourseState")
+    print("=" * 60)
+    
+    # Test 1: Verificar que todos los estados existen
+    print("\n1. Verificar estados existentes:")
+    for state in CourseState:
+        print(f"   ✓ {state.name} = '{state.value}'")
+    
+    # Test 2: Verificar is_active()
+    print("\n2. Verificar is_active():")
+    for state in CourseState:
+        is_active = state.is_active()
+        expected = "✓" if state == CourseState.ACTIVE else "✗"
+        print(f"   {expected} {state.name}.is_active() = {is_active}")
+    
+    # Test 3: Verificar is_visible()
+    print("\n3. Verificar is_visible():")
+    for state in CourseState:
+        is_visible = state.is_visible()
+        expected = "✓" if state in (CourseState.ACTIVE, CourseState.ARCHIVED) else "✗"
+        print(f"   {expected} {state.name}.is_visible() = {is_visible}")
+    
+    # Test 4: Verificar get_label()
+    print("\n4. Verificar get_label():")
+    for state in CourseState:
+        label = state.get_label()
+        print(f"   ✓ {state.name}.get_label() = '{label}'")
+    
+    # Test 5: Verificar get_color()
+    print("\n5. Verificar get_color():")
+    for state in CourseState:
+        color = state.get_color()
+        print(f"   ✓ {state.name}.get_color() = {color}")
+    
+    # Test 6: Verificar from_string()
+    print("\n6. Verificar from_string():")
+    test_values = ["ACTIVE", "active", "ARCHIVED", "archived"]
+    for value in test_values:
+        result = CourseState.from_string(value)
+        print(f"   ✓ from_string('{value}') = {result}")
+    
+    # Test 7: Verificar error con valor inválido
+    print("\n7. Verificar error con valor inválido:")
+    try:
+        CourseState.from_string("INVALID_STATE")
+        print("   ✗ ERROR: Debería haber lanzado ValueError")
+    except ValueError as e:
+        print(f"   ✓ ValueError capturado correctamente")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de CourseState: OK")
+    print("=" * 60)

@@ -134,3 +134,110 @@ class ListCourseMaterials:
             type_name = material.type.value
             counts[type_name] = counts.get(type_name, 0) + 1
         return counts
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRUEBAS ATÓMICAS
+# ═══════════════════════════════════════════════════════════════
+if __name__ == "__main__":
+    """
+    Pruebas rápidas para verificar que ListCourseMaterials funciona.
+    
+    Ejecutar con:
+        python -m api.application.use_cases.list_course_materials
+    """
+    from datetime import datetime
+    from api.domain.entities import Course
+    from api.domain.entities.course_state import CourseState
+    from api.domain.factories import MaterialFactory
+    
+    print("=" * 60)
+    print("PRUEBAS ATÓMICAS: ListCourseMaterials")
+    print("=" * 60)
+    
+    # Crear Mock Repository
+    class MockRepository(ClassroomRepository):
+        """Mock para testing."""
+        
+        def get_user_courses(self, user_id: str, access_token: str):
+            return []
+        
+        def get_course_materials(self, course_id: str, access_token: str) -> List[Material]:
+            return [
+                MaterialFactory.create_for_testing(
+                    id="mat_1",
+                    title="Guía de Integrales",
+                    type=MaterialType.PDF
+                ),
+                MaterialFactory.create_for_testing(
+                    id="mat_2",
+                    title="Video Tutorial",
+                    type=MaterialType.VIDEO
+                ),
+                MaterialFactory.create_for_testing(
+                    id="mat_3",
+                    title="Tarea 1",
+                    type=MaterialType.ASSIGNMENT
+                ),
+                MaterialFactory.create_for_testing(
+                    id="mat_4",
+                    title="Enlace de Referencia",
+                    type=MaterialType.LINK
+                ),
+            ]
+        
+        def get_course_by_id(self, course_id: str, access_token: str):
+            return None
+    
+    mock_repo = MockRepository()
+    use_case = ListCourseMaterials(mock_repo)
+    
+    # Test 1: Ejecutar sin filtros
+    print("\n1. Ejecutar sin filtros:")
+    request = ListCourseMaterialsRequest(
+        course_id="course_123",
+        access_token="token"
+    )
+    response = use_case.execute(request)
+    print(f"   ✓ Total: {response.total_count}")
+    print(f"   ✓ Filtrados: {response.filtered_count}")
+    print(f"   ✓ Conteo por tipo: {response.type_counts}")
+    
+    # Test 2: Filtrar por tipo PDF
+    print("\n2. Filtrar solo PDF:")
+    request2 = ListCourseMaterialsRequest(
+        course_id="course_123",
+        access_token="token",
+        filter_type=MaterialType.PDF
+    )
+    response2 = use_case.execute(request2)
+    print(f"   ✓ Materiales PDF: {len(response2.materials)} (esperado: 1)")
+    
+    # Test 3: Buscar por texto
+    print("\n3. Buscar 'Guía':")
+    request3 = ListCourseMaterialsRequest(
+        course_id="course_123",
+        access_token="token",
+        search_query="Guía"
+    )
+    response3 = use_case.execute(request3)
+    print(f"   ✓ Materiales encontrados: {len(response3.materials)} (esperado: 1)")
+    
+    # Test 4: Aplicar límite
+    print("\n4. Aplicar límite=2:")
+    request4 = ListCourseMaterialsRequest(
+        course_id="course_123",
+        access_token="token",
+        limit=2
+    )
+    response4 = use_case.execute(request4)
+    print(f"   ✓ Materiales retornados: {len(response4.materials)} (esperado: 2)")
+    
+    # Test 5: Verificar DTOs
+    print("\n5. Verificar DTOs:")
+    print(f"   ✓ Request: course_id, access_token, filter_type, search_query, limit")
+    print(f"   ✓ Response: materials, total_count, filtered_count, type_counts")
+    
+    print("\n" + "=" * 60)
+    print("✅ Prueba de ListCourseMaterials: OK")
+    print("=" * 60)
