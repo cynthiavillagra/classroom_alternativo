@@ -1,52 +1,63 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 14:05
+> **Última actualización:** 2025-12-14 14:20
 
 ---
 
 ## Estado Actual
 
-**Fase Actual:** 4-B COMPLETADA ✅
+**Fase Actual:** 4-B EN PROCESO — Visor de Documentación agregado
 
 **Archivos Completados:**
-- 01-24: Fase 4-A completa (Domain, Infrastructure, Application, API Layer)
-- 25: main.py (Server Entrypoint)
-- 26: Frontend (index.html, login.html, dashboard.html, CSS, JS)
-- `.env.example` ✅
-- `docs/setup_externo.md` ✅
+- 01-27: Fase 4-A completa (Domain, Infrastructure, Application, API Layer)
+- main.py (Server Entrypoint) ✅
+- Frontend (index.html, login.html, dashboard.html) ✅
+- **public/docs.html** — Visor de Documentación con barra lateral ✅ **NUEVO**
 
-**Último Archivo:** `docs/setup_externo.md` (guía de credenciales)
+**Último Archivo:** `public/docs.html` + `/api/docs` endpoint
 
-**Siguiente en Cola:** Configurar credenciales reales y probar OAuth
-
----
-
-## 📊 Cumplimiento de Prompts
-
-| Prompt | Entregable | Estado |
-|--------|------------|--------|
-| 0 | Entrevista técnica | ✅ |
-| 1 | `docs/01_planificacion_analisis.md` | ✅ |
-| 2-A | `docs/02_a_arquitectura_patrones.md` | ✅ |
-| 2-B | `docs/02_b_modelado_datos.md` | ✅ |
-| 2-C | `docs/02_c_api_dinamica.md` | ✅ |
-| 3 | `docs/03_estrategia_datos.md` | ✅ |
-| 4-A | `requirements.txt` | ✅ |
-| 4-A | `.env.example` | ✅ |
-| 4-A | `docs/setup_externo.md` | ✅ |
-| 4-A | `README.md` con AI Stack | ✅ |
-| 4-A | 24 manuales técnicos | ✅ |
-| 4-B | `main.py` | ✅ |
-| 4-B | Frontend HTML/CSS/JS | ✅ |
+**Siguiente en Cola:** Prueba de recorrido del visor de documentación
 
 ---
 
-## 🚀 Para Probar OAuth Real
+## 📊 Cumplimiento de Fase 4-B
 
-1. Sigue la guía en `docs/setup_externo.md`
-2. Crea `.env` con tus credenciales
-3. Ejecuta `python main.py`
-4. Abre http://localhost:5000
+| Requisito | Estado |
+|-----------|--------|
+| Main/App Entrypoint | ✅ |
+| Routers/Endpoints | ✅ |
+| Pantalla Principal | ✅ |
+| **Visor de Documentación con barra lateral** | ✅ **AGREGADO** |
+| Prueba de Recorrido | ⏳ Pendiente confirmación |
+
+---
+
+## 🚀 Rutas Disponibles
+
+```
+GET /                    → Página principal
+GET /login               → Página de login
+GET /dashboard           → Dashboard
+GET /docs                → 📚 Visor de Documentación
+GET /api/auth/me         → Info usuario
+GET /api/courses         → Listar cursos
+GET /api/docs?file=X     → Servir documento Markdown
+```
+
+---
+
+## 🔥 Prueba de Recorrido
+
+```powershell
+# Iniciar servidor
+python main.py
+
+# Probar visor de documentación
+curl http://localhost:5000/api/docs?file=README.md
+
+# O abrir en navegador
+http://localhost:5000/docs
+```
 
 ---
 

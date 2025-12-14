@@ -19,7 +19,7 @@ POR QUÉ NO uvicorn/Flask/FastAPI:
 # POR QUÉ http.server: Servidor HTTP de librería estándar
 # POR QUÉ importar handlers: Delegamos a cada handler especializado
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import json
 import os
 
@@ -59,12 +59,18 @@ class MainRouter(BaseHTTPRequestHandler):
             self._delegate_to_materials()
         elif path.startswith('/api/courses'):
             self._delegate_to_courses()
+        # [REFACTOR] Agregar endpoint para servir documentación
+        elif path.startswith('/api/docs'):
+            self._serve_docs_api()
         elif path == '/' or path == '/index.html':
             self._serve_static('public/index.html', 'text/html')
         elif path == '/login' or path == '/login.html':
             self._serve_static('public/login.html', 'text/html')
         elif path == '/dashboard' or path == '/dashboard.html':
             self._serve_static('public/dashboard.html', 'text/html')
+        # [REFACTOR] Agregar ruta para visor de documentación
+        elif path == '/docs' or path == '/docs.html':
+            self._serve_static('public/docs.html', 'text/html')
         elif path.startswith('/css/'):
             self._serve_static(f'public{path}', 'text/css')
         elif path.startswith('/js/'):
@@ -90,6 +96,47 @@ class MainRouter(BaseHTTPRequestHandler):
         """Delega a MaterialsHandler."""
         handler = _create_delegated_handler(MaterialsHandler, self)
         handler.do_GET()
+    
+    # ───────────────────────────────────────────────────────────
+    # [REFACTOR] Paso 2.2.1: API para servir documentos Markdown
+    # ───────────────────────────────────────────────────────────
+    def _serve_docs_api(self):
+        """
+        Endpoint /api/docs?file=path/to/file.md
+        
+        Sirve archivos de documentación Markdown.
+        POR QUÉ API separada: Permite al frontend cargar docs dinámicamente
+        """
+        parsed = urlparse(self.path)
+        query = parse_qs(parsed.query)
+        
+        file_path = query.get('file', [None])[0]
+        
+        if not file_path:
+            self._send_json({'error': 'Missing file parameter'}, 400)
+            return
+        
+        # Seguridad: Solo permitir archivos .md en docs/ o README.md
+        if not (file_path.endswith('.md') and 
+                (file_path.startswith('docs/') or file_path == 'README.md')):
+            self._send_json({'error': 'Invalid file path'}, 403)
+            return
+        
+        # Prevenir path traversal
+        if '..' in file_path:
+            self._send_json({'error': 'Invalid path'}, 403)
+            return
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/markdown; charset=utf-8')
+            self.send_header('Content-Length', len(content.encode('utf-8')))
+            self.end_headers()
+            self.wfile.write(content.encode('utf-8'))
+        except FileNotFoundError:
+            self._send_json({'error': 'File not found'}, 404)
     
     # ───────────────────────────────────────────────────────────
     # Paso 2.3: Servir archivos estáticos
@@ -213,11 +260,13 @@ def run_server(host: str = 'localhost', port: int = 5000):
     print("   GET /                    → Página principal")
     print("   GET /login               → Página de login")
     print("   GET /dashboard           → Dashboard")
+    print("   GET /docs                → 📚 Visor de Documentación")
     print("   GET /api/auth/login      → Iniciar OAuth")
     print("   GET /api/auth/callback   → Callback OAuth")
     print("   GET /api/auth/me         → Info usuario")
     print("   GET /api/courses         → Listar cursos")
     print("   GET /api/courses/{id}/materials → Listar materiales")
+    print("   GET /api/docs?file=X     → Servir documento Markdown")
     print("=" * 60)
     print("\nPresiona Ctrl+C para detener el servidor")
     print("=" * 60)
