@@ -2,7 +2,14 @@
 
 > **Explorador avanzado de materiales de Google Classroom**
 
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![Tests](https://img.shields.io/badge/Tests-39%20passed-success)
+![Architecture](https://img.shields.io/badge/Architecture-Clean%20POO-purple)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-green)
+
 Una aplicación web que permite visualizar, filtrar y organizar los materiales de tus cursos de Google Classroom de forma más eficiente que la interfaz nativa.
+
+**Python POO Puro** — Sin frameworks web externos (Flask, FastAPI, Django).
 
 ---
 
@@ -25,7 +32,7 @@ Este proyecto sigue **Clean Architecture** con las siguientes capas:
 ┌─────────────────────────────────────────────────────────────┐
 │  Frontend (HTML/CSS/JS Vanilla)                             │
 ├─────────────────────────────────────────────────────────────┤
-│  API Layer (Flask - Vercel Serverless)                      │
+│  API Layer (Python POO Puro + VercelBridge)                 │
 ├─────────────────────────────────────────────────────────────┤
 │  Application Layer (Use Cases)                              │
 ├─────────────────────────────────────────────────────────────┤
@@ -91,10 +98,13 @@ cp .env.example .env
 ### 5. Ejecutar en Local
 
 ```bash
-# Desarrollo
-python -m flask --app api/main run --debug
+# Iniciar servidor
+python main.py
 
 # La app estará en http://localhost:5000
+
+# Para pruebas atómicas
+python main.py --test
 ```
 
 ---
