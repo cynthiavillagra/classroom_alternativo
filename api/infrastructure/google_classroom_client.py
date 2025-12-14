@@ -14,12 +14,21 @@ POR QUÉ NO crear una instancia por request:
 ❌ Más lento
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ requests: Librería HTTP estándar de Python, simple y robusta
+# POR QUÉ time: Para implementar retry con backoff exponencial
 import requests
 import time
 from typing import Dict, Any, Optional
 from .config import Config
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la clase Cliente (Singleton)
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Singleton: Reutiliza sesión HTTP, evita overhead
 class GoogleClassroomClient:
     """
     Cliente HTTP Singleton para Google Classroom API.

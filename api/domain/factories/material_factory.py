@@ -4,12 +4,20 @@ Material Factory - Classroom Explorer
 Factory para crear instancias de Material con validaciones y transformaciones.
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Material y MaterialType: Entidad y enum para type-safety
 from datetime import datetime
 from typing import Dict, Any, Optional
 from ..entities.material import Material
 from ..entities.material_type import MaterialType
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la clase Factory
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ similar a CourseFactory: Consistencia en patrones
 class MaterialFactory:
     """
     Factory para crear instancias de Material.

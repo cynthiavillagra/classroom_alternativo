@@ -15,12 +15,21 @@ POR QUÉ NO convertir directamente en el repositorio:
 ❌ Si cambia la API, hay que cambiar mucho código
 """
 
-from datetime import datetime
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ datetime: Para parsear timestamps de Google
+# POR QUÉ Factories: Para crear entidades válidas
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 from api.domain.entities import Course, Material, MaterialType, CourseState
 from api.domain.factories import CourseFactory, MaterialFactory
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir el Mapper (Adapter Pattern)
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Adapter: Aísla cambios de API externa del dominio
 class ClassroomMapper:
     """
     Mapper para convertir respuestas de Google Classroom API a entidades de dominio.

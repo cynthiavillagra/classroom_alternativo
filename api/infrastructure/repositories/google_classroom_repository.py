@@ -10,6 +10,11 @@ POR QUÉ SÍ esta implementación:
 ✅ Puede ser reemplazada por un mock en tests
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ ClassroomRepository: Interface que implementamos
+# POR QUÉ cache + mapper + client: Composición sobre herencia
 from typing import List
 from api.domain.entities import Course, Material
 from api.domain.interfaces import (
@@ -23,6 +28,10 @@ from api.infrastructure.cache import cache
 from api.infrastructure.config import Config
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Implementar la interface del repositorio
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ hereda ClassroomRepository: Cumple el contrato del dominio
 class GoogleClassroomRepository(ClassroomRepository):
     """
     Implementación del repositorio usando Google Classroom API.

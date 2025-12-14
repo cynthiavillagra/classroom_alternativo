@@ -20,10 +20,19 @@ LIMITACIÓN:
 • Aceptable para MVP (cada usuario tiene su caché)
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ datetime: Para calcular expiración de valores
+# POR QUÉ Tuple: Guardamos (valor, fecha_expiracion)
 from datetime import datetime, timedelta
 from typing import Optional, Any, Dict, Tuple
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la clase MemoryCache
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ clase simple: No necesitamos herencia ni ABC
 class MemoryCache:
     """
     Caché simple en memoria con TTL.

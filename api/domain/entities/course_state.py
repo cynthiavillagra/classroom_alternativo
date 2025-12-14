@@ -7,9 +7,17 @@ Basado en la documentación oficial de Google Classroom API:
 https://developers.google.com/classroom/reference/rest/v1/courses#CourseState
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Enum: Proporciona type-safety y valores constantes.
+# Los estados de Google Classroom son un conjunto finito y cerrado.
 from enum import Enum
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la enumeración de estados de curso
+# ═══════════════════════════════════════════════════════════════
 class CourseState(Enum):
     """
     Estados de un curso en Google Classroom.
@@ -22,11 +30,22 @@ class CourseState(Enum):
     - SUSPENDED: Curso suspendido por el administrador
     """
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.1: Valores del enum (estados oficiales de Google)
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ MAYÚSCULAS: Así vienen de la API de Google.
+    # Mantenemos el mismo formato para evitar conversiones.
     ACTIVE = "ACTIVE"
     ARCHIVED = "ARCHIVED"
     PROVISIONED = "PROVISIONED"
     DECLINED = "DECLINED"
     SUSPENDED = "SUSPENDED"
+    
+    # ───────────────────────────────────────────────────────────
+    # Paso 3: Métodos de lógica de negocio
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ métodos aquí: Encapsulamos reglas de negocio
+    # directamente en el enum (Rich Domain Model).
     
     def is_active(self) -> bool:
         """

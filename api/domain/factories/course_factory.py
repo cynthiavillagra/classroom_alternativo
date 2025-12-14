@@ -15,12 +15,21 @@ POR QUÉ NO crear directamente:
 ❌ Difícil crear desde diccionarios (API responses)
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Course y CourseState: Necesitamos la entidad y el enum
+# para construir instancias válidas.
 from datetime import datetime
 from typing import Dict, Any
 from ..entities.course import Course
 from ..entities.course_state import CourseState
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la clase Factory
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Factory Pattern: Centraliza creación, valida, transforma.
 class CourseFactory:
     """
     Factory para crear instancias de Course.

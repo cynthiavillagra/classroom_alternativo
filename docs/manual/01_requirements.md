@@ -78,18 +78,43 @@ pytest-mock==3.12.0
 
 ---
 
-## 📦 Instalación
+## 📦 Estrategia de Construcción Incremental
 
+1. **Paso 1 — Identificar dependencias core:** Flask para web, requests para HTTP
+2. **Paso 2 — Agregar seguridad:** PyJWT para tokens, cryptography para encriptación
+3. **Paso 3 — Integrar Google:** google-auth y google-auth-oauthlib para OAuth
+4. **Paso 4 — Validación:** pydantic para type safety en runtime
+5. **Paso 5 — Utilidades:** python-dotenv para variables de entorno
+6. **Paso 6 — Testing:** pytest y plugins para pruebas automatizadas
+
+---
+
+## 🔥 Prueba de Fuego
+
+### Comando Exacto
 ```powershell
-# 1. Crear entorno virtual
-python -m venv venv
-
-# 2. Activar (Windows)
-.\venv\Scripts\activate
-
-# 3. Instalar dependencias
+# Desde la raíz del proyecto (app classroom/)
 pip install -r requirements.txt
-
-# 4. Verificar
-pip list
+pip list | findstr flask
 ```
+
+### Salida Esperada
+```
+Flask                 3.0.0
+```
+
+### Verificación Completa
+```powershell
+python -c "import flask; import jwt; import requests; print('✅ Todas las dependencias OK')"
+```
+
+### Salida Esperada
+```
+✅ Todas las dependencias OK
+```
+
+---
+
+## 🎓 Aclaración Metodológica
+
+Este archivo NO tiene bloque `if __name__ == "__main__"` porque es un archivo de configuración, no código Python ejecutable. La "Prueba de Fuego" se realiza verificando que `pip install` funciona correctamente.

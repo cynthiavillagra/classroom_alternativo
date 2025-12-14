@@ -1,19 +1,58 @@
-# 🔢 MaterialType (Enum) — Manual Técnico
+# 📄 MaterialType (Enum) — Manual Técnico
 
 **Archivo:** `api/domain/entities/material_type.py`  
-**Propósito:** Define los tipos de materiales soportados  
-**Trazabilidad:** Entidad de dominio, RF-M03 (Listar materiales)
+**Propósito:** Define los tipos de materiales soportados como enumeración type-safe  
+**Trazabilidad:** RF-M03 (Tipos de material), Entidad de Dominio
 
 ---
 
-## 📝 Código Completo
+## 📐 Estrategia de Construcción Incremental
+
+1. **Paso 1 — Importar dependencias:**
+   - Importamos `Enum` de la librería estándar de Python
+   - POR QUÉ Enum: Garantiza valores únicos y comparables
+
+2. **Paso 2 — Definir los valores del enum:**
+   - Cada tipo tiene un valor string (`"pdf"`, `"video"`, etc.)
+   - POR QUÉ minúsculas: Consistencia con APIs REST y JSON
+
+3. **Paso 3 — Agregar métodos helper:**
+   - `get_label()`: Etiqueta legible para UI
+   - `get_icon()`: Emoji para representación visual
+   - `get_color()`: Color hexadecimal para UI
+   - POR QUÉ métodos en el enum: Encapsulamos lógica de presentación
+
+4. **Paso 4 — Factory method:**
+   - `from_string()`: Convierte string a enum
+   - POR QUÉ: Permite crear desde respuestas de API
+
+---
+
+## 🎓 Aclaración Metodológica: Rol del Bloque Main
+
+*Este bloque es una herramienta de construcción. Sirve para validar que el archivo funciona en aislamiento (Prueba Atómica) antes de conectarlo al sistema. No reemplaza a los tests unitarios formales.*
+
+---
+
+## 📝 Código Clave (Fragmento)
 
 ```python
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Enum: Clase base de Python para crear enumeraciones.
+# Garantiza que cada valor es único y comparable.
 from enum import Enum
 
+
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la enumeración de tipos de material
+# ═══════════════════════════════════════════════════════════════
 class MaterialType(Enum):
-    """Tipos de materiales soportados."""
-    
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.1: Definir los valores del enum
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ valores en minúsculas: Consistencia con APIs REST
     PDF = "pdf"
     VIDEO = "video"
     DOCUMENT = "document"
@@ -23,158 +62,79 @@ class MaterialType(Enum):
     ASSIGNMENT = "assignment"
     FILE = "file"
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 3: Métodos helper para UI
+    # ───────────────────────────────────────────────────────────
     def get_label(self) -> str:
-        """Retorna la etiqueta legible para UI."""
+        """Retorna etiqueta legible para UI."""
         labels = {
             MaterialType.PDF: "PDF",
             MaterialType.VIDEO: "Video",
-            MaterialType.DOCUMENT: "Documento",
-            MaterialType.LINK: "Enlace",
-            MaterialType.FORM: "Formulario",
-            MaterialType.IMAGE: "Imagen",
-            MaterialType.ASSIGNMENT: "Tarea",
-            MaterialType.FILE: "Archivo"
+            # ... más tipos
         }
         return labels.get(self, "Desconocido")
-    
-    def get_icon(self) -> str:
-        """Retorna el emoji/icono asociado."""
-        icons = {
-            MaterialType.PDF: "📄",
-            MaterialType.VIDEO: "🎥",
-            MaterialType.DOCUMENT: "📝",
-            MaterialType.LINK: "🔗",
-            MaterialType.FORM: "📋",
-            MaterialType.IMAGE: "🖼️",
-            MaterialType.ASSIGNMENT: "✏️",
-            MaterialType.FILE: "📎"
-        }
-        return icons.get(self, "📎")
-    
-    def get_color(self) -> str:
-        """Retorna el color sugerido para UI (hex)."""
-        colors = {
-            MaterialType.PDF: "#E74C3C",        # Rojo
-            MaterialType.VIDEO: "#9B59B6",      # Púrpura
-            MaterialType.DOCUMENT: "#3498DB",   # Azul
-            MaterialType.LINK: "#1ABC9C",       # Turquesa
-            MaterialType.FORM: "#F39C12",       # Naranja
-            MaterialType.IMAGE: "#E67E22",      # Naranja oscuro
-            MaterialType.ASSIGNMENT: "#2ECC71", # Verde
-            MaterialType.FILE: "#95A5A6"        # Gris
-        }
-        return colors.get(self, "#95A5A6")
 ```
 
 ---
 
-## ✅ POR QUÉ SÍ usar Enum
+## 🔥 Prueba de Fuego
 
-- ✅ Evita strings mágicos ("pdf", "video", etc.)
-- ✅ Autocomplete en el IDE
-- ✅ Type safety (el IDE detecta errores)
-- ✅ Fácil de extender (agregar nuevos tipos)
-- ✅ Métodos helper (`get_label()`, `get_icon()`)
-
----
-
-## ❌ POR QUÉ NO usar strings directamente
-
-```python
-# ❌ ANTI-PATRÓN: Strings mágicos
-material_type = "pdf"  # Typo: "pfd" no se detecta
-if material_type == "video":  # Repetitivo, propenso a errores
-    ...
-
-# ✅ PATRÓN CORRECTO: Enum
-material_type = MaterialType.PDF
-if material_type == MaterialType.VIDEO:  # Autocomplete, type-safe
-    ...
+### Comando Exacto
+```powershell
+python -m api.domain.entities.material_type
 ```
 
-**Problemas de strings:**
-- ❌ Typos no se detectan hasta runtime
-- ❌ No hay autocomplete
-- ❌ Difícil de refactorizar
-- ❌ No hay validación de tipos
+### Salida Esperada
+```
+============================================================
+PRUEBAS ATÓMICAS: MaterialType
+============================================================
+
+1. Verificar tipos existentes:
+   ✓ PDF = 'pdf'
+   ✓ VIDEO = 'video'
+   ...
+
+✅ Prueba de MaterialType: OK
+============================================================
+```
 
 ---
 
-## 🎓 CONCEPTOS EDUCATIVOS
+## 🔍 Análisis Dual
+
+### ✅ POR QUÉ SÍ usar Enum
+
+| Beneficio | Explicación |
+|-----------|-------------|
+| **Type Safety** | El IDE detecta errores en tiempo de desarrollo |
+| **Autocomplete** | Escribes `MaterialType.` y ves todas las opciones |
+| **Refactorización** | Cambiar un valor actualiza todos los usos |
+| **No typos** | `MaterialType.PDF` vs `"pdff"` (error silencioso) |
+| **Documentación** | El código es autodocumentado |
+
+### ❌ POR QUÉ NO usar strings directos
+
+| Problema | Ejemplo |
+|----------|---------|
+| **Typos** | `"pdf"` vs `"pfd"` - no hay error hasta runtime |
+| **Sin autocomplete** | No sabes qué valores son válidos |
+| **Difícil buscar** | ¿Dónde se usa `"video"`? Buscar strings es impreciso |
+| **Sin validación** | `material_type = "banana"` es válido pero incorrecto |
+
+---
+
+## 🎓 Conceptos Educativos
 
 ### ¿Qué es un Enum?
+- Conjunto finito de valores constantes con nombre
+- Similar a los tipos enumerados de otros lenguajes
+- En Python, cada valor es una instancia del enum
 
-```python
-from enum import Enum
+### Patrón Rich Enum
+Este enum implementa el patrón "Rich Enum" porque tiene:
+- Valores (`PDF = "pdf"`)
+- Métodos de instancia (`get_label()`, `get_icon()`)
+- Factory method (`from_string()`)
 
-class Color(Enum):
-    RED = 1
-    GREEN = 2
-    BLUE = 3
-
-# Uso:
-color = Color.RED
-print(color.value)  # 1
-print(color.name)   # "RED"
-```
-
-**Beneficios:**
-- ✅ Conjunto fijo de valores
-- ✅ Type-safe
-- ✅ Autocomplete en IDE
-- ✅ Puede tener métodos
-
-### Métodos en Enums
-
-```python
-class MaterialType(Enum):
-    PDF = "pdf"
-    
-    def get_label(self) -> str:
-        """Método personalizado."""
-        return "PDF Document"
-
-# Uso:
-type = MaterialType.PDF
-print(type.get_label())  # "PDF Document"
-```
-
-**POR QUÉ SÍ métodos en enums:**
-- ✅ Encapsula lógica relacionada
-- ✅ Evita funciones sueltas
-- ✅ Más orientado a objetos
-
-### Enum vs. Constantes
-
-```python
-# ❌ CONSTANTES (anti-patrón)
-PDF = "pdf"
-VIDEO = "video"
-DOCUMENT = "document"
-
-# Problema: No hay agrupación, no hay validación
-
-# ✅ ENUM (correcto)
-class MaterialType(Enum):
-    PDF = "pdf"
-    VIDEO = "video"
-    DOCUMENT = "document"
-
-# Beneficio: Agrupado, validado, type-safe
-```
-
-### Conversión desde String
-
-```python
-@classmethod
-def from_string(cls, value: str) -> 'MaterialType':
-    """Crea desde un string."""
-    try:
-        return cls(value.lower())
-    except ValueError:
-        raise ValueError(f"Tipo inválido: '{value}'")
-
-# Uso:
-type = MaterialType.from_string("PDF")  # MaterialType.PDF
-type = MaterialType.from_string("invalid")  # ValueError
-```
+Es más que un simple catálogo de constantes.

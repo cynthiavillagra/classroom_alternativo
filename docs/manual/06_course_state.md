@@ -1,122 +1,142 @@
-# 🔢 CourseState (Enum) — Manual Técnico
+# 📄 CourseState (Enum) — Manual Técnico
 
 **Archivo:** `api/domain/entities/course_state.py`  
-**Propósito:** Define los estados de un curso en Google Classroom  
-**Trazabilidad:** Entidad de dominio, RF-M02 (Listar cursos)
+**Propósito:** Define los estados posibles de un curso de Google Classroom  
+**Trazabilidad:** RF-M02 (Estados de curso), API de Google Classroom
 
 ---
 
-## 📝 Código Completo
+## 📐 Estrategia de Construcción Incremental
+
+1. **Paso 1 — Importar dependencias:**
+   - Importamos `Enum` de la librería estándar
+   - POR QUÉ: Type-safety y valores constantes garantizados
+
+2. **Paso 2 — Definir valores del enum:**
+   - `ACTIVE`, `ARCHIVED`, `PROVISIONED`, `DECLINED`, `SUSPENDED`
+   - POR QUÉ MAYÚSCULAS: Así vienen de la API de Google (evitamos conversiones)
+
+3. **Paso 3 — Agregar lógica de negocio:**
+   - `is_active()`: ¿El curso está activo?
+   - `is_visible()`: ¿Se debe mostrar por defecto?
+   - `get_label()`: Etiqueta para UI
+   - `get_color()`: Color para representación visual
+   - POR QUÉ métodos aquí: Rich Domain Model (encapsulación de reglas)
+
+4. **Paso 4 — Factory method:**
+   - `from_string()`: Convierte string de API a enum
+   - POR QUÉ: Mapeo seguro desde respuestas JSON
+
+---
+
+## 🎓 Aclaración Metodológica: Rol del Bloque Main
+
+*Este bloque es una herramienta de construcción. Sirve para validar que el archivo funciona en aislamiento (Prueba Atómica) antes de conectarlo al sistema. No reemplaza a los tests unitarios formales.*
+
+---
+
+## 📝 Código Clave (Fragmento)
 
 ```python
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Enum: Type-safety y valores constantes.
 from enum import Enum
 
+
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la enumeración de estados de curso
+# ═══════════════════════════════════════════════════════════════
 class CourseState(Enum):
-    """Estados de un curso en Google Classroom."""
-    
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.1: Valores del enum (estados oficiales de Google)
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ MAYÚSCULAS: Así vienen de la API de Google.
     ACTIVE = "ACTIVE"
     ARCHIVED = "ARCHIVED"
     PROVISIONED = "PROVISIONED"
     DECLINED = "DECLINED"
     SUSPENDED = "SUSPENDED"
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 3: Métodos de lógica de negocio
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ: Rich Domain Model - encapsulamos reglas aquí.
+    
     def is_active(self) -> bool:
-        """Verifica si el curso está activo."""
+        """¿El curso está activo?"""
         return self == CourseState.ACTIVE
     
     def is_visible(self) -> bool:
-        """Verifica si el curso debería mostrarse por defecto."""
+        """¿Se muestra por defecto? (ACTIVE o ARCHIVED)"""
         return self in (CourseState.ACTIVE, CourseState.ARCHIVED)
-    
-    def get_label(self) -> str:
-        """Retorna la etiqueta legible para UI."""
-        labels = {
-            CourseState.ACTIVE: "Activo",
-            CourseState.ARCHIVED: "Archivado",
-            CourseState.PROVISIONED: "Pendiente",
-            CourseState.DECLINED: "Rechazado",
-            CourseState.SUSPENDED: "Suspendido"
-        }
-        return labels.get(self, "Desconocido")
-    
-    def get_color(self) -> str:
-        """Retorna el color sugerido para UI."""
-        colors = {
-            CourseState.ACTIVE: "#2ECC71",      # Verde
-            CourseState.ARCHIVED: "#95A5A6",    # Gris
-            CourseState.PROVISIONED: "#F39C12", # Naranja
-            CourseState.DECLINED: "#E74C3C",    # Rojo
-            CourseState.SUSPENDED: "#E67E22"    # Naranja oscuro
-        }
-        return colors.get(self, "#95A5A6")
 ```
 
 ---
 
-## ✅ POR QUÉ SÍ este diseño
+## 🔥 Prueba de Fuego
 
-| Decisión | Justificación |
-|----------|---------------|
-| **Enum** | Valores fijos definidos por Google Classroom API |
-| **Métodos helper** | `is_active()`, `is_visible()` - Lógica de negocio |
-| **get_label()** | Traducción a español para UI |
-| **get_color()** | Colores consistentes en toda la app |
+### Comando Exacto
+```powershell
+python -m api.domain.entities.course_state
+```
+
+### Salida Esperada
+```
+============================================================
+PRUEBAS ATÓMICAS: CourseState
+============================================================
+
+1. Verificar estados existentes:
+   ✓ ACTIVE = 'ACTIVE'
+   ✓ ARCHIVED = 'ARCHIVED'
+   ...
+
+✅ Prueba de CourseState: OK
+============================================================
+```
 
 ---
 
-## 🎓 CONCEPTOS EDUCATIVOS
+## 🔍 Análisis Dual
 
-### Estados oficiales de Google Classroom API
+### ✅ POR QUÉ SÍ usar Enum con lógica
 
-Basado en la documentación oficial:
-https://developers.google.com/classroom/reference/rest/v1/courses#CourseState
+| Beneficio | Explicación |
+|-----------|-------------|
+| **Consistencia con API** | Valores coinciden con Google Classroom API |
+| **Lógica encapsulada** | `is_active()` vs `state == "ACTIVE"` |
+| **Fácil de extender** | Agregar nuevo estado = agregar valor al enum |
+| **Single Source of Truth** | Todo sobre estados en un solo archivo |
 
-| Estado | Descripción | Cuándo Ocurre |
-|--------|-------------|---------------|
-| **ACTIVE** | Curso activo y visible | Estado normal de un curso |
-| **ARCHIVED** | Curso archivado (solo lectura) | Profesor archiva el curso |
-| **PROVISIONED** | Curso creado pero no activado | Curso recién creado |
-| **DECLINED** | Invitación rechazada | Usuario rechaza invitación |
-| **SUSPENDED** | Curso suspendido | Administrador suspende el curso |
+### ❌ POR QUÉ NO usar strings o constantes
 
-### Métodos de Negocio en Enums
+| Problema | Ejemplo |
+|----------|---------|
+| **Sin métodos** | No puedes hacer `"ACTIVE".is_visible()` |
+| **Dispersión** | Lógica de estados repartida en todo el código |
+| **Typos** | `"ACTVE"` vs `"ACTIVE"` - error silencioso |
+| **Comparaciones frágiles** | `state.upper() == "ACTIVE"` en todos lados |
 
+---
+
+## 🎓 Conceptos Educativos
+
+### Rich Domain Model vs Anemic Domain Model
+
+**Anemic (❌):** El enum solo tiene valores, la lógica está afuera
 ```python
-def is_visible(self) -> bool:
-    """Cursos que se muestran en la UI."""
-    return self in (CourseState.ACTIVE, CourseState.ARCHIVED)
-
-# POR QUÉ SÍ este método:
-# ✅ Encapsula lógica de negocio
-# ✅ Evita repetir la condición en muchos lugares
-# ✅ Fácil de cambiar (ej: agregar PROVISIONED)
-
-# Uso:
-if course.state.is_visible():
-    display(course)
+# ❌ Anemic
+if course.state == "ACTIVE":
+    show_course()
 ```
 
-### Conversión desde String
-
+**Rich (✅):** El enum tiene valores Y comportamiento
 ```python
-@classmethod
-def from_string(cls, value: str) -> 'CourseState':
-    """Crea desde un string (API response)."""
-    try:
-        return cls(value.upper())
-    except ValueError:
-        raise ValueError(
-            f"Estado inválido: '{value}'. "
-            f"Estados válidos: {', '.join([s.value for s in cls])}"
-        )
-
-# Uso:
-state = CourseState.from_string("active")  # CourseState.ACTIVE
-state = CourseState.from_string("ACTIVE")  # CourseState.ACTIVE
-state = CourseState.from_string("invalid") # ValueError con mensaje claro
+# ✅ Rich
+if course.state.is_active():
+    show_course()
 ```
 
-**POR QUÉ SÍ validar:**
-- ✅ Fail-fast: detecta errores inmediatamente
-- ✅ Mensaje claro: lista los valores válidos
-- ✅ Case-insensitive: acepta "active" y "ACTIVE"
+El modelo rico es más mantenible y testeable.

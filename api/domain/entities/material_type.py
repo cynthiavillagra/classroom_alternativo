@@ -15,9 +15,17 @@ POR QUÉ NO usar strings directamente:
 ❌ Difícil de refactorizar
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Enum: Clase base de Python para crear enumeraciones.
+# Garantiza que cada valor es único y comparable.
 from enum import Enum
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la enumeración de tipos de material
+# ═══════════════════════════════════════════════════════════════
 class MaterialType(Enum):
     """
     Tipos de materiales soportados.
@@ -28,6 +36,11 @@ class MaterialType(Enum):
     - get_icon(): Emoji/icono para UI
     """
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.1: Definir los valores del enum
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ valores en minúsculas: Consistencia con APIs REST
+    # y facilita serialización JSON.
     PDF = "pdf"
     VIDEO = "video"
     DOCUMENT = "document"
@@ -37,6 +50,9 @@ class MaterialType(Enum):
     ASSIGNMENT = "assignment"
     FILE = "file"
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 3: Métodos helper para UI
+    # ───────────────────────────────────────────────────────────
     def get_label(self) -> str:
         """
         Retorna la etiqueta legible para mostrar en UI.

@@ -15,12 +15,21 @@ POR QUÉ NO usar directamente Google API:
 ❌ Inflexible: No podríamos cambiar de proveedor
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ ABC: Abstract Base Class para definir interfaces
+# POR QUÉ abstractmethod: Fuerza implementación en subclases
 from abc import ABC, abstractmethod
 from typing import List
 from ..entities.course import Course
 from ..entities.material import Material
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la interface (Port)
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Hexagonal: El dominio define qué necesita, infra lo implementa
 class ClassroomRepository(ABC):
     """
     Interface (Port) para acceder a datos de Google Classroom.

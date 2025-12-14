@@ -15,10 +15,19 @@ POR QUÉ NO hardcodear:
 ❌ Violaríamos el principio de 12-factor app
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ os: Acceso a variables de entorno del sistema
+# POR QUÉ List: Type hints para OAUTH_SCOPES
 import os
 from typing import List
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir clase de configuración
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ clase con atributos de clase: Acceso global sin instanciar
 class Config:
     """
     Configuración centralizada de la aplicación.

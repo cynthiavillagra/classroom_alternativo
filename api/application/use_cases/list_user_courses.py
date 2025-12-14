@@ -15,12 +15,21 @@ POR QUÉ NO poner lógica directamente en el route:
 ❌ No es reutilizable
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ dataclass: Para Request/Response DTOs simples
+# POR QUÉ ClassroomRepository: Dependency Injection
 from typing import List, Optional
 from dataclasses import dataclass
 from api.domain.entities import Course, CourseState
 from api.domain.interfaces import ClassroomRepository
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir DTOs (Data Transfer Objects)
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ DTOs: Encapsulan entrada/salida del Use Case
 @dataclass
 class ListUserCoursesRequest:
     """

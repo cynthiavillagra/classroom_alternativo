@@ -15,12 +15,22 @@ POR QUÉ NO usar dict:
 ❌ Fácil cometer errores (typos en keys)
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ dataclass: Reduce boilerplate, genera __init__, __repr__, __eq__
+# POR QUÉ datetime: Manejo correcto de fechas con timezone
+# POR QUÉ Optional: Campos que pueden ser None de forma explícita
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from .course_state import CourseState
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la entidad Course
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ frozen=True: Inmutabilidad (thread-safe, cacheable, sin bugs)
 @dataclass(frozen=True)
 class Course:
     """
@@ -46,15 +56,30 @@ class Course:
         updated_at: Última actualización
     """
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.1: Campos requeridos (sin default)
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ primero los requeridos: Python exige que campos
+    # sin default vengan antes de campos con default.
     id: str
     name: str
     state: CourseState
     owner_id: str
     created_at: datetime
     updated_at: datetime
+    
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.2: Campos opcionales (con default None)
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ Optional: Explícitamente indica que puede ser None.
     section: Optional[str] = None
     description: Optional[str] = None
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 3: Validaciones en __post_init__
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ __post_init__: Se ejecuta después de __init__,
+    # ideal para validar en dataclass frozen.
     def __post_init__(self):
         """
         Validaciones que se ejecutan después de crear la instancia.

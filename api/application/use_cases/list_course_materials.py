@@ -4,12 +4,21 @@ List Course Materials Use Case - Classroom Explorer
 Caso de uso para listar los materiales de un curso.
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ Material + MaterialType: Entidades del dominio
+# POR QUÉ ClassroomRepository: Dependency Injection
 from typing import List, Optional
 from dataclasses import dataclass
 from api.domain.entities import Material, MaterialType
 from api.domain.interfaces import ClassroomRepository
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir DTOs (Data Transfer Objects)
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ DTOs separados: Encapsulan entrada/salida del Use Case
 @dataclass
 class ListCourseMaterialsRequest:
     """Request DTO para el caso de uso."""

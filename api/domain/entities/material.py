@@ -6,12 +6,21 @@ Entidad de dominio que representa un material de un curso de Google Classroom.
 Un material puede ser: PDF, video, documento, enlace, formulario, imagen, tarea, etc.
 """
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 1: Importar dependencias
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ dataclass: Reduce boilerplate para entidades
+# POR QUÉ MaterialType: Enum para type-safety en tipos de material
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 from .material_type import MaterialType
 
 
+# ═══════════════════════════════════════════════════════════════
+# Paso 2: Definir la entidad Material
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ frozen=True: Inmutabilidad garantiza consistencia
 @dataclass(frozen=True)
 class Material:
     """
@@ -32,6 +41,10 @@ class Material:
         max_points: Puntos máximos si es tarea (opcional)
     """
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.1: Campos requeridos
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ type: MaterialType: Usa enum para type-safety
     id: str
     course_id: str
     title: str
@@ -39,10 +52,19 @@ class Material:
     url: str
     created_at: datetime
     updated_at: datetime
+    
+    # ───────────────────────────────────────────────────────────
+    # Paso 2.2: Campos opcionales (específicos de tareas)
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ separados: Solo aplican si el material es ASSIGNMENT
     description: Optional[str] = None
     due_date: Optional[datetime] = None
     max_points: Optional[int] = None
     
+    # ───────────────────────────────────────────────────────────
+    # Paso 3: Validaciones en __post_init__
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ: Fail-fast, garantiza datos válidos desde la creación
     def __post_init__(self):
         """
         Validaciones automáticas al crear la instancia.
