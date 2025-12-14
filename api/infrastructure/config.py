@@ -20,8 +20,14 @@ POR QUÉ NO hardcodear:
 # ═══════════════════════════════════════════════════════════════
 # POR QUÉ os: Acceso a variables de entorno del sistema
 # POR QUÉ List: Type hints para OAUTH_SCOPES
+# [FIX] POR QUÉ dotenv aquí: Debe cargarse ANTES de que Config lea os.getenv
 import os
 from typing import List
+from dotenv import load_dotenv
+
+# [FIX] Cargar .env ANTES de definir Config
+# Esto asegura que os.getenv() encuentre las variables
+load_dotenv()
 
 
 # ═══════════════════════════════════════════════════════════════
