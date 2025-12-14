@@ -194,7 +194,8 @@
         }
 
         function viewCourse(courseId) {
-            alert(`Ver materiales del curso: ${courseId}\n\n(Esta funcionalidad requiere implementar la vista de materiales)`);
+            // Navegar a la página de materiales con el ID del curso
+            window.location.href = `/materials?id=${courseId}`;
         }
     </script>
 </body>

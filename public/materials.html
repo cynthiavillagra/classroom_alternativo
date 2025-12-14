@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiales del Curso - Classroom Explorer</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__logo">
+            <span class="header__icon">📚</span>
+            <h1 class="header__title">Classroom Explorer</h1>
+        </div>
+        <nav class="header__nav">
+            <a href="/dashboard" class="btn btn--secondary">← Volver a Cursos</a>
+            <a href="/api/auth/logout" class="btn btn--secondary">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="materials-section">
+            <div class="course-header" id="courseHeader">
+                <h2>⏳ Cargando curso...</h2>
+            </div>
+
+            <div class="materials-container" id="materialsContainer">
+                <div class="loading">
+                    <span class="loading-spinner">⏳</span>
+                    <p>Cargando materiales...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Classroom Explorer — Python POO sin frameworks</p>
+    </footer>
+
+    <style>
+        .materials-section {
+            padding: 2rem 0;
+        }
+
+        .course-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .course-header h2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .course-header p {
+            color: var(--color-text-secondary);
+        }
+
+        .materials-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .material-card {
+            background: var(--color-bg-card);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .material-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .material-card__type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .material-card__type--assignment {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .material-card__type--video {
+            background: #fce4ec;
+            color: #c62828;
+        }
+
+        .material-card__type--file {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .material-card__type--link {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .material-card__title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .material-card__description {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .material-card__meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--color-text-secondary);
+        }
+
+        .material-card__link {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .material-card__link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #fce8e6;
+            color: #c5221f;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            grid-column: 1 / -1;
+        }
+
+        .no-materials {
+            text-align: center;
+            padding: 3rem;
+            grid-column: 1 / -1;
+            color: var(--color-text-secondary);
+        }
+    </style>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // Materials Page - Cargar materiales del curso
+        // ═══════════════════════════════════════════════════════════════
+
+        // Obtener courseId de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!courseId) {
+                showError('No se especificó un curso');
+                return;
+            }
+            await loadCourseInfo();
+            await loadMaterials();
+        });
+
+        async function loadCourseInfo() {
+            const header = document.getElementById('courseHeader');
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                if (response.ok) {
+                    const course = await response.json();
+                    header.innerHTML = `
+                        <h2>📖 ${course.name}</h2>
+                        <p>${course.section || ''} ${course.description || ''}</p>
+                    `;
+                }
+            } catch (e) {
+                header.innerHTML = `<h2>📖 Curso ${courseId}</h2>`;
+            }
+        }
+
+        async function loadMaterials() {
+            const container = document.getElementById('materialsContainer');
+
+            try {
+                const response = await fetch(`/api/courses/${courseId}/materials`);
+
+                if (response.status === 401) {
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p>⚠️ No estás autenticado. <a href="/api/auth/login">Iniciar sesión</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Error cargando materiales');
+                }
+
+                const data = await response.json();
+
+                if (data.materials && data.materials.length > 0) {
+                    container.innerHTML = data.materials.map(material => `
+                        <div class="material-card">
+                            <span class="material-card__type material-card__type--${getTypeClass(material.type)}">
+                                ${getTypeIcon(material.type)} ${material.type || 'Material'}
+                            </span>
+                            <div class="material-card__title">${material.title}</div>
+                            <div class="material-card__description">
+                                ${material.description || 'Sin descripción'}
+                            </div>
+                            <div class="material-card__meta">
+                                <span>${formatDate(material.created_at)}</span>
+                                ${material.url ? `<a href="${material.url}" target="_blank" class="material-card__link">Abrir ↗</a>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="no-materials">
+                            <p>📭 Este curso no tiene materiales disponibles</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function getTypeClass(type) {
+            const types = {
+                'ASSIGNMENT': 'assignment',
+                'VIDEO': 'video',
+                'PDF': 'file',
+                'FILE': 'file',
+                'LINK': 'link'
+            };
+            return types[type] || 'file';
+        }
+
+        function getTypeIcon(type) {
+            const icons = {
+                'ASSIGNMENT': '📝',
+                'VIDEO': '🎬',
+                'PDF': '📄',
+                'FILE': '📁',
+                'LINK': '🔗'
+            };
+            return icons[type] || '📄';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('materialsContainer');
+            container.innerHTML = `
+                <div class="error-message">
+                    <p>❌ Error: ${message}</p>
+                    <p><small>Verifica que el curso exista y tengas acceso.</small></p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>

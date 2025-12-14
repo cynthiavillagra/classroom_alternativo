@@ -108,6 +108,9 @@ class MainRouter(BaseHTTPRequestHandler):
         # [REFACTOR] Agregar ruta para visor de documentación
         elif path == '/docs' or path == '/docs.html':
             self._serve_static('public/docs.html', 'text/html')
+        # [FIX] Agregar ruta para ver materiales de un curso
+        elif path == '/materials' or path.startswith('/materials?'):
+            self._serve_static('public/materials.html', 'text/html')
         elif path.startswith('/css/'):
             self._serve_static(f'public{path}', 'text/css')
         elif path.startswith('/js/'):
@@ -254,13 +257,17 @@ def _create_delegated_handler(handler_class, parent):
             self.wfile = parent.wfile
             self.rfile = parent.rfile
             self._parent = parent
-            # Inicializar dependencias
+            # [FIX] Inicializar dependencias para TODOS los handlers que las necesiten
             from api.infrastructure.repositories import GoogleClassroomRepository
             from api.application.use_cases import ListUserCourses, ListCourseMaterials
+            
+            # Siempre inicializar repository
             self.repository = GoogleClassroomRepository()
-            if hasattr(handler_class, 'list_courses_use_case'):
+            
+            # Inicializar use cases según el nombre de la clase
+            if handler_class.__name__ == 'CoursesHandler':
                 self.list_courses_use_case = ListUserCourses(self.repository)
-            if hasattr(handler_class, 'list_materials_use_case'):
+            elif handler_class.__name__ == 'MaterialsHandler':
                 self.list_materials_use_case = ListCourseMaterials(self.repository)
         
         def send_response(self, code):
