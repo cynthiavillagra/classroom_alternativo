@@ -1,0 +1,66 @@
+# ══════════════════════════════════════════════════════════════
+# Classroom Explorer - Python Dependencies
+# ══════════════════════════════════════════════════════════════
+# 
+# Este archivo lista todas las dependencias del proyecto.
+# Instalar con: pip install -r requirements.txt
+#
+# ══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# 🌐 Framework Web (Vercel Serverless)
+# ─────────────────────────────────────────────────────────────
+# Flask es ligero y compatible con Vercel Functions
+flask==3.0.0
+werkzeug==3.0.1
+
+# ─────────────────────────────────────────────────────────────
+# 🔐 Autenticación y Seguridad
+# ─────────────────────────────────────────────────────────────
+# PyJWT: Para crear y validar tokens JWT de sesión
+PyJWT==2.8.0
+
+# cryptography: Para encriptar tokens sensibles
+cryptography==41.0.7
+
+# ─────────────────────────────────────────────────────────────
+# 🌐 HTTP Client (para llamar a Google APIs)
+# ─────────────────────────────────────────────────────────────
+# requests: Cliente HTTP simple y confiable
+requests==2.31.0
+
+# google-auth: Librería oficial de Google para OAuth 2.0
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+
+# ─────────────────────────────────────────────────────────────
+# 📊 Validación de Datos
+# ─────────────────────────────────────────────────────────────
+# pydantic: Validación de datos con type hints
+pydantic==2.5.3
+
+# ─────────────────────────────────────────────────────────────
+# 🛠️ Utilidades
+# ─────────────────────────────────────────────────────────────
+# python-dotenv: Para cargar variables de .env en desarrollo
+python-dotenv==1.0.0
+
+# ─────────────────────────────────────────────────────────────
+# 🧪 Testing (desarrollo)
+# ─────────────────────────────────────────────────────────────
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# ─────────────────────────────────────────────────────────────
+# 📝 Linting y Formateo (desarrollo)
+# ─────────────────────────────────────────────────────────────
+black==23.12.1
+flake8==6.1.0
+mypy==1.7.1
+
+# ─────────────────────────────────────────────────────────────
+# 🔍 Type Stubs (para mypy)
+# ─────────────────────────────────────────────────────────────
+types-requests==2.31.0.10
