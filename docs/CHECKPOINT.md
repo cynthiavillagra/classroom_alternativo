@@ -1,56 +1,74 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 15:40
+> **Última actualización:** 2025-12-14 15:45
 
 ---
 
 ## Estado Actual
 
-**Fase Actual:** 4-B EN PROCESO DE REFACTORIZACIÓN
+**Fase Actual:** ✅ **FASE 4-B COMPLETADA**
 
-**Archivo Afectado:** `main.py` y `requirements.txt`
-
-**Cambios Realizados:**
-- ✅ `requirements.txt` — Removido Flask (Python POO puro)
-- ✅ `main.py` — Agregado `load_dotenv()` al inicio
-- ✅ `main.py` — Agregado diagnóstico de variables críticas
-- ✅ `main.py` — Agregado `VercelBridge` para compatibilidad WSGI
-- ✅ `main.py` — Expuesta variable `app` para Vercel
-
-**Siguiente en Cola:** Confirmar prueba y actualizar manual de troubleshooting
+**Endpoints Verificados:**
+- ✅ `GET /` → 200 (Página principal)
+- ✅ `GET /docs` → 200 (Visor documentación)
+- ✅ `GET /api/docs?file=X` → 200 (API documentación)
+- ✅ `GET /api/auth/me` → 401 (Correcto: no autenticado)
 
 ---
 
-## 📊 Cumplimiento del Nuevo Prompt
+## 📊 Resumen del Proyecto
 
-| Requisito | Estado |
-|-----------|--------|
-| `requirements.txt` con `python-dotenv` | ✅ |
-| Sin Flask (Python POO puro) | ✅ |
-| `main.py` con `load_dotenv()` al inicio | ✅ |
-| Diagnóstico de variables críticas | ✅ |
-| `VercelBridge` para WSGI | ✅ |
-| Variable `app` expuesta | ✅ |
-| Manual de Troubleshooting | ⏳ Pendiente |
+### Archivos Generados
+
+| Capa | Cantidad | Estado |
+|------|----------|--------|
+| Configuración | 5 | ✅ |
+| Domain Layer | 10 | ✅ |
+| Infrastructure | 6 | ✅ |
+| Application | 2 | ✅ |
+| API Routes | 3 | ✅ |
+| Server + Bridge | 1 | ✅ |
+| Frontend | 4 | ✅ |
+| **Total** | **31** | ✅ |
+
+### Manuales Técnicos
+
+- 27 manuales en `docs/manual/`
+- Todos con:
+  - Trazabilidad (HU, CA)
+  - Construcción incremental
+  - Prueba de fuego
+  - Análisis dual
+  - Troubleshooting (para deploy)
 
 ---
 
 ## 🚀 Cómo Ejecutar
 
-### Local
+### Desarrollo Local
 ```powershell
 python main.py
+# http://localhost:5000
 ```
 
-### Vercel
+### Deploy Vercel
 ```powershell
 vercel --prod
 ```
 
-### Prueba Atómica
+### Prueba Rápida
 ```powershell
 python main.py --test
 ```
+
+---
+
+## 📋 Siguiente Paso
+
+**Opciones:**
+1. Fase 5: Testing Formal (pytest)
+2. Deploy a Vercel
+3. Configurar credenciales Google reales
 
 ---
 
