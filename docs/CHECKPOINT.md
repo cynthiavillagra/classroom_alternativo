@@ -1,62 +1,52 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 13:55
+> **Última actualización:** 2025-12-14 14:05
 
 ---
 
 ## Estado Actual
 
-**Fase Actual:** 4-B (Endpoints y UI)
+**Fase Actual:** 4-B COMPLETADA ✅
 
 **Archivos Completados:**
-- 01-24: Fase 4-A completa
+- 01-24: Fase 4-A completa (Domain, Infrastructure, Application, API Layer)
 - 25: main.py (Server Entrypoint)
 - 26: Frontend (index.html, login.html, dashboard.html, CSS, JS)
+- `.env.example` ✅
+- `docs/setup_externo.md` ✅
 
-**Último Archivo:** Frontend básico (HTML/CSS/JS)
+**Último Archivo:** `docs/setup_externo.md` (guía de credenciales)
 
-**Siguiente en Cola:** Prueba de recorrido completa del servidor
-
----
-
-## 📊 Progreso de Manuales
-
-| Rango | Capa | Estado |
-|-------|------|--------|
-| 01-03 | Configuración | ✅ Completado |
-| 04-13 | Domain Layer | ✅ Completado |
-| 14-19 | Infrastructure | ✅ Completado |
-| 20-21 | Application | ✅ Completado |
-| 22-24 | API Routes | ✅ Completado |
-| 25 | Main Server | ✅ Completado |
-| 26 | Frontend | ✅ Completado |
+**Siguiente en Cola:** Configurar credenciales reales y probar OAuth
 
 ---
 
-## 🌐 Frontend Creado
+## 📊 Cumplimiento de Prompts
 
-```
-public/
-├── index.html      → Página principal
-├── login.html      → Página de login
-├── dashboard.html  → Dashboard de cursos
-├── css/
-│   └── styles.css  → Estilos CSS
-└── js/
-    └── app.js      → JavaScript vanilla
-```
+| Prompt | Entregable | Estado |
+|--------|------------|--------|
+| 0 | Entrevista técnica | ✅ |
+| 1 | `docs/01_planificacion_analisis.md` | ✅ |
+| 2-A | `docs/02_a_arquitectura_patrones.md` | ✅ |
+| 2-B | `docs/02_b_modelado_datos.md` | ✅ |
+| 2-C | `docs/02_c_api_dinamica.md` | ✅ |
+| 3 | `docs/03_estrategia_datos.md` | ✅ |
+| 4-A | `requirements.txt` | ✅ |
+| 4-A | `.env.example` | ✅ |
+| 4-A | `docs/setup_externo.md` | ✅ |
+| 4-A | `README.md` con AI Stack | ✅ |
+| 4-A | 24 manuales técnicos | ✅ |
+| 4-B | `main.py` | ✅ |
+| 4-B | Frontend HTML/CSS/JS | ✅ |
 
 ---
 
-## 🚀 Cómo Probar
+## 🚀 Para Probar OAuth Real
 
-```powershell
-# Iniciar servidor
-python main.py
-
-# Abrir en navegador
-http://localhost:5000
-```
+1. Sigue la guía en `docs/setup_externo.md`
+2. Crea `.env` con tus credenciales
+3. Ejecuta `python main.py`
+4. Abre http://localhost:5000
 
 ---
 
