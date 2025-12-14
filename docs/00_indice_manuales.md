@@ -1,7 +1,7 @@
 # 📚 Índice de Manuales Técnicos — Classroom Explorer
 
 > **Versión**: 2.0  
-> **Fecha**: 2024-12-14  
+> **Fecha**: 2025-12-14  
 > **Estado**: ✅ Completo
 
 ---
