@@ -3,6 +3,12 @@ Main Server - Classroom Explorer
 
 Punto de entrada del servidor HTTP usando Python POO puro.
 
+[REFACTOR] Cambios para soporte Vercel + diagnóstico:
+- load_dotenv() AL INICIO antes de cualquier lógica
+- Diagnóstico de variables críticas
+- VercelBridge para compatibilidad WSGI
+- Variable 'app' expuesta para Vercel
+
 POR QUÉ SÍ http.server:
 ✅ Librería estándar de Python (sin dependencias)
 ✅ Control total sobre routing
@@ -14,20 +20,51 @@ POR QUÉ NO uvicorn/Flask/FastAPI:
 """
 
 # ═══════════════════════════════════════════════════════════════
+# [REFACTOR] Paso 0: CARGAR .env ANTES DE TODO
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ al inicio: Las variables deben estar disponibles para Config
+from dotenv import load_dotenv
+load_dotenv()  # Carga .env si existe (desarrollo local)
+
+# ═══════════════════════════════════════════════════════════════
 # Paso 1: Importar dependencias
 # ═══════════════════════════════════════════════════════════════
 # POR QUÉ http.server: Servidor HTTP de librería estándar
 # POR QUÉ importar handlers: Delegamos a cada handler especializado
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+from io import BytesIO
 import json
 import os
+import sys
 
 # Importar handlers de rutas
 from api.routes.auth import AuthHandler, session_store
 from api.routes.courses import CoursesHandler
 from api.routes.materials import MaterialsHandler
 from api.infrastructure.config import Config
+
+# ═══════════════════════════════════════════════════════════════
+# [REFACTOR] Paso 1.1: Diagnóstico de Variables Críticas
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ diagnóstico: Detectar problemas de configuración temprano
+def _diagnose_environment():
+    """Verifica que las variables críticas estén configuradas."""
+    critical_vars = [
+        ('GOOGLE_CLIENT_ID', 'OAuth no funcionará'),
+        ('GOOGLE_CLIENT_SECRET', 'OAuth no funcionará'),
+    ]
+    
+    warnings = []
+    for var_name, impact in critical_vars:
+        value = os.getenv(var_name)
+        if not value or value.startswith('REEMPLAZA') or value.startswith('<'):
+            warnings.append(f"⚠️ ALERTA: Variable {var_name} no configurada. {impact}")
+    
+    return warnings
+
+# Ejecutar diagnóstico al cargar el módulo
+_env_warnings = _diagnose_environment()
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -279,7 +316,75 @@ def run_server(host: str = 'localhost', port: int = 5000):
 
 
 # ═══════════════════════════════════════════════════════════════
-# Paso 5: Prueba Atómica
+# [REFACTOR] Paso 5: VercelBridge - Adaptador WSGI para Vercel
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ un bridge: Vercel usa WSGI, no HTTPServer.serve_forever()
+class VercelBridge:
+    """
+    Adaptador que traduce requests WSGI a nuestro MainRouter.
+    
+    EN VERCEL:
+    - Vercel llama a app(environ, start_response)
+    - Este bridge traduce environ a lo que espera MainRouter
+    
+    EN LOCAL:
+    - Se usa HTTPServer directamente (en __main__)
+    """
+    
+    def __call__(self, environ, start_response):
+        """Función WSGI que Vercel ejecuta."""
+        # Construir request fake para MainRouter
+        path = environ.get('PATH_INFO', '/')
+        query = environ.get('QUERY_STRING', '')
+        full_path = f"{path}?{query}" if query else path
+        
+        # Crear un handler fake que capture la respuesta
+        response_body = BytesIO()
+        response_headers = []
+        response_status = [200]
+        
+        class FakeWfile:
+            def write(self, data):
+                response_body.write(data)
+        
+        class FakeHandler(MainRouter):
+            def __init__(self):
+                self.path = full_path
+                self.headers = {k[5:].replace('_', '-').title(): v 
+                               for k, v in environ.items() if k.startswith('HTTP_')}
+                self.wfile = FakeWfile()
+                self.rfile = BytesIO(environ.get('wsgi.input', b'').read() if hasattr(environ.get('wsgi.input'), 'read') else b'')
+            
+            def send_response(self, code):
+                response_status[0] = code
+            
+            def send_header(self, key, value):
+                response_headers.append((key, str(value)))
+            
+            def end_headers(self):
+                pass
+            
+            def log_message(self, *args):
+                pass
+        
+        handler = FakeHandler()
+        handler.do_GET()
+        
+        # Devolver respuesta WSGI
+        status = f"{response_status[0]} OK"
+        start_response(status, response_headers)
+        return [response_body.getvalue()]
+
+
+# ═══════════════════════════════════════════════════════════════
+# [REFACTOR] Paso 5.1: Exponer variable 'app' para Vercel
+# ═══════════════════════════════════════════════════════════════
+# POR QUÉ exponer app: Vercel busca una variable llamada 'app'
+app = VercelBridge()
+
+
+# ═══════════════════════════════════════════════════════════════
+# Paso 6: Prueba Atómica
 # ═══════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     """
@@ -293,6 +398,14 @@ if __name__ == "__main__":
         print("=" * 60)
         print("PRUEBAS ATÓMICAS: Main Server")
         print("=" * 60)
+        
+        # Test 0: Diagnóstico de entorno
+        print("\n0. Diagnóstico de Entorno:")
+        if _env_warnings:
+            for warning in _env_warnings:
+                print(f"   {warning}")
+        else:
+            print("   ✓ Todas las variables críticas configuradas")
         
         # Test 1: Verificar imports
         print("\n1. Verificar imports:")
@@ -319,12 +432,23 @@ if __name__ == "__main__":
         if not flask_loaded:
             print(f"   ✓ ¡Confirmado: Python POO puro!")
         
+        # Test 5: Verificar VercelBridge
+        print("\n5. Verificar VercelBridge (para Vercel):")
+        print(f"   ✓ VercelBridge: {VercelBridge is not None}")
+        print(f"   ✓ app expuesta: {app is not None}")
+        print(f"   ✓ app es callable: {callable(app)}")
+        
         print("\n" + "=" * 60)
         print("✅ Prueba de Main Server: OK")
         print("=" * 60)
         print("\nPara iniciar servidor real:")
         print("   python main.py")
+        print("\nPara deploy en Vercel:")
+        print("   vercel --prod")
         print("=" * 60)
     else:
+        # Mostrar warnings de entorno
+        for warning in _env_warnings:
+            print(warning)
         # Modo servidor real
         run_server()

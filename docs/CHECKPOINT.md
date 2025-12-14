@@ -1,62 +1,55 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 14:20
+> **Última actualización:** 2025-12-14 15:40
 
 ---
 
 ## Estado Actual
 
-**Fase Actual:** 4-B EN PROCESO — Visor de Documentación agregado
+**Fase Actual:** 4-B EN PROCESO DE REFACTORIZACIÓN
 
-**Archivos Completados:**
-- 01-27: Fase 4-A completa (Domain, Infrastructure, Application, API Layer)
-- main.py (Server Entrypoint) ✅
-- Frontend (index.html, login.html, dashboard.html) ✅
-- **public/docs.html** — Visor de Documentación con barra lateral ✅ **NUEVO**
+**Archivo Afectado:** `main.py` y `requirements.txt`
 
-**Último Archivo:** `public/docs.html` + `/api/docs` endpoint
+**Cambios Realizados:**
+- ✅ `requirements.txt` — Removido Flask (Python POO puro)
+- ✅ `main.py` — Agregado `load_dotenv()` al inicio
+- ✅ `main.py` — Agregado diagnóstico de variables críticas
+- ✅ `main.py` — Agregado `VercelBridge` para compatibilidad WSGI
+- ✅ `main.py` — Expuesta variable `app` para Vercel
 
-**Siguiente en Cola:** Prueba de recorrido del visor de documentación
+**Siguiente en Cola:** Confirmar prueba y actualizar manual de troubleshooting
 
 ---
 
-## 📊 Cumplimiento de Fase 4-B
+## 📊 Cumplimiento del Nuevo Prompt
 
 | Requisito | Estado |
 |-----------|--------|
-| Main/App Entrypoint | ✅ |
-| Routers/Endpoints | ✅ |
-| Pantalla Principal | ✅ |
-| **Visor de Documentación con barra lateral** | ✅ **AGREGADO** |
-| Prueba de Recorrido | ⏳ Pendiente confirmación |
+| `requirements.txt` con `python-dotenv` | ✅ |
+| Sin Flask (Python POO puro) | ✅ |
+| `main.py` con `load_dotenv()` al inicio | ✅ |
+| Diagnóstico de variables críticas | ✅ |
+| `VercelBridge` para WSGI | ✅ |
+| Variable `app` expuesta | ✅ |
+| Manual de Troubleshooting | ⏳ Pendiente |
 
 ---
 
-## 🚀 Rutas Disponibles
+## 🚀 Cómo Ejecutar
 
-```
-GET /                    → Página principal
-GET /login               → Página de login
-GET /dashboard           → Dashboard
-GET /docs                → 📚 Visor de Documentación
-GET /api/auth/me         → Info usuario
-GET /api/courses         → Listar cursos
-GET /api/docs?file=X     → Servir documento Markdown
-```
-
----
-
-## 🔥 Prueba de Recorrido
-
+### Local
 ```powershell
-# Iniciar servidor
 python main.py
+```
 
-# Probar visor de documentación
-curl http://localhost:5000/api/docs?file=README.md
+### Vercel
+```powershell
+vercel --prod
+```
 
-# O abrir en navegador
-http://localhost:5000/docs
+### Prueba Atómica
+```powershell
+python main.py --test
 ```
 
 ---

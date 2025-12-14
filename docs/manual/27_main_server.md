@@ -98,8 +98,94 @@ curl http://localhost:5000/api/auth/me
 - **Router central**: Un punto de entrada que delega
 - **Archivos estáticos**: Sirve frontend HTML/CSS/JS
 - **Configurable**: host/port como parámetros
+- **[REFACTOR] VercelBridge**: Compatibilidad con Vercel sin frameworks
 
 ### Por qué NO (riesgos):
 - **Sin router central**: Múltiples servidores escuchando
 - **Sin delegación**: Todo el código en un archivo gigante
 - **Framework externo**: Viola requisito POO pura
+- **Sin VercelBridge**: Vercel no puede ejecutar HTTPServer.serve_forever()
+
+---
+
+## 🔧 Guía de Resolución de Problemas (Troubleshooting)
+
+### 1. Diferencias de Entorno
+
+| Entorno | Método | Explicación |
+|---------|--------|-------------|
+| **Local** | `HTTPServer.serve_forever()` | Servidor TCP tradicional que mantiene conexión abierta |
+| **Vercel** | `app(environ, start_response)` | Función WSGI que se ejecuta por cada request |
+
+**Por qué la diferencia:**
+- Vercel es serverless: no hay un servidor "siempre encendido"
+- Cada request crea una nueva instancia de la función
+- `serve_forever()` bloqueante causa timeout en Vercel
+
+### 2. Errores Comunes
+
+#### "Missing variable 'app'"
+```
+Error: Cannot find module handler "main.app"
+```
+**Causa:** Vercel busca una variable `app` que implemente WSGI.
+
+**Solución:** Verificar que `main.py` tiene:
+```python
+app = VercelBridge()
+```
+
+#### "Error de Credenciales (400/401)"
+```
+Error: invalid_client o access_denied
+```
+**Causa:** Variables de entorno no configuradas.
+
+**Solución:**
+1. Verificar que `.env` existe con valores reales
+2. En Vercel: Settings → Environment Variables
+3. Diagnóstico rápido:
+```python
+import os
+print("CLIENT_ID:", os.getenv('GOOGLE_CLIENT_ID'))
+```
+
+#### "⚠️ ALERTA: Variable X no configurada"
+**Causa:** El diagnóstico de arranque detectó variables faltantes.
+
+**Solución:**
+1. Local: Crear `.env` con valores de `.env.example`
+2. Vercel: Configurar en Dashboard → Settings → Environment Variables
+
+#### "Despliegue Fantasma" (Vercel no detecta cambios)
+**Síntoma:** El código cambió pero Vercel sirve la versión antigua.
+
+**Solución:**
+```powershell
+# Forzar nuevo commit
+git commit --allow-empty -m "force: trigger deploy"
+git push
+
+# O crear deployment manual
+vercel --prod --force
+```
+
+### 3. Verificación de Deploy
+
+```powershell
+# Probar local
+python main.py --test
+
+# Probar Vercel local
+vercel dev
+
+# Probar producción
+curl https://tu-app.vercel.app/api/auth/me
+```
+
+---
+
+## 🤖 AI Stack
+
+Generado mediante metodología SDLC V5 usando Google Antigravity + Claude Opus 4.5
+

@@ -2,17 +2,16 @@
 # Classroom Explorer - Python Dependencies
 # ══════════════════════════════════════════════════════════════
 # 
-# Este archivo lista todas las dependencias del proyecto.
+# [REFACTOR] Limpiado para Python POO puro (sin Flask)
 # Instalar con: pip install -r requirements.txt
 #
 # ══════════════════════════════════════════════════════════════
 
 # ─────────────────────────────────────────────────────────────
-# 🌐 Framework Web (Vercel Serverless)
+# 🔧 Configuración (CRÍTICO - cargar primero)
 # ─────────────────────────────────────────────────────────────
-# Flask es ligero y compatible con Vercel Functions
-flask==3.0.0
-werkzeug==3.0.1
+# python-dotenv: Carga variables de .env ANTES de cualquier lógica
+python-dotenv==1.0.0
 
 # ─────────────────────────────────────────────────────────────
 # 🔐 Autenticación y Seguridad
@@ -41,12 +40,6 @@ google-auth-httplib2==0.2.0
 pydantic==2.5.3
 
 # ─────────────────────────────────────────────────────────────
-# 🛠️ Utilidades
-# ─────────────────────────────────────────────────────────────
-# python-dotenv: Para cargar variables de .env en desarrollo
-python-dotenv==1.0.0
-
-# ─────────────────────────────────────────────────────────────
 # 🧪 Testing (desarrollo)
 # ─────────────────────────────────────────────────────────────
 pytest==7.4.3
@@ -61,6 +54,11 @@ flake8==6.1.0
 mypy==1.7.1
 
 # ─────────────────────────────────────────────────────────────
-# 🔍 Type Stubs (para mypy)
+# � Type Stubs (para mypy)
 # ─────────────────────────────────────────────────────────────
 types-requests==2.31.0.10
+
+# ─────────────────────────────────────────────────────────────
+# ⚠️ NOTA: NO usamos Flask/FastAPI
+# Usamos http.server de la librería estándar (Python POO puro)
+# ─────────────────────────────────────────────────────────────
