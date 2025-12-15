@@ -11,23 +11,19 @@
     },
     {
       "source": "/dashboard",
-      "destination": "/public/dashboard.html"
+      "destination": "/dashboard.html"
     },
     {
       "source": "/login",
-      "destination": "/public/login.html"
+      "destination": "/login.html"
     },
     {
       "source": "/materials",
-      "destination": "/public/materials.html"
+      "destination": "/materials.html"
     },
     {
       "source": "/docs",
-      "destination": "/public/docs.html"
-    },
-    {
-      "source": "/",
-      "destination": "/public/index.html"
+      "destination": "/docs.html"
     }
   ]
 }
