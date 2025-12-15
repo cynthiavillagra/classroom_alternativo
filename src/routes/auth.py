@@ -181,14 +181,28 @@ class AuthHandler(BaseHTTPRequestHandler):
             token_data = self._exchange_code_for_token(code)
             access_token = token_data.get('access_token')
             
+            # [FIX] Obtener session_id de cookie o crear nueva sesión
+            session_id = self._get_session_id_from_cookie()
+            if not session_id:
+                session_id = session_store.create_session()
+            
             # Guardar en sesión
             session_store.set(session_id, 'access_token', access_token)
             session_store.set(session_id, 'user_id', self._get_user_id(access_token))
             
-            # Redirigir a dashboard
-            self._send_redirect(Config.APP_URL + '/dashboard')
+            # Redirigir a dashboard (con cookie de sesión actualizada)
+            self.send_response(302)
+            self.send_header('Location', Config.APP_URL + '/dashboard')
+            self.send_header('Set-Cookie', f'session_id={session_id}; HttpOnly; Path=/; SameSite=Lax')
+            # Limpiar cookie oauth_state ya usada
+            self.send_header('Set-Cookie', 'oauth_state=; HttpOnly; Path=/; Max-Age=0')
+            self.end_headers()
         except Exception as e:
-            self._send_json_response({'error': str(e)}, 500)
+            import traceback
+            self._send_json_response({
+                'error': str(e),
+                'traceback': traceback.format_exc()
+            }, 500)
     
     # ───────────────────────────────────────────────────────────
     # Paso 3.4: Ruta /logout
