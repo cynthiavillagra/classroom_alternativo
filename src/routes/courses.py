@@ -26,7 +26,7 @@ from typing import Dict, Any, Optional
 # Importar del dominio (POO pura)
 from src.application.use_cases import ListUserCourses, ListUserCoursesRequest
 from src.infrastructure.repositories import GoogleClassroomRepository
-from src.routes.auth import session_store
+# [UNIVERSAL] No importamos session_store, leemos directamente de cookies
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -87,14 +87,9 @@ class CoursesHandler(BaseHTTPRequestHandler):
         POR QUÉ usar Use Case: Reutilizamos lógica de Application Layer
         POR QUÉ verificar auth primero: Seguridad
         """
-        # Paso 4.1: Verificar autenticación
-        session_id = self._get_session_id_from_cookie()
-        if not session_id:
-            self._send_json_response({'error': 'Not authenticated'}, 401)
-            return
-        
-        access_token = session_store.get(session_id, 'access_token')
-        user_id = session_store.get(session_id, 'user_id')
+        # [UNIVERSAL] Leer token desde cookie (stateless)
+        access_token = self._get_cookie('access_token')
+        user_id = self._get_cookie('user_email') or 'me'
         
         if not access_token:
             self._send_json_response({'error': 'Not authenticated'}, 401)
@@ -137,13 +132,8 @@ class CoursesHandler(BaseHTTPRequestHandler):
         
         POR QUÉ endpoint separado: REST best practice
         """
-        # Paso 5.1: Verificar autenticación
-        session_id = self._get_session_id_from_cookie()
-        if not session_id:
-            self._send_json_response({'error': 'Not authenticated'}, 401)
-            return
-        
-        access_token = session_store.get(session_id, 'access_token')
+        # [UNIVERSAL] Leer token desde cookie (stateless)
+        access_token = self._get_cookie('access_token')
         
         if not access_token:
             self._send_json_response({'error': 'Not authenticated'}, 401)
@@ -167,12 +157,12 @@ class CoursesHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
     
-    def _get_session_id_from_cookie(self) -> Optional[str]:
-        """Extrae session_id de las cookies."""
-        cookie_header = self.headers.get('Cookie', '')
+    def _get_cookie(self, name: str) -> Optional[str]:
+        """[UNIVERSAL] Extrae una cookie por nombre."""
+        cookie_header = self.headers.get('Cookie', '') if self.headers else ''
         for cookie in cookie_header.split(';'):
             cookie = cookie.strip()
-            if cookie.startswith('session_id='):
+            if cookie.startswith(f'{name}='):
                 return cookie.split('=', 1)[1]
         return None
     

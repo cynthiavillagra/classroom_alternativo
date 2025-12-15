@@ -180,20 +180,19 @@ class AuthHandler(BaseHTTPRequestHandler):
         try:
             token_data = self._exchange_code_for_token(code)
             access_token = token_data.get('access_token')
+            user_info = self._get_user_info(access_token)
             
-            # [FIX] Obtener session_id de cookie o crear nueva sesión
-            session_id = self._get_session_id_from_cookie()
-            if not session_id:
-                session_id = session_store.create_session()
-            
-            # Guardar en sesión
-            session_store.set(session_id, 'access_token', access_token)
-            session_store.set(session_id, 'user_id', self._get_user_id(access_token))
-            
-            # Redirigir a dashboard (con cookie de sesión actualizada)
+            # [UNIVERSAL] Guardar token en cookie (NO en memoria)
+            # Esto hace el código stateless y funciona en cualquier entorno
             self.send_response(302)
             self.send_header('Location', Config.APP_URL + '/dashboard')
-            self.send_header('Set-Cookie', f'session_id={session_id}; HttpOnly; Path=/; SameSite=Lax')
+            # Token en cookie HttpOnly (seguro, no accesible desde JS)
+            self.send_header('Set-Cookie', f'access_token={access_token}; HttpOnly; Path=/; SameSite=Lax; Secure')
+            # Info de usuario (nombre para mostrar)
+            user_name = user_info.get('name', 'Usuario')
+            user_email = user_info.get('email', '')
+            self.send_header('Set-Cookie', f'user_name={user_name}; Path=/; SameSite=Lax')
+            self.send_header('Set-Cookie', f'user_email={user_email}; Path=/; SameSite=Lax')
             # Limpiar cookie oauth_state ya usada
             self.send_header('Set-Cookie', 'oauth_state=; HttpOnly; Path=/; Max-Age=0')
             self.end_headers()
@@ -208,33 +207,45 @@ class AuthHandler(BaseHTTPRequestHandler):
     # Paso 3.4: Ruta /logout
     # ───────────────────────────────────────────────────────────
     def _handle_logout(self):
-        """Cierra la sesión del usuario."""
-        session_id = self._get_session_id_from_cookie()
-        if session_id:
-            session_store.delete(session_id)
-        self._send_redirect(Config.APP_URL + '/login')
+        """
+        Cierra la sesión del usuario.
+        
+        [UNIVERSAL] Limpia cookies, no memoria.
+        """
+        self.send_response(302)
+        self.send_header('Location', Config.APP_URL + '/login')
+        # Limpiar todas las cookies de autenticación
+        self.send_header('Set-Cookie', 'access_token=; HttpOnly; Path=/; Max-Age=0')
+        self.send_header('Set-Cookie', 'user_name=; Path=/; Max-Age=0')
+        self.send_header('Set-Cookie', 'user_email=; Path=/; Max-Age=0')
+        self.send_header('Set-Cookie', 'session_id=; HttpOnly; Path=/; Max-Age=0')
+        self.end_headers()
     
     # ───────────────────────────────────────────────────────────
     # Paso 3.5: Ruta /me
     # ───────────────────────────────────────────────────────────
     def _handle_me(self):
-        """Retorna información del usuario actual."""
-        session_id = self._get_session_id_from_cookie()
+        """
+        Retorna información del usuario actual.
         
-        if not session_id:
-            self._send_json_response({'authenticated': False}, 401)
-            return
-        
-        access_token = session_store.get(session_id, 'access_token')
+        [UNIVERSAL] Lee desde cookies, no de memoria.
+        Funciona en cualquier entorno (local, server, serverless).
+        """
+        # Leer token desde cookie (stateless)
+        access_token = self._get_cookie('access_token')
         
         if not access_token:
             self._send_json_response({'authenticated': False}, 401)
             return
         
-        user_id = session_store.get(session_id, 'user_id')
+        # Leer info de usuario desde cookies
+        user_name = self._get_cookie('user_name') or 'Usuario'
+        user_email = self._get_cookie('user_email') or ''
+        
         self._send_json_response({
             'authenticated': True,
-            'user_id': user_id
+            'name': user_name,
+            'email': user_email
         })
     
     # ───────────────────────────────────────────────────────────
@@ -322,6 +333,27 @@ class AuthHandler(BaseHTTPRequestHandler):
             return 'unknown'
         
         return json.loads(response_data).get('id', 'unknown')
+    
+    def _get_user_info(self, access_token: str) -> dict:
+        """
+        Obtiene info completa del usuario desde Google.
+        
+        [UNIVERSAL] Retorna dict con name, email, id para guardar en cookies
+        """
+        context = ssl.create_default_context()
+        conn = http.client.HTTPSConnection('www.googleapis.com', context=context)
+        
+        headers = {'Authorization': f'Bearer {access_token}'}
+        conn.request('GET', '/oauth2/v1/userinfo', headers=headers)
+        
+        response = conn.getresponse()
+        response_data = response.read().decode()
+        conn.close()
+        
+        if response.status != 200:
+            return {'id': 'unknown', 'name': 'Usuario', 'email': ''}
+        
+        return json.loads(response_data)
     
     # Silenciar logs del servidor
     def log_message(self, format, *args):
