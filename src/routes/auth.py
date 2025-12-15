@@ -123,8 +123,9 @@ class AuthHandler(BaseHTTPRequestHandler):
         Inicia el flujo OAuth 2.0.
         
         POR QUÉ state: Previene ataques CSRF
+        [FIX] Guardar state en cookie para compatibilidad con Vercel serverless
         """
-        # Crear sesión y guardar state
+        # Crear sesión y state
         session_id = session_store.create_session()
         state = secrets.token_urlsafe(32)
         session_store.set(session_id, 'oauth_state', state)
@@ -132,8 +133,14 @@ class AuthHandler(BaseHTTPRequestHandler):
         # Construir URL de autorización
         auth_url = Config.get_oauth_auth_url(state)
         
-        # Redirigir (con cookie de sesión)
-        self._send_redirect(auth_url, session_id)
+        # Redirigir con cookies (session_id Y oauth_state para Vercel)
+        self.send_response(302)
+        self.send_header('Location', auth_url)
+        # Guardar session_id
+        self.send_header('Set-Cookie', f'session_id={session_id}; HttpOnly; Path=/; SameSite=Lax')
+        # [FIX] También guardar state en cookie para Vercel (cada request puede ir a instancia diferente)
+        self.send_header('Set-Cookie', f'oauth_state={state}; HttpOnly; Path=/; SameSite=Lax; Max-Age=300')
+        self.end_headers()
     
     # ───────────────────────────────────────────────────────────
     # Paso 3.3: Ruta /callback
@@ -143,20 +150,18 @@ class AuthHandler(BaseHTTPRequestHandler):
         Maneja callback de Google OAuth.
         
         POR QUÉ validar state: Protección CSRF
+        [FIX] Leer state desde cookie para compatibilidad con Vercel serverless
         """
-        # Obtener session_id de cookie
-        session_id = self._get_session_id_from_cookie()
-        
-        if not session_id:
-            self._send_json_response({'error': 'No session'}, 400)
-            return
-        
-        # Validar state
+        # Validar state (desde cookie porque Vercel es stateless)
         state = query.get('state', [None])[0]
-        stored_state = session_store.get(session_id, 'oauth_state')
+        stored_state = self._get_cookie('oauth_state')
         
-        if not state or state != stored_state:
-            self._send_json_response({'error': 'Invalid state'}, 400)
+        if not state or not stored_state or state != stored_state:
+            self._send_json_response({
+                'error': 'Invalid state',
+                'received': state,
+                'expected': stored_state[:10] + '...' if stored_state else None
+            }, 400)
             return
         
         # Verificar errores de Google
@@ -238,10 +243,14 @@ class AuthHandler(BaseHTTPRequestHandler):
     
     def _get_session_id_from_cookie(self) -> Optional[str]:
         """Extrae session_id de las cookies."""
-        cookie_header = self.headers.get('Cookie', '')
+        return self._get_cookie('session_id')
+    
+    def _get_cookie(self, name: str) -> Optional[str]:
+        """Extrae una cookie por nombre."""
+        cookie_header = self.headers.get('Cookie', '') if self.headers else ''
         for cookie in cookie_header.split(';'):
             cookie = cookie.strip()
-            if cookie.startswith('session_id='):
+            if cookie.startswith(f'{name}='):
                 return cookie.split('=', 1)[1]
         return None
     
