@@ -41,9 +41,7 @@ class handler(BaseHTTPRequestHandler):
             error_response = json.dumps({
                 'error': 'Import failed',
                 'message': IMPORT_ERROR,
-                'traceback': IMPORT_TRACEBACK,
-                'path': sys.path[:5],
-                'root_dir': ROOT_DIR
+                'traceback': IMPORT_TRACEBACK
             })
             self.wfile.write(error_response.encode())
             return
@@ -51,7 +49,7 @@ class handler(BaseHTTPRequestHandler):
         # Obtener el path real de la request
         raw_path = getattr(self, 'path', '/')
         
-        # Construir environ WSGI
+        # Construir environ WSGI con COOKIES
         path_info = raw_path.split('?')[0]
         query_string = raw_path.split('?')[1] if '?' in raw_path else ''
         
@@ -62,10 +60,11 @@ class handler(BaseHTTPRequestHandler):
             'wsgi.input': None,
         }
         
-        # Agregar headers HTTP (cookies incluidas)
+        # Agregar headers HTTP (incluyendo cookies!)
         if hasattr(self, 'headers') and self.headers:
             for key, value in self.headers.items():
-                environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
+                wsgi_key = f'HTTP_{key.upper().replace("-", "_")}'
+                environ[wsgi_key] = value
         
         # Ejecutar WSGI app
         try:
@@ -98,8 +97,7 @@ class handler(BaseHTTPRequestHandler):
                 'error': 'Runtime error',
                 'message': str(e),
                 'traceback': traceback.format_exc(),
-                'path_info': path_info,
-                'raw_path': raw_path
+                'path_info': path_info
             })
             self.wfile.write(error_response.encode())
     

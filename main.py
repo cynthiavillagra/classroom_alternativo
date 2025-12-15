@@ -99,6 +99,9 @@ class MainRouter(BaseHTTPRequestHandler):
         # [REFACTOR] Agregar endpoint para servir documentación
         elif path.startswith('/api/docs'):
             self._serve_docs_api()
+        # [DEBUG] Endpoint temporal para ver qué path llega
+        elif path == '/api/debug':
+            self._send_json({'debug': True, 'path_received': path, 'full_path': self.path})
         elif path == '/' or path == '/index.html':
             self._serve_static('public/index.html', 'text/html')
         elif path == '/login' or path == '/login.html':
