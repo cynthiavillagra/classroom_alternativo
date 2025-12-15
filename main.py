@@ -211,7 +211,9 @@ class MainRouter(BaseHTTPRequestHandler):
         self.send_response(404)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dumps({'error': 'Not found'}).encode())
+        # [DEBUG] Mostrar qué path causó el 404
+        path = getattr(self, 'path', 'unknown')
+        self.wfile.write(json.dumps({'error': 'Not found', 'path_received': path}).encode())
     
     def _send_json(self, data: dict, status: int = 200):
         """Envía respuesta JSON."""
