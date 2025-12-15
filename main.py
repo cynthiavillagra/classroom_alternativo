@@ -99,9 +99,12 @@ class MainRouter(BaseHTTPRequestHandler):
         # [REFACTOR] Agregar endpoint para servir documentación
         elif path.startswith('/api/docs'):
             self._serve_docs_api()
-        # [DEBUG] Endpoint temporal para ver qué path llega
-        elif path == '/api/debug':
-            self._send_json({'debug': True, 'path_received': path, 'full_path': self.path})
+        # ───────────────────────────────────────────────────────────
+        # [UNIVERSAL] Rutas estáticas - En producción (Vercel/Netlify)
+        # estas rutas son manejadas por vercel.json/netlify.toml.
+        # En desarrollo local, las manejamos nosotros.
+        # POR QUÉ mantenerlas: Permite desarrollo local sin config extra
+        # ───────────────────────────────────────────────────────────
         elif path == '/' or path == '/index.html':
             self._serve_static('public/index.html', 'text/html')
         elif path == '/login' or path == '/login.html':
@@ -188,8 +191,12 @@ class MainRouter(BaseHTTPRequestHandler):
         """
         Sirve archivos estáticos del frontend.
         
-        POR QUÉ servir estáticos: Frontend HTML/CSS/JS necesita archivos
-        [FIX] Usar ruta absoluta para compatibilidad con Vercel
+        [UNIVERSAL] Esta función se usa solo en desarrollo local.
+        En producción (Vercel/Netlify), los archivos estáticos se
+        sirven directamente desde el CDN, no desde la función.
+        
+        POR QUÉ SÍ mantener: Desarrollo local funciona sin config extra
+        POR QUÉ NO eliminar: Rompería `python main.py` local
         """
         # Obtener directorio base del proyecto
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -204,22 +211,14 @@ class MainRouter(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(content)
         except FileNotFoundError:
-            # [DEBUG] Mostrar qué path falló
-            self._send_json({
-                'error': 'File not found',
-                'base_dir': base_dir,
-                'filepath': filepath,
-                'full_path': full_path
-            }, 404)
+            self._send_not_found()
     
     def _send_not_found(self):
         """Envía error 404."""
         self.send_response(404)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
-        # [DEBUG] Mostrar qué path causó el 404
-        path = getattr(self, 'path', 'unknown')
-        self.wfile.write(json.dumps({'error': 'Not found', 'path_received': path}).encode())
+        self.wfile.write(json.dumps({'error': 'Not found'}).encode())
     
     def _send_json(self, data: dict, status: int = 200):
         """Envía respuesta JSON."""

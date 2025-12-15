@@ -212,32 +212,46 @@ pytest tests/integration/
 
 ---
 
-## 🚀 Deploy a Vercel
+## 🚀 Deploy
 
-### 1. Instalar Vercel CLI
+### Arquitectura Universal
 
-```bash
-npm install -g vercel
-```
+Este proyecto está diseñado para funcionar en **cualquier entorno**:
 
-### 2. Login
+| Entorno | Configuración |
+|---------|---------------|
+| **Local** | `python main.py` |
+| **Vercel** | Conectar repo, listo |
+| **Docker** | `docker-compose up` |
+| **Netlify** | Usar `netlify.toml` |
+| **Servidor** | Con systemd + nginx |
 
-```bash
-vercel login
-```
+**Ver guía completa:** [`docs/DEPLOY_UNIVERSAL.md`](docs/DEPLOY_UNIVERSAL.md)
 
-### 3. Configurar Variables de Entorno
+### Deploy a Vercel (Recomendado)
 
-En el dashboard de Vercel:
-1. Ve a **Settings** → **Environment Variables**
-2. Agrega todas las variables de `.env`
-3. Asegúrate de cambiar `OAUTH_REDIRECT_URI` a tu dominio de producción
+1. **Conectar repositorio a Vercel**
+   - Ir a [vercel.com](https://vercel.com)
+   - Import Git Repository
+   - Seleccionar tu repo
 
-### 4. Deploy
+2. **Configurar Variables de Entorno**
 
-```bash
-vercel --prod
-```
+   En Dashboard > Settings > Environment Variables:
+
+   | Variable | Valor |
+   |----------|-------|
+   | `GOOGLE_CLIENT_ID` | Tu client ID |
+   | `GOOGLE_CLIENT_SECRET` | Tu client secret |
+   | `APP_URL` | `https://tu-app.vercel.app` |
+   | `OAUTH_REDIRECT_URI` | `https://tu-app.vercel.app/api/auth/callback` |
+
+3. **Actualizar Google Cloud Console**
+   - Agregar `https://tu-app.vercel.app/api/auth/callback` a Redirect URIs
+   - Agregar `https://tu-app.vercel.app` a Authorized Origins
+
+4. **Deploy automático**
+   - Cada `git push` deploya automáticamente
 
 ---
 
@@ -249,6 +263,7 @@ vercel --prod
 - [Modelado de Datos](docs/02_b_modelado_datos.md)
 - [API y Dinámica](docs/02_c_api_dinamica.md)
 - [Estrategia de Datos](docs/03_estrategia_datos.md)
+- [**Deploy Universal**](docs/DEPLOY_UNIVERSAL.md) — **Nuevo: Deploy en cualquier plataforma**
 
 ### Manuales Técnicos (Para Replicar el Proyecto)
 - [📚 Índice de Manuales](docs/00_indice_manuales.md) — **Sigue la secuencia 01-21 para construir todo desde cero**
@@ -262,11 +277,12 @@ vercel --prod
 | Capa | Tecnología | Justificación |
 |------|------------|---------------|
 | **Frontend** | HTML/CSS/JS Vanilla | Simplicidad, sin dependencias |
-| **Backend** | Python 3.11+ | Claridad sintáctica, ideal para POO |
-| **Framework** | Flask | Ligero, compatible con Vercel |
+| **Backend** | Python 3.11+ POO Puro | Sin frameworks web (universal) |
+| **Servidor** | http.server + VercelBridge | Funciona en cualquier entorno |
 | **Autenticación** | Google OAuth 2.0 | Estándar de la industria |
 | **API Externa** | Google Classroom API | Fuente de datos |
-| **Deploy** | Vercel Serverless | Sin servidor, escalable |
+| **Estado** | Cookies (stateless) | Funciona en serverless |
+| **Deploy** | Vercel / Docker / Cualquiera | Arquitectura universal |
 
 ---
 

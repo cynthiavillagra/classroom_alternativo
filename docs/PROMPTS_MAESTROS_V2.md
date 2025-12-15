@@ -6,7 +6,7 @@ Este documento contiene prompts universales para crear **cualquier tipo de app**
 
 ---
 
-## 📋 14 REGLAS DE ORO (Aplicables a TODO)
+## 📋 15 REGLAS DE ORO (Aplicables a TODO)
 
 Estas reglas se basan en errores reales de producción y aplican a **cualquier proyecto**:
 
@@ -26,6 +26,7 @@ Estas reglas se basan en errores reales de producción y aplican a **cualquier p
 | 12 | Cero placeholders en UI | Siempre |
 | 13 | Docs = Código sincronizados | Siempre |
 | 14 | E2E manual > Tests unitarios | Siempre |
+| **15** | **STATELESS/UNIVERSAL: Estado en cookies, NO memoria** | **Si serverless o multi-entorno** |
 
 ---
 
@@ -400,7 +401,39 @@ CLÁUSULA DE FRENO: NO deploy hasta E2E manual OK.
 ```
 Testing aprobado. Ejecuta FASE 6: DEPLOY.
 
-CHECKLIST PRE-DEPLOY:
+=== ARQUITECTURA UNIVERSAL (REGLA 15) ===
+
+ANTES de configurar deploy, verifica:
+
+1. **ESTADO STATELESS:**
+   ```python
+   # ❌ MALO (falla en serverless)
+   session_store = {}  # Memoria se pierde entre requests
+   
+   # ✅ BUENO (funciona en cualquier entorno)
+   access_token = self._get_cookie('access_token')
+   ```
+
+2. **CONFIGURACIÓN POR ENV:**
+   ```python
+   # ❌ MALO
+   REDIRECT_URI = "http://localhost:5000/callback"
+   
+   # ✅ BUENO
+   REDIRECT_URI = os.getenv("OAUTH_REDIRECT_URI")
+   ```
+
+3. **CÓDIGO AGNÓSTICO:**
+   ```python
+   # ❌ MALO
+   if os.environ.get('VERCEL'):
+       hacer_algo_diferente()
+   
+   # ✅ BUENO
+   # Mismo código funciona en local, Vercel, Docker, etc.
+   ```
+
+=== CHECKLIST PRE-DEPLOY ===
 
 1. **Variables de entorno en producción:**
    - [ ] Todas configuradas en hosting
@@ -414,10 +447,27 @@ CHECKLIST PRE-DEPLOY:
    - [ ] README.md actualizado
    - [ ] Comandos de instalación correctos
 
+4. **Arquitectura universal (si multi-entorno):**
+   - [ ] Estado en cookies, no memoria
+   - [ ] Archivos estáticos servidos por plataforma
+   - [ ] API como función separada
+
+=== TROUBLESHOOTING DEPLOY ===
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| "Invalid state" en OAuth | State guardado en memoria (se pierde) | Guardar state en cookie |
+| "Not authenticated" post-login | Token en memoria (se pierde) | Guardar token en cookie |
+| 404 en archivos estáticos | Plataforma no incluye archivos | Configurar includeFiles o rewrites |
+| "No module named 'src'" | Python path incorrecto | Agregar `sys.path.insert(0, ROOT_DIR)` |
+| "Function timeout" | Cold start lento | Reducir imports, usar cache |
+
 Genera docs/07_deploy.md con:
-- Guía paso a paso
+- Guía paso a paso para CADA plataforma objetivo
 - Variables requeridas
-- Troubleshooting
+- Troubleshooting específico
+
+VER TAMBIÉN: docs/DEPLOY_UNIVERSAL.md
 
 GIT CHECKPOINT:
 ● git add ., git commit -m "chore: ready for production"
