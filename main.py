@@ -204,7 +204,13 @@ class MainRouter(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(content)
         except FileNotFoundError:
-            self._send_not_found()
+            # [DEBUG] Mostrar qué path falló
+            self._send_json({
+                'error': 'File not found',
+                'base_dir': base_dir,
+                'filepath': filepath,
+                'full_path': full_path
+            }, 404)
     
     def _send_not_found(self):
         """Envía error 404."""
