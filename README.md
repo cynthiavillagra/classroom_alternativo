@@ -257,15 +257,19 @@ Este proyecto está diseñado para funcionar en **cualquier entorno**:
 
 ## 📚 Documentación
 
+### 🔄 Para Replicar Este Proyecto
+- [**Prompts Maestros V2**](docs/PROMPTS_MAESTROS_V2.md) — Metodología universal (15 reglas)
+- [**Implementación de Referencia**](docs/REFERENCE_IMPLEMENTATION.md) — Decisiones y código clave de ESTE proyecto
+- [**Deploy Universal**](docs/DEPLOY_UNIVERSAL.md) — Guía multi-plataforma
+
 ### Documentación de Diseño
 - [Planificación y Análisis](docs/01_planificacion_analisis.md)
 - [Arquitectura y Patrones](docs/02_a_arquitectura_patrones.md)
 - [Modelado de Datos](docs/02_b_modelado_datos.md)
 - [API y Dinámica](docs/02_c_api_dinamica.md)
 - [Estrategia de Datos](docs/03_estrategia_datos.md)
-- [**Deploy Universal**](docs/DEPLOY_UNIVERSAL.md) — **Nuevo: Deploy en cualquier plataforma**
 
-### Manuales Técnicos (Para Replicar el Proyecto)
+### Manuales Técnicos (Paso a Paso)
 - [📚 Índice de Manuales](docs/00_indice_manuales.md) — **Sigue la secuencia 01-21 para construir todo desde cero**
 - Los manuales están en `docs/manual/` con formato `NN_nombre.md`
 - Cada manual tiene "Prueba de Fuego" con comando exacto y salida esperada
