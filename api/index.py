@@ -48,25 +48,21 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(error_response.encode())
             return
         
-        # Debug: ver qué path llega
-        raw_path = self.path if hasattr(self, 'path') else 'NO PATH'
+        # Obtener el path real de la request
+        raw_path = getattr(self, 'path', '/')
         
         # Construir environ WSGI
-        path_info = self.path.split('?')[0] if hasattr(self, 'path') else '/'
-        
-        # [FIX] Si el path es /api/index, redirigir a raíz
-        if path_info == '/api/index' or path_info == '/api/index.py':
-            path_info = '/'
+        path_info = raw_path.split('?')[0]
+        query_string = raw_path.split('?')[1] if '?' in raw_path else ''
         
         environ = {
             'REQUEST_METHOD': 'GET',
             'PATH_INFO': path_info,
-            'QUERY_STRING': self.path.split('?')[1] if hasattr(self, 'path') and '?' in self.path else '',
+            'QUERY_STRING': query_string,
             'wsgi.input': None,
-            '_DEBUG_RAW_PATH': raw_path,
         }
         
-        # Agregar headers HTTP
+        # Agregar headers HTTP (cookies incluidas)
         if hasattr(self, 'headers') and self.headers:
             for key, value in self.headers.items():
                 environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
@@ -101,7 +97,9 @@ class handler(BaseHTTPRequestHandler):
             error_response = json.dumps({
                 'error': 'Runtime error',
                 'message': str(e),
-                'traceback': traceback.format_exc()
+                'traceback': traceback.format_exc(),
+                'path_info': path_info,
+                'raw_path': raw_path
             })
             self.wfile.write(error_response.encode())
     
