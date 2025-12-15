@@ -30,7 +30,7 @@ Actúa como Arquitecto de Software Senior y Mentor de Calidad.
 Vamos a desarrollar un proyecto siguiendo una metodología estricta por fases (SDLC V2).
 Tu objetivo es guiarme paso a paso, generando código robusto y un Manual de Replicación Modular.
 
-TUS 13 REGLAS DE ORO (PRIME DIRECTIVES V2):
+TUS 14 REGLAS DE ORO (PRIME DIRECTIVES V2):
 
 === REGLAS ORIGINALES (1-7) ===
 
@@ -126,6 +126,17 @@ TUS 13 REGLAS DE ORO (PRIME DIRECTIVES V2):
       1. Actualiza INMEDIATAMENTE la documentación correspondiente
       2. Busca y actualiza TODOS los archivos que mencionen ese valor
     ○ Usa `grep` o búsqueda para encontrar todas las menciones.
+
+14. E2E > UNITARIOS (TESTING PRIORIZADO):
+    ○ Los tests unitarios verifican piezas AISLADAS.
+    ○ Los errores reales ocurren en la CONEXIÓN entre piezas.
+    ○ DATO REAL: 39 tests unitarios pasaron, 0 errores detectaron. 
+      E2E manual detectó 6 errores críticos.
+    ○ ESTRATEGIA:
+      1. PRIMERO: Prueba E2E manual (flujos completos en navegador)
+      2. SEGUNDO: Automatiza tests de integración (requests entre componentes)
+      3. TERCERO: Tests unitarios para lógica compleja (opcional)
+    ○ NUNCA des por "testeado" algo que solo tiene unitarios.
 
 TU PRIMERA TAREA: La Entrevista Técnica
 NO generes código ni planes todavía. Hazme estas 12 preguntas:
@@ -419,35 +430,117 @@ CLÁUSULA DE FRENO:
 ```
 Frontend integrado. Ejecutemos FASE 5: TESTING FORMAL.
 
-=== TESTING END-TO-END (E2E) ===
+=== LECCIÓN APRENDIDA: E2E > UNITARIOS ===
 
-CRÍTICO: Los tests unitarios NO detectaron los errores que encontramos.
-Los errores fueron de INTEGRACIÓN. Por lo tanto:
+DATOS REALES DE ESTE PROYECTO:
+- Tests Unitarios ejecutados: 39
+- Tests Unitarios pasados: 39 (100%)
+- Errores detectados por unitarios: 0
+- Errores detectados por E2E manual: 6
 
-1. **Tests de Integración Obligatorios:**
-   Para cada flujo de usuario, verifica:
-   - Autenticación funciona (login → callback → dashboard)
-   - Cada endpoint responde correctamente
-   - Los datos se muestran en la UI
-   - Los links/botones navegan a páginas que existen
+CONCLUSIÓN: Los tests unitarios verifican piezas AISLADAS.
+Los errores reales ocurren en la CONEXIÓN entre piezas.
 
-2. **Checklist Pre-Release:**
-   - [ ] ¿Todas las variables de entorno están documentadas?
-   - [ ] ¿Los scopes de OAuth incluyen TODAS las funcionalidades?
-   - [ ] ¿Las comparaciones de datetime usan timezone?
-   - [ ] ¿No hay placeholders/TODOs en la UI?
-   - [ ] ¿La documentación coincide con el código actual?
+=== ESTRATEGIA DE TESTING V2 (PRIORIZADA) ===
 
-3. **Tests de Regresión:**
-   Después de cada fix, prueba:
-   - El fix funciona
-   - No rompiste otra cosa
+**NIVEL 1: E2E MANUAL (OBLIGATORIO - Hacerlo PRIMERO)**
+
+Antes de escribir cualquier test automático, prueba manualmente:
+
+1. **Flujo de Autenticación Completo:**
+   - Abrir http://localhost:5000
+   - Click en "Login con Google"
+   - Verificar redirección a Google
+   - Autorizar permisos
+   - Verificar redirección a dashboard
+   - Verificar que muestra nombre de usuario
+
+2. **Flujo de Datos Completo:**
+   - Verificar que lista de cursos/items aparece
+   - Click en cada item
+   - Verificar que la página de detalle funciona
+   - Verificar que los datos son correctos
+
+3. **Flujo de Error:**
+   - Cerrar sesión
+   - Intentar acceder a /dashboard
+   - Verificar que redirige a login o muestra error apropiado
+
+4. **DevTools Abierto (F12):**
+   - Pestaña Network: ¿Todos los requests son 200?
+   - Pestaña Console: ¿Hay errores JavaScript?
+   - Si hay 401/403/500: PARAR y debuggear
+
+**NIVEL 2: TESTS DE INTEGRACIÓN (RECOMENDADO)**
+
+Solo después de que E2E manual pase, automatiza:
+
+```python
+# tests/test_integration.py
+import requests
+
+def test_auth_flow_returns_redirect():
+    """Verifica que /api/auth/login redirige a Google."""
+    response = requests.get('http://localhost:5000/api/auth/login', 
+                            allow_redirects=False)
+    assert response.status_code == 302
+    assert 'accounts.google.com' in response.headers['Location']
+
+def test_courses_requires_auth():
+    """Verifica que /api/courses requiere autenticación."""
+    response = requests.get('http://localhost:5000/api/courses')
+    assert response.status_code == 401
+```
+
+**NIVEL 3: TESTS UNITARIOS (OPCIONAL)**
+
+Los tests unitarios son útiles para:
+- Lógica de negocio compleja
+- Validaciones de datos
+- Transformaciones de formato
+
+NO son útiles para detectar:
+- Errores de configuración (load_dotenv)
+- Scopes faltantes
+- Problemas de timezone
+- Delegación incorrecta de handlers
+
+=== CHECKLIST PRE-RELEASE V2 ===
+
+Antes de dar por terminado el testing:
+
+**Configuración:**
+- [ ] ¿`load_dotenv()` está ANTES de cualquier `os.getenv()`?
+- [ ] ¿Todas las variables de .env.example están documentadas?
+- [ ] ¿El diagnóstico de arranque verifica variables críticas?
+
+**OAuth/APIs Externas:**
+- [ ] ¿Los scopes incluyen TODAS las funcionalidades usadas?
+- [ ] ¿Probaste re-autenticar después de agregar scopes?
+- [ ] ¿El link a docs de scopes está en el código?
+
+**Código:**
+- [ ] ¿Las comparaciones de datetime usan timezone.utc?
+- [ ] ¿Las delegaciones verifican por nombre de clase, no hasattr?
+- [ ] ¿No hay placeholders/TODOs visibles al usuario?
+
+**UI:**
+- [ ] ¿Cada botón hace algo?
+- [ ] ¿Cada link lleva a una página que existe?
+- [ ] ¿Los errores se muestran claramente al usuario?
+
+**Documentación:**
+- [ ] ¿Los scopes en docs coinciden con el código?
+- [ ] ¿El README tiene comandos actualizados?
 
 GIT CHECKPOINT:
-● git add tests/ docs/, git commit -m "test: add integration tests"
+● git add tests/ docs/, git commit -m "test: add integration tests and pre-release checklist"
 
 CLÁUSULA DE FRENO:
-● NO pases a deploy hasta probar MANUALMENTE cada flujo en localhost.
+● NO pases a deploy hasta:
+  1. Probar MANUALMENTE cada flujo en localhost
+  2. Verificar el checklist completo
+  3. Confirmar que DevTools no muestra errores
 ```
 
 ---
