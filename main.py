@@ -39,10 +39,10 @@ import os
 import sys
 
 # Importar handlers de rutas
-from api.routes.auth import AuthHandler, session_store
-from api.routes.courses import CoursesHandler
-from api.routes.materials import MaterialsHandler
-from api.infrastructure.config import Config
+from src.routes.auth import AuthHandler, session_store
+from src.routes.courses import CoursesHandler
+from src.routes.materials import MaterialsHandler
+from src.infrastructure.config import Config
 
 # ═══════════════════════════════════════════════════════════════
 # [REFACTOR] Paso 1.1: Diagnóstico de Variables Críticas

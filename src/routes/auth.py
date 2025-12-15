@@ -30,7 +30,7 @@ import secrets
 import http.client
 import ssl
 from typing import Dict, Any, Optional
-from api.infrastructure.config import Config
+from src.infrastructure.config import Config
 
 
 # ═══════════════════════════════════════════════════════════════

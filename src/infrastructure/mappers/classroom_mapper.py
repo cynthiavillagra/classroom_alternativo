@@ -22,8 +22,8 @@ POR QUÉ NO convertir directamente en el repositorio:
 # POR QUÉ Factories: Para crear entidades válidas
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
-from api.domain.entities import Course, Material, MaterialType, CourseState
-from api.domain.factories import CourseFactory, MaterialFactory
+from src.domain.entities import Course, Material, MaterialType, CourseState
+from src.domain.factories import CourseFactory, MaterialFactory
 
 
 # ═══════════════════════════════════════════════════════════════

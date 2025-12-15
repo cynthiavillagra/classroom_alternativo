@@ -22,8 +22,8 @@ POR QUÉ NO poner lógica directamente en el route:
 # POR QUÉ ClassroomRepository: Dependency Injection
 from typing import List, Optional
 from dataclasses import dataclass
-from api.domain.entities import Course, CourseState
-from api.domain.interfaces import ClassroomRepository
+from src.domain.entities import Course, CourseState
+from src.domain.interfaces import ClassroomRepository
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -169,8 +169,8 @@ if __name__ == "__main__":
         python -m api.application.use_cases.list_user_courses
     """
     from datetime import datetime
-    from api.domain.entities import Course
-    from api.domain.factories import CourseFactory
+    from src.domain.entities import Course
+    from src.domain.factories import CourseFactory
     
     print("=" * 60)
     print("PRUEBAS ATÓMICAS: ListUserCourses")

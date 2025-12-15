@@ -16,16 +16,16 @@ POR QUÉ SÍ esta implementación:
 # POR QUÉ ClassroomRepository: Interface que implementamos
 # POR QUÉ cache + mapper + client: Composición sobre herencia
 from typing import List
-from api.domain.entities import Course, Material
-from api.domain.interfaces import (
+from src.domain.entities import Course, Material
+from src.domain.interfaces import (
     ClassroomRepository,
     RepositoryError,
     CourseNotFoundError
 )
-from api.infrastructure.google_classroom_client import GoogleClassroomClient, GoogleAPIError
-from api.infrastructure.mappers import ClassroomMapper
-from api.infrastructure.cache import cache
-from api.infrastructure.config import Config
+from src.infrastructure.google_classroom_client import GoogleClassroomClient, GoogleAPIError
+from src.infrastructure.mappers import ClassroomMapper
+from src.infrastructure.cache import cache
+from src.infrastructure.config import Config
 
 
 # ═══════════════════════════════════════════════════════════════

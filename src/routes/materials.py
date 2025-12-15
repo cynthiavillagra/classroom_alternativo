@@ -24,10 +24,10 @@ import json
 from typing import Dict, Any, Optional
 
 # Importar del dominio (POO pura)
-from api.domain.entities import MaterialType
-from api.application.use_cases import ListCourseMaterials, ListCourseMaterialsRequest
-from api.infrastructure.repositories import GoogleClassroomRepository
-from api.routes.auth import session_store
+from src.domain.entities import MaterialType
+from src.application.use_cases import ListCourseMaterials, ListCourseMaterialsRequest
+from src.infrastructure.repositories import GoogleClassroomRepository
+from src.routes.auth import session_store
 
 
 # ═══════════════════════════════════════════════════════════════

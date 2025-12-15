@@ -11,8 +11,8 @@ Caso de uso para listar los materiales de un curso.
 # POR QUÉ ClassroomRepository: Dependency Injection
 from typing import List, Optional
 from dataclasses import dataclass
-from api.domain.entities import Material, MaterialType
-from api.domain.interfaces import ClassroomRepository
+from src.domain.entities import Material, MaterialType
+from src.domain.interfaces import ClassroomRepository
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -156,9 +156,9 @@ if __name__ == "__main__":
         python -m api.application.use_cases.list_course_materials
     """
     from datetime import datetime
-    from api.domain.entities import Course
-    from api.domain.entities.course_state import CourseState
-    from api.domain.factories import MaterialFactory
+    from src.domain.entities import Course
+    from src.domain.entities.course_state import CourseState
+    from src.domain.factories import MaterialFactory
     
     print("=" * 60)
     print("PRUEBAS ATÓMICAS: ListCourseMaterials")

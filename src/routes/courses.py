@@ -24,9 +24,9 @@ import json
 from typing import Dict, Any, Optional
 
 # Importar del dominio (POO pura)
-from api.application.use_cases import ListUserCourses, ListUserCoursesRequest
-from api.infrastructure.repositories import GoogleClassroomRepository
-from api.routes.auth import session_store
+from src.application.use_cases import ListUserCourses, ListUserCoursesRequest
+from src.infrastructure.repositories import GoogleClassroomRepository
+from src.routes.auth import session_store
 
 
 # ═══════════════════════════════════════════════════════════════
