@@ -186,9 +186,14 @@ class MainRouter(BaseHTTPRequestHandler):
         Sirve archivos estáticos del frontend.
         
         POR QUÉ servir estáticos: Frontend HTML/CSS/JS necesita archivos
+        [FIX] Usar ruta absoluta para compatibilidad con Vercel
         """
+        # Obtener directorio base del proyecto
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.join(base_dir, filepath)
+        
         try:
-            with open(filepath, 'rb') as f:
+            with open(full_path, 'rb') as f:
                 content = f.read()
             self.send_response(200)
             self.send_header('Content-Type', content_type)
