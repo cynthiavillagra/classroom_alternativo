@@ -48,12 +48,22 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(error_response.encode())
             return
         
+        # Debug: ver qué path llega
+        raw_path = self.path if hasattr(self, 'path') else 'NO PATH'
+        
         # Construir environ WSGI
+        path_info = self.path.split('?')[0] if hasattr(self, 'path') else '/'
+        
+        # [FIX] Si el path es /api/index, redirigir a raíz
+        if path_info == '/api/index' or path_info == '/api/index.py':
+            path_info = '/'
+        
         environ = {
             'REQUEST_METHOD': 'GET',
-            'PATH_INFO': self.path.split('?')[0],
-            'QUERY_STRING': self.path.split('?')[1] if '?' in self.path else '',
+            'PATH_INFO': path_info,
+            'QUERY_STRING': self.path.split('?')[1] if hasattr(self, 'path') and '?' in self.path else '',
             'wsgi.input': None,
+            '_DEBUG_RAW_PATH': raw_path,
         }
         
         # Agregar headers HTTP
