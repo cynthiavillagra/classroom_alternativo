@@ -14,7 +14,7 @@ class TestConfig:
         """
         Valida Criterio de Aceptación CA-003.1 de Historia HU-003.
         """
-        from api.infrastructure.config import Config
+        from src.infrastructure.config import Config
         
         assert Config is not None
     
@@ -22,7 +22,7 @@ class TestConfig:
         """
         Valida Criterio de Aceptación CA-003.2 de Historia HU-003.
         """
-        from api.infrastructure.config import Config
+        from src.infrastructure.config import Config
         
         assert hasattr(Config, 'APP_URL')
         assert Config.APP_URL is not None
@@ -31,7 +31,7 @@ class TestConfig:
         """
         Valida Criterio de Aceptación CA-003.3 de Historia HU-003.
         """
-        from api.infrastructure.config import Config
+        from src.infrastructure.config import Config
         
         assert hasattr(Config, 'ENVIRONMENT')
 
@@ -43,7 +43,7 @@ class TestMemoryCache:
         """
         Valida Criterio de Aceptación CA-003.4 de Historia HU-003.
         """
-        from api.infrastructure.cache import MemoryCache
+        from src.infrastructure.cache import MemoryCache
         
         assert MemoryCache is not None
     
@@ -51,7 +51,7 @@ class TestMemoryCache:
         """
         Valida Criterio de Aceptación CA-003.5 de Historia HU-003.
         """
-        from api.infrastructure.cache import MemoryCache
+        from src.infrastructure.cache import MemoryCache
         
         cache = MemoryCache()
         cache.set('test_key', 'test_value')
@@ -63,7 +63,7 @@ class TestMemoryCache:
         """
         Valida Criterio de Aceptación CA-003.6 de Historia HU-003.
         """
-        from api.infrastructure.cache import MemoryCache
+        from src.infrastructure.cache import MemoryCache
         
         cache = MemoryCache()
         result = cache.get('nonexistent')
@@ -78,7 +78,7 @@ class TestClassroomMapper:
         """
         Valida Criterio de Aceptación CA-003.7 de Historia HU-003.
         """
-        from api.infrastructure.mappers import ClassroomMapper
+        from src.infrastructure.mappers import ClassroomMapper
         
         assert ClassroomMapper is not None
     
@@ -86,6 +86,6 @@ class TestClassroomMapper:
         """
         Valida Criterio de Aceptación CA-003.8 de Historia HU-003.
         """
-        from api.infrastructure.mappers import ClassroomMapper
+        from src.infrastructure.mappers import ClassroomMapper
         
         assert hasattr(ClassroomMapper, 'api_course_to_domain')

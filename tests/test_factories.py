@@ -13,7 +13,7 @@ class TestCourseFactory:
         """
         Valida Criterio de Aceptación CA-001.6 de Historia HU-001.
         """
-        from api.domain.factories import CourseFactory
+        from src.domain.factories import CourseFactory
         
         assert CourseFactory is not None
     
@@ -21,7 +21,7 @@ class TestCourseFactory:
         """
         Valida Criterio de Aceptación CA-001.7 de Historia HU-001.
         """
-        from api.domain.factories import CourseFactory
+        from src.domain.factories import CourseFactory
         
         assert hasattr(CourseFactory, 'create')
         assert callable(CourseFactory.create)
@@ -34,7 +34,7 @@ class TestMaterialFactory:
         """
         Valida Criterio de Aceptación CA-002.3 de Historia HU-002.
         """
-        from api.domain.factories import MaterialFactory
+        from src.domain.factories import MaterialFactory
         
         assert MaterialFactory is not None
     
@@ -42,6 +42,6 @@ class TestMaterialFactory:
         """
         Valida Criterio de Aceptación CA-002.4 de Historia HU-002.
         """
-        from api.domain.factories import MaterialFactory
+        from src.domain.factories import MaterialFactory
         
         assert hasattr(MaterialFactory, 'create')

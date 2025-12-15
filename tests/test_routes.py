@@ -17,7 +17,7 @@ class TestSessionStore:
         
         SessionStore debe crear sesiones con ID único.
         """
-        from api.routes.auth import SessionStore
+        from src.routes.auth import SessionStore
         
         store = SessionStore()
         session_id = store.create_session()
@@ -31,7 +31,7 @@ class TestSessionStore:
         
         SessionStore debe guardar y recuperar valores.
         """
-        from api.routes.auth import SessionStore
+        from src.routes.auth import SessionStore
         
         store = SessionStore()
         session_id = store.create_session()
@@ -48,7 +48,7 @@ class TestSessionStore:
         
         Sesión inexistente debe retornar None.
         """
-        from api.routes.auth import SessionStore
+        from src.routes.auth import SessionStore
         
         store = SessionStore()
         result = store.get('session_que_no_existe', 'key')
@@ -61,7 +61,7 @@ class TestSessionStore:
         
         delete() debe eliminar la sesión (logout).
         """
-        from api.routes.auth import SessionStore
+        from src.routes.auth import SessionStore
         
         store = SessionStore()
         session_id = store.create_session()
@@ -81,7 +81,7 @@ class TestAuthHandler:
         
         AuthHandler debe heredar de BaseHTTPRequestHandler.
         """
-        from api.routes.auth import AuthHandler
+        from src.routes.auth import AuthHandler
         
         assert issubclass(AuthHandler, BaseHTTPRequestHandler)
     
@@ -91,7 +91,7 @@ class TestAuthHandler:
         
         AuthHandler debe tener método do_GET.
         """
-        from api.routes.auth import AuthHandler
+        from src.routes.auth import AuthHandler
         
         assert hasattr(AuthHandler, 'do_GET')
 
@@ -105,7 +105,7 @@ class TestCoursesHandler:
         
         CoursesHandler debe ser importable.
         """
-        from api.routes.courses import CoursesHandler
+        from src.routes.courses import CoursesHandler
         
         assert CoursesHandler is not None
     
@@ -115,7 +115,7 @@ class TestCoursesHandler:
         
         CoursesHandler debe heredar de BaseHTTPRequestHandler.
         """
-        from api.routes.courses import CoursesHandler
+        from src.routes.courses import CoursesHandler
         
         assert issubclass(CoursesHandler, BaseHTTPRequestHandler)
 
@@ -129,6 +129,6 @@ class TestMaterialsHandler:
         
         MaterialsHandler debe ser importable.
         """
-        from api.routes.materials import MaterialsHandler
+        from src.routes.materials import MaterialsHandler
         
         assert MaterialsHandler is not None

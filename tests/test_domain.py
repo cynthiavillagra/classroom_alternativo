@@ -14,7 +14,7 @@ class TestMaterialType:
         """
         Valida Criterio de Aceptación CA-001.1 de Historia HU-001.
         """
-        from api.domain.entities import MaterialType
+        from src.domain.entities import MaterialType
         
         # Probar que existe el enum
         assert MaterialType.ASSIGNMENT is not None
@@ -24,7 +24,7 @@ class TestMaterialType:
         """
         Valida Criterio de Aceptación CA-001.2 de Historia HU-001.
         """
-        from api.domain.entities import MaterialType
+        from src.domain.entities import MaterialType
         
         # Verificar valores del enum
         types = list(MaterialType)
@@ -38,7 +38,7 @@ class TestCourseState:
         """
         Valida Criterio de Aceptación CA-001.3 de Historia HU-001.
         """
-        from api.domain.entities import CourseState
+        from src.domain.entities import CourseState
         
         assert CourseState.ACTIVE is not None
         assert CourseState.ARCHIVED is not None
@@ -47,7 +47,7 @@ class TestCourseState:
         """
         Valida Criterio de Aceptación CA-001.4 de Historia HU-001.
         """
-        from api.domain.entities import CourseState
+        from src.domain.entities import CourseState
         
         assert CourseState.ACTIVE.is_active() is True
         assert CourseState.ARCHIVED.is_active() is False
@@ -60,7 +60,7 @@ class TestCourse:
         """
         Valida Criterio de Aceptación CA-001.5 de Historia HU-001.
         """
-        from api.domain.entities import Course
+        from src.domain.entities import Course
         
         assert Course is not None
     
@@ -68,7 +68,7 @@ class TestCourse:
         """
         Valida Criterio de Aceptación CA-001.6 de Historia HU-001.
         """
-        from api.domain.entities import Course
+        from src.domain.entities import Course
         import inspect
         
         # Verificar que es dataclass con campos
@@ -85,7 +85,7 @@ class TestMaterial:
         """
         Valida Criterio de Aceptación CA-002.1 de Historia HU-002.
         """
-        from api.domain.entities import Material
+        from src.domain.entities import Material
         
         assert Material is not None
     
@@ -93,7 +93,7 @@ class TestMaterial:
         """
         Valida Criterio de Aceptación CA-002.2 de Historia HU-002.
         """
-        from api.domain.entities import Material
+        from src.domain.entities import Material
         
         assert hasattr(Material, '__dataclass_fields__')
         fields = Material.__dataclass_fields__

@@ -258,8 +258,8 @@ def _create_delegated_handler(handler_class, parent):
             self.rfile = parent.rfile
             self._parent = parent
             # [FIX] Inicializar dependencias para TODOS los handlers que las necesiten
-            from api.infrastructure.repositories import GoogleClassroomRepository
-            from api.application.use_cases import ListUserCourses, ListCourseMaterials
+            from src.infrastructure.repositories import GoogleClassroomRepository
+            from src.application.use_cases import ListUserCourses, ListCourseMaterials
             
             # Siempre inicializar repository
             self.repository = GoogleClassroomRepository()
