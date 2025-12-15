@@ -1,36 +1,53 @@
 """
 Vercel Serverless Function Entry Point
-
-Vercel Python functions deben exportar una función 'handler' 
-que reciba (request) y retorne una Response.
-
-ALTERNATIVA: Exportar una variable 'app' que sea WSGI callable.
+Punto único de entrada para Vercel.
 """
 
-import sys
-import os
-
-# Agregar raíz al path para importar main
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Cargar .env si existe (para desarrollo local)
-from dotenv import load_dotenv
-load_dotenv()
-
-# Importar el VercelBridge de main.py
-from main import VercelBridge
-
-# Crear instancia del adaptador WSGI
-app = VercelBridge()
-
-# Para Vercel Serverless Functions (HTTP handler)
 from http.server import BaseHTTPRequestHandler
+import json
+import os
+import sys
+
+# Agregar raíz al path
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
+# Cargar .env
+from dotenv import load_dotenv
+load_dotenv(os.path.join(ROOT_DIR, '.env'))
+
+# Ahora importar desde main
+try:
+    from main import VercelBridge
+    wsgi_app = VercelBridge()
+    IMPORT_ERROR = None
+except Exception as e:
+    wsgi_app = None
+    IMPORT_ERROR = str(e)
+    import traceback
+    IMPORT_TRACEBACK = traceback.format_exc()
+
 
 class handler(BaseHTTPRequestHandler):
     """Handler HTTP para Vercel Functions."""
     
     def do_GET(self):
-        """Delega GET al VercelBridge."""
+        """Maneja GET requests."""
+        # Si hubo error al importar, mostrarlo
+        if IMPORT_ERROR:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            error_response = json.dumps({
+                'error': 'Import failed',
+                'message': IMPORT_ERROR,
+                'traceback': IMPORT_TRACEBACK,
+                'path': sys.path[:5],
+                'root_dir': ROOT_DIR
+            })
+            self.wfile.write(error_response.encode())
+            return
+        
         # Construir environ WSGI
         environ = {
             'REQUEST_METHOD': 'GET',
@@ -40,27 +57,48 @@ class handler(BaseHTTPRequestHandler):
         }
         
         # Agregar headers HTTP
-        for key, value in self.headers.items():
-            environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
-        
-        # Capturar respuesta
-        response_started = [False]
-        response_headers = []
-        
-        def start_response(status, headers):
-            response_started[0] = True
-            self.send_response(int(status.split()[0]))
-            for key, value in headers:
-                self.send_header(key, value)
-            self.end_headers()
+        if hasattr(self, 'headers') and self.headers:
+            for key, value in self.headers.items():
+                environ[f'HTTP_{key.upper().replace("-", "_")}'] = value
         
         # Ejecutar WSGI app
-        result = app(environ, start_response)
-        
-        # Escribir body
-        for data in result:
-            self.wfile.write(data)
+        try:
+            response_body = []
+            response_status = [200]
+            response_headers = []
+            
+            def start_response(status, headers):
+                response_status[0] = int(status.split()[0])
+                response_headers.extend(headers)
+            
+            result = wsgi_app(environ, start_response)
+            for data in result:
+                response_body.append(data)
+            
+            # Enviar respuesta
+            self.send_response(response_status[0])
+            for key, value in response_headers:
+                self.send_header(key, value)
+            self.end_headers()
+            for data in response_body:
+                self.wfile.write(data)
+                
+        except Exception as e:
+            import traceback
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            error_response = json.dumps({
+                'error': 'Runtime error',
+                'message': str(e),
+                'traceback': traceback.format_exc()
+            })
+            self.wfile.write(error_response.encode())
     
     def do_POST(self):
-        """Delega POST al VercelBridge."""
-        self.do_GET()  # Por ahora, mismo handling
+        """Maneja POST requests."""
+        self.do_GET()
+    
+    def log_message(self, format, *args):
+        """Silenciar logs."""
+        pass
