@@ -41,6 +41,25 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.0.4 — 2025-12-17: Sistema de filtros para materiales
+
+**Mejora:** Sistema completo de filtros para buscar materiales sin revisar clase por clase.
+
+**Funcionalidades:**
+- 🔍 Búsqueda por palabra clave
+- 🏷️ Filtro por tipo (Video, PDF, Link, Documento, Formulario, Tarea)
+- 📊 Contador de resultados en tiempo real
+- 🧹 Botón "Limpiar filtros"
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `public/materials.html` | Barra de filtros + CSS + lógica JS + `loadMaterials(filterType, searchQuery)` |
+
+**Backend:** Ya soportaba filtros (`?type=X&q=Y`), solo se agregó UI.
+
+---
+
 ### v1.0.3 — 2025-12-17: URLs clickeables en descripciones
 
 **Problema:** Las URLs en el texto de descripción aparecían como texto plano, no como links clickeables.
@@ -168,7 +187,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.3
+  VERSIÓN:  1.0.4
   FECHA:    2025-12-17
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

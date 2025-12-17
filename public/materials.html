@@ -26,6 +26,27 @@
                 <h2>⏳ Cargando curso...</h2>
             </div>
 
+            <!-- [FIX v1.0.4] Barra de filtros -->
+            <div class="filters-bar" id="filtersBar">
+                <div class="filters-bar__search">
+                    <input type="text" id="searchInput" placeholder="🔍 Buscar por palabra clave..."
+                        class="search-input">
+                    <button id="searchBtn" class="btn btn--primary btn--small">Buscar</button>
+                </div>
+                <div class="filters-bar__types">
+                    <button class="filter-btn active" data-type="">📚 Todos</button>
+                    <button class="filter-btn" data-type="video">🎬 Videos</button>
+                    <button class="filter-btn" data-type="pdf">📄 PDFs</button>
+                    <button class="filter-btn" data-type="link">🔗 Links</button>
+                    <button class="filter-btn" data-type="document">📝 Documentos</button>
+                    <button class="filter-btn" data-type="form">📋 Formularios</button>
+                    <button class="filter-btn" data-type="assignment">✏️ Tareas</button>
+                </div>
+                <div class="filters-bar__stats" id="filterStats">
+                    <span id="materialCount">0 materiales</span>
+                </div>
+            </div>
+
             <div class="materials-container" id="materialsContainer">
                 <div class="loading">
                     <span class="loading-spinner">⏳</span>
@@ -56,6 +77,79 @@
 
         .course-header p {
             color: var(--color-text-secondary);
+        }
+
+        /* [FIX v1.0.4] Estilos para barra de filtros */
+        .filters-bar {
+            background: var(--color-bg-card, #fff);
+            padding: 1rem;
+            border-radius: var(--radius-md, 8px);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+        }
+
+        .filters-bar__search {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--color-border, #e0e0e0);
+            border-radius: var(--radius-sm, 6px);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary, #1a73e8);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .btn--small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .filters-bar__types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--color-border, #e0e0e0);
+            border-radius: 20px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: var(--color-bg-secondary, #f5f5f5);
+        }
+
+        .filter-btn.active {
+            background: var(--color-primary, #1a73e8);
+            color: white;
+            border-color: var(--color-primary, #1a73e8);
+        }
+
+        .filters-bar__stats {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--color-border, #e0e0e0);
+        }
+
+        .filters-bar__stats span {
+            font-weight: 500;
         }
 
         .materials-container {
@@ -265,11 +359,35 @@
             }
         }
 
-        async function loadMaterials() {
+        async function loadMaterials(filterType = '', searchQuery = '') {
             const container = document.getElementById('materialsContainer');
+            const countElement = document.getElementById('materialCount');
+
+            // Mostrar loading
+            container.innerHTML = `
+                <div class="loading">
+                    <span class="loading-spinner">⏳</span>
+                    <p>Buscando materiales...</p>
+                </div>
+            `;
 
             try {
-                const response = await fetch(`/api/courses/${courseId}/materials`);
+                // [FIX v1.0.4] Construir URL con filtros
+                let url = `/api/courses/${courseId}/materials`;
+                const params = new URLSearchParams();
+
+                if (filterType) {
+                    params.set('type', filterType);
+                }
+                if (searchQuery && searchQuery.trim()) {
+                    params.set('q', searchQuery.trim());
+                }
+
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                const response = await fetch(url);
 
                 if (response.status === 401) {
                     container.innerHTML = `
@@ -285,6 +403,12 @@
                 }
 
                 const data = await response.json();
+
+                // Actualizar contador
+                const count = data.materials ? data.materials.length : 0;
+                const filterText = filterType ? ` (tipo: ${filterType})` : '';
+                const searchText = searchQuery ? ` con "${searchQuery}"` : '';
+                countElement.textContent = `${count} material${count !== 1 ? 'es' : ''}${filterText}${searchText}`;
 
                 if (data.materials && data.materials.length > 0) {
                     container.innerHTML = data.materials.map(material => `
@@ -306,15 +430,66 @@
                         </div>
                     `).join('');
                 } else {
+                    const noResultMsg = searchQuery
+                        ? `🔍 No se encontraron materiales con "${searchQuery}"`
+                        : (filterType ? `📭 No hay materiales de tipo ${filterType}` : '📭 Este curso no tiene materiales disponibles');
                     container.innerHTML = `
                         <div class="no-materials">
-                            <p>📭 Este curso no tiene materiales disponibles</p>
+                            <p>${noResultMsg}</p>
+                            ${(filterType || searchQuery) ? '<p><button onclick="clearFilters()" class="btn btn--secondary">Limpiar filtros</button></p>' : ''}
                         </div>
                     `;
                 }
             } catch (error) {
                 showError(error.message);
             }
+        }
+
+        // [FIX v1.0.4] Variables de estado para filtros
+        let currentFilterType = '';
+        let currentSearchQuery = '';
+
+        // [FIX v1.0.4] Event listeners para filtros
+        document.addEventListener('DOMContentLoaded', () => {
+            // Botones de filtro por tipo
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Actualizar UI
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Aplicar filtro
+                    currentFilterType = btn.dataset.type;
+                    loadMaterials(currentFilterType, currentSearchQuery);
+                });
+            });
+
+            // Búsqueda por texto
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+
+            searchBtn.addEventListener('click', () => {
+                currentSearchQuery = searchInput.value;
+                loadMaterials(currentFilterType, currentSearchQuery);
+            });
+
+            // Búsqueda al presionar Enter
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    currentSearchQuery = searchInput.value;
+                    loadMaterials(currentFilterType, currentSearchQuery);
+                }
+            });
+        });
+
+        // [FIX v1.0.4] Limpiar todos los filtros
+        function clearFilters() {
+            currentFilterType = '';
+            currentSearchQuery = '';
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.filter-btn[data-type=""]').classList.add('active');
+            loadMaterials();
         }
 
         function getTypeClass(type) {
