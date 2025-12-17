@@ -335,6 +335,13 @@ class ClassroomMapper:
             return MaterialType.VIDEO
         
         if 'link' in first_material:
+            # [FIX v1.0.6] Analizar URL para detectar tipo
+            link_url = first_material['link'].get('url', '')
+            link_title = first_material['link'].get('title', '')
+            
+            type_by_url = self._detect_type_by_url(link_url, link_title)
+            if type_by_url:
+                return type_by_url
             return MaterialType.LINK
         
         if 'form' in first_material:
@@ -382,6 +389,88 @@ class ClassroomMapper:
         for ext in image_extensions:
             if filename_lower.endswith(ext):
                 return MaterialType.IMAGE
+        
+        return None
+    
+    def _detect_type_by_url(self, url: str, title: str = '') -> MaterialType:
+        """
+        [FIX v1.0.6] Detecta el tipo de material por URL.
+        
+        - YouTube URLs → VIDEO
+        - Google Drive URLs → DOCUMENT (o detectar por extensión)
+        - Otras URLs → detectar por extensión en la URL
+        
+        Args:
+            url: URL del recurso
+            title: Título opcional para ayudar a detectar
+        
+        Returns:
+            MaterialType o None si no se puede detectar
+        """
+        if not url:
+            return None
+        
+        url_lower = url.lower()
+        
+        # YouTube URLs → VIDEO
+        youtube_patterns = [
+            'youtube.com',
+            'youtu.be',
+            'youtube.com/watch',
+            'youtube.com/embed',
+            'youtube.com/v/'
+        ]
+        for pattern in youtube_patterns:
+            if pattern in url_lower:
+                return MaterialType.VIDEO
+        
+        # Vimeo, Dailymotion → VIDEO
+        video_platforms = ['vimeo.com', 'dailymotion.com', 'wistia.com']
+        for platform in video_platforms:
+            if platform in url_lower:
+                return MaterialType.VIDEO
+        
+        # Google Drive → Intentar detectar por extensión o título, default DOCUMENT
+        if 'drive.google.com' in url_lower:
+            # Intentar detectar tipo por el título del link
+            if title:
+                type_by_title = self._detect_type_by_filename(title)
+                if type_by_title:
+                    return type_by_title
+            
+            # Buscar extensión en la URL (algunos links de Drive tienen el nombre)
+            type_by_url = self._detect_type_by_filename(url)
+            if type_by_url:
+                return type_by_url
+            
+            # Default para Drive: DOCUMENT
+            return MaterialType.DOCUMENT
+        
+        # Google Docs, Sheets, Slides → DOCUMENT
+        google_docs_patterns = [
+            'docs.google.com/document',
+            'docs.google.com/spreadsheets',
+            'docs.google.com/presentation',
+            'docs.google.com/forms'
+        ]
+        for pattern in google_docs_patterns:
+            if pattern in url_lower:
+                if 'forms' in pattern:
+                    return MaterialType.FORM
+                return MaterialType.DOCUMENT
+        
+        # GitHub notebooks
+        if 'github.com' in url_lower and '.ipynb' in url_lower:
+            return MaterialType.NOTEBOOK
+        
+        # Google Colab → NOTEBOOK
+        if 'colab.research.google.com' in url_lower:
+            return MaterialType.NOTEBOOK
+        
+        # Intentar detectar por extensión en la URL
+        type_by_url_ext = self._detect_type_by_filename(url)
+        if type_by_url_ext:
+            return type_by_url_ext
         
         return None
     

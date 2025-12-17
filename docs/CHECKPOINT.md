@@ -41,6 +41,26 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.0.6 — 2025-12-17: Detección de tipos por URL
+
+**Mejora:** Los links ahora se clasifican según la plataforma.
+
+**Detección por URL:**
+| URL contiene | Tipo |
+|--------------|------|
+| `youtube.com`, `youtu.be`, `vimeo.com` | video |
+| `drive.google.com` | document (o detecta por extensión) |
+| `docs.google.com` | document |
+| `colab.research.google.com` | notebook |
+| `github.com/*.ipynb` | notebook |
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `classroom_mapper.py` | `_detect_type_by_url()` analiza URLs |
+
+---
+
 ### v1.0.5 — 2025-12-17: Clasificación mejorada de tipos de archivo
 
 **Mejora:** Los archivos ahora se clasifican correctamente por extensión.
@@ -207,7 +227,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.5
+  VERSIÓN:  1.0.6
   FECHA:    2025-12-17
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
