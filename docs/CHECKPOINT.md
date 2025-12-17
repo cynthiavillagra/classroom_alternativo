@@ -41,6 +41,19 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.0.7 — 2025-12-17: Fix regresión videos en Drive
+
+**Bug:** Los videos dejaron de ser encontrados porque Drive devolvía DOCUMENT por defecto.
+
+**Fix:** Ahora Drive devuelve `None` si no puede detectar por extensión, permitiendo que el MIME type determine el tipo correcto (video/mp4 → VIDEO).
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `classroom_mapper.py` | `_detect_type_by_url()` no devuelve DOCUMENT por defecto |
+
+---
+
 ### v1.0.6 — 2025-12-17: Detección de tipos por URL
 
 **Mejora:** Los links ahora se clasifican según la plataforma.

@@ -397,7 +397,7 @@ class ClassroomMapper:
         [FIX v1.0.6] Detecta el tipo de material por URL.
         
         - YouTube URLs → VIDEO
-        - Google Drive URLs → DOCUMENT (o detectar por extensión)
+        - Google Drive URLs → detectar por extensión (si no puede, None)
         - Otras URLs → detectar por extensión en la URL
         
         Args:
@@ -425,12 +425,13 @@ class ClassroomMapper:
                 return MaterialType.VIDEO
         
         # Vimeo, Dailymotion → VIDEO
-        video_platforms = ['vimeo.com', 'dailymotion.com', 'wistia.com']
+        video_platforms = ['vimeo.com', 'dailymotion.com', 'wistia.com', 'loom.com', 'streamable.com']
         for platform in video_platforms:
             if platform in url_lower:
                 return MaterialType.VIDEO
         
-        # Google Drive → Intentar detectar por extensión o título, default DOCUMENT
+        # Google Drive → Intentar detectar por extensión o título
+        # [FIX v1.0.7] NO devolver DOCUMENT por defecto, devolver None para que MIME type lo determine
         if 'drive.google.com' in url_lower:
             # Intentar detectar tipo por el título del link
             if title:
@@ -443,8 +444,8 @@ class ClassroomMapper:
             if type_by_url:
                 return type_by_url
             
-            # Default para Drive: DOCUMENT
-            return MaterialType.DOCUMENT
+            # NO devolver DOCUMENT por defecto - dejar que MIME type lo determine
+            return None
         
         # Google Docs, Sheets, Slides → DOCUMENT
         google_docs_patterns = [
