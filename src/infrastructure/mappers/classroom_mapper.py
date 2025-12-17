@@ -142,11 +142,25 @@ class ClassroomMapper:
         # Tomar las primeras 100 caracteres como título
         title = text[:100] + '...' if len(text) > 100 else text
         
+        # [FIX] Obtener alternateLink primero (link directo al anuncio)
+        alternate_link = api_data.get('alternateLink', '')
+        announcement_id = api_data.get('id', '')
+        
         # Extraer URL del primer material adjunto si existe
         url = ''
         materials_data = api_data.get('materials', [])
         if materials_data:
             url = self._extract_single_material_url(materials_data[0])
+        
+        # [FIX] Fallback robusto para URL
+        if not url:
+            # Usar alternateLink si está disponible
+            url = alternate_link
+        if not url:
+            # Generar URL directa al curso en Classroom
+            url = f"https://classroom.google.com/c/{course_id}"
+            if announcement_id:
+                url = f"https://classroom.google.com/c/{course_id}/p/{announcement_id}"
         
         # Extraer fechas
         created_at = self._parse_google_timestamp(
@@ -170,11 +184,26 @@ class ClassroomMapper:
         })
     
     def _extract_single_material_url(self, material_data: Dict[str, Any]) -> str:
-        """Extrae URL de un solo material adjunto."""
+        """
+        Extrae URL de un solo material adjunto.
+        
+        [FIX] Maneja ambas estructuras de driveFile:
+        - Directa: driveFile.alternateLink
+        - Anidada: driveFile.driveFile.alternateLink
+        """
         if 'driveFile' in material_data:
-            return material_data['driveFile'].get('driveFile', {}).get('alternateLink', '')
+            drive_data = material_data.get('driveFile', {})
+            # Intentar estructura directa primero
+            url = drive_data.get('alternateLink', '')
+            if not url:
+                # Intentar estructura anidada
+                url = drive_data.get('driveFile', {}).get('alternateLink', '')
+            return url
         if 'youtubeVideo' in material_data:
-            return f"https://youtube.com/watch?v={material_data['youtubeVideo'].get('id', '')}"
+            video_id = material_data['youtubeVideo'].get('id', '')
+            if video_id:
+                return f"https://youtube.com/watch?v={video_id}"
+            return material_data['youtubeVideo'].get('alternateLink', '')
         if 'link' in material_data:
             return material_data['link'].get('url', '')
         if 'form' in material_data:
@@ -256,40 +285,74 @@ class ClassroomMapper:
         material_type: MaterialType
     ) -> str:
         """
-        Extrae la URL del material.
+        Extrae la URL del material con fallback robusto.
+        
+        IMPORTANTE: Siempre debe retornar una URL válida.
+        Si no hay URL específica, usa alternateLink.
+        Si tampoco hay alternateLink, genera URL directa a Classroom.
         
         Args:
             api_data: Datos de la API
             material_type: Tipo detectado
         
         Returns:
-            URL del material
+            URL del material (nunca vacía)
         """
+        # Obtener IDs para fallback a URL de Classroom
+        course_id = api_data.get('courseId', '')
+        material_id = api_data.get('id', '')
+        
         # URL alternativa (link al courseWork en Classroom)
         alternate_link = api_data.get('alternateLink', '')
         
+        # URL de fallback final: directo a Google Classroom
+        # [FIX] Generar URL válida si no hay alternateLink
+        fallback_url = alternate_link
+        if not fallback_url and course_id:
+            # Generar URL directa a Classroom
+            fallback_url = f"https://classroom.google.com/c/{course_id}"
+            if material_id:
+                # Añadir ID del material si está disponible
+                fallback_url = f"https://classroom.google.com/c/{course_id}/a/{material_id}/details"
+        
+        # Si aún no hay URL, usar URL genérica de Classroom
+        if not fallback_url:
+            fallback_url = "https://classroom.google.com"
+        
         materials = api_data.get('materials', [])
         if not materials:
-            return alternate_link
+            return fallback_url
         
         first_material = materials[0]
         
         # Extraer URL según tipo
         if 'driveFile' in first_material:
-            drive_file = first_material['driveFile'].get('driveFile', {})
-            return drive_file.get('alternateLink', alternate_link)
+            # [FIX] Estructura correcta de driveFile en la API
+            drive_file_data = first_material.get('driveFile', {})
+            # La URL puede estar directamente o en un sub-objeto driveFile
+            url = drive_file_data.get('alternateLink', '')
+            if not url:
+                inner_drive = drive_file_data.get('driveFile', {})
+                url = inner_drive.get('alternateLink', '')
+            return url if url else fallback_url
         
         if 'youtubeVideo' in first_material:
-            video_id = first_material['youtubeVideo'].get('id', '')
-            return f"https://www.youtube.com/watch?v={video_id}"
+            video_data = first_material.get('youtubeVideo', {})
+            video_id = video_data.get('id', '')
+            if video_id:
+                return f"https://www.youtube.com/watch?v={video_id}"
+            # Fallback a alternateLink del video
+            return video_data.get('alternateLink', fallback_url)
         
         if 'link' in first_material:
-            return first_material['link'].get('url', alternate_link)
+            link_url = first_material['link'].get('url', '')
+            return link_url if link_url else fallback_url
         
         if 'form' in first_material:
-            return first_material['form'].get('formUrl', alternate_link)
+            form_url = first_material['form'].get('formUrl', '')
+            return form_url if form_url else fallback_url
         
-        return alternate_link
+        return fallback_url
     
     def _parse_google_timestamp(self, timestamp: str) -> datetime:
         """

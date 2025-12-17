@@ -121,11 +121,18 @@ class GoogleClassroomRepository(ClassroomRepository):
                     course_id, access_token
                 )
                 for item in course_work_response.get('courseWork', []):
-                    material = self.mapper.api_material_to_domain(item, course_id)
-                    materials.append(material)
-            except Exception:
-                # Si falla, continuamos sin courseWork
-                pass
+                    try:
+                        # [FIX] Procesar cada material individualmente para no perder todos si uno falla
+                        material = self.mapper.api_material_to_domain(item, course_id)
+                        materials.append(material)
+                    except ValueError as e:
+                        # Error de validación (ej: URL vacía) - continuar con el siguiente
+                        print(f"[WARN] No se pudo procesar courseWork {item.get('id', '?')}: {e}")
+                    except Exception as e:
+                        print(f"[WARN] Error inesperado en courseWork {item.get('id', '?')}: {e}")
+            except Exception as e:
+                # Si falla la llamada API completa, continuamos sin courseWork
+                print(f"[INFO] No se pudo obtener courseWork: {e}")
             
             # Obtener courseWorkMaterials (materiales de referencia)
             try:
@@ -133,11 +140,16 @@ class GoogleClassroomRepository(ClassroomRepository):
                     course_id, access_token
                 )
                 for item in materials_response.get('courseWorkMaterial', []):
-                    material = self.mapper.api_material_to_domain(item, course_id)
-                    materials.append(material)
-            except Exception:
+                    try:
+                        material = self.mapper.api_material_to_domain(item, course_id)
+                        materials.append(material)
+                    except ValueError as e:
+                        print(f"[WARN] No se pudo procesar material {item.get('id', '?')}: {e}")
+                    except Exception as e:
+                        print(f"[WARN] Error inesperado en material {item.get('id', '?')}: {e}")
+            except Exception as e:
                 # Si falla, continuamos sin courseWorkMaterials
-                pass
+                print(f"[INFO] No se pudo obtener courseWorkMaterials: {e}")
             
             # Obtener announcements (publicaciones)
             try:
@@ -145,11 +157,16 @@ class GoogleClassroomRepository(ClassroomRepository):
                     course_id, access_token
                 )
                 for item in announcements_response.get('announcements', []):
-                    material = self.mapper.api_announcement_to_domain(item, course_id)
-                    materials.append(material)
-            except Exception:
+                    try:
+                        material = self.mapper.api_announcement_to_domain(item, course_id)
+                        materials.append(material)
+                    except ValueError as e:
+                        print(f"[WARN] No se pudo procesar anuncio {item.get('id', '?')}: {e}")
+                    except Exception as e:
+                        print(f"[WARN] Error inesperado en anuncio {item.get('id', '?')}: {e}")
+            except Exception as e:
                 # Si falla, continuamos sin announcements
-                pass
+                print(f"[INFO] No se pudo obtener announcements: {e}")
             
             # Ordenar por fecha de creación (más reciente primero)
             materials.sort(key=lambda m: m.created_at, reverse=True)

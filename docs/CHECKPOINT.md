@@ -1,6 +1,6 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-14 16:05
+> **Última actualización:** 2025-12-16 23:34
 
 ---
 
@@ -37,6 +37,27 @@
 | Tests pasados | 39 (100%) |
 | Endpoints API | 8 |
 | Páginas frontend | 4 |
+
+---
+
+## 🔧 Historial de Fixes Post-Release
+
+### v1.0.1 — 2025-12-16: Fix URLs de Materiales
+
+**Problema:** Los materiales no eran descargables y los links no eran visibles.
+
+**Causa raíz:**
+- El mapper no generaba URLs válidas cuando Google Classroom no proporcionaba `alternateLink`
+- La validación de Material lanzaba `ValueError` con URL vacía
+- Los errores se silenciaban completamente en el repositorio
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `src/infrastructure/mappers/classroom_mapper.py` | Fallback robusto de URLs a `classroom.google.com/c/{id}/a/{materialId}/details` |
+| `src/infrastructure/repositories/google_classroom_repository.py` | Logging de errores + manejo granular por material |
+
+**Verificación de seguridad:** ✅ No expone credenciales, stateless confirmado
 
 ---
 
@@ -114,8 +135,9 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.0
-  FECHA:    2025-12-14
+  VERSIÓN:  1.0.1
+  FECHA:    2025-12-16
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
 ```
+
