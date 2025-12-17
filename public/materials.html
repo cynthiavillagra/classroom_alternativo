@@ -37,6 +37,7 @@
                     <button class="filter-btn active" data-type="">📚 Todos</button>
                     <button class="filter-btn" data-type="video">🎬 Videos</button>
                     <button class="filter-btn" data-type="pdf">📄 PDFs</button>
+                    <button class="filter-btn" data-type="notebook">📓 Notebooks</button>
                     <button class="filter-btn" data-type="link">🔗 Links</button>
                     <button class="filter-btn" data-type="document">📝 Documentos</button>
                     <button class="filter-btn" data-type="form">📋 Formularios</button>
@@ -502,7 +503,8 @@
                 'announcement': 'announcement',
                 'document': 'document',
                 'form': 'link',
-                'image': 'file'
+                'image': 'file',
+                'notebook': 'notebook'  // [FIX v1.0.5]
             };
             return types[type?.toLowerCase()] || 'file';
         }
@@ -517,7 +519,8 @@
                 'announcement': '📢',
                 'document': '📝',
                 'form': '📋',
-                'image': '🖼️'
+                'image': '🖼️',
+                'notebook': '📓'  // [FIX v1.0.5]
             };
             return icons[type?.toLowerCase()] || '📄';
         }

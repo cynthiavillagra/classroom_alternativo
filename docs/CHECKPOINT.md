@@ -41,6 +41,26 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.0.5 — 2025-12-17: Clasificación mejorada de tipos de archivo
+
+**Mejora:** Los archivos ahora se clasifican correctamente por extensión.
+
+**Nuevas clasificaciones:**
+| Extensión | Tipo |
+|-----------|------|
+| `.mkv`, `.mp4`, `.avi` | video |
+| `.ipynb` | notebook (nuevo) |
+| `.docx`, `.xlsx`, `.md`, `.txt` | document |
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `material_type.py` | Nuevo tipo `NOTEBOOK` |
+| `classroom_mapper.py` | `_detect_type_by_filename()` detecta por extensión |
+| `materials.html` | Filtro para Notebooks |
+
+---
+
 ### v1.0.4 — 2025-12-17: Sistema de filtros para materiales
 
 **Mejora:** Sistema completo de filtros para buscar materiales sin revisar clase por clase.
@@ -187,7 +207,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.4
+  VERSIÓN:  1.0.5
   FECHA:    2025-12-17
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

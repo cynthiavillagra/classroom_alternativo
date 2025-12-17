@@ -50,6 +50,7 @@ class MaterialType(Enum):
     ASSIGNMENT = "assignment"
     FILE = "file"
     ANNOUNCEMENT = "announcement"  # Publicaciones/Anuncios
+    NOTEBOOK = "notebook"  # [FIX v1.0.5] Jupyter Notebooks (.ipynb)
     
     # ───────────────────────────────────────────────────────────
     # Paso 3: Métodos helper para UI
@@ -70,7 +71,8 @@ class MaterialType(Enum):
             MaterialType.IMAGE: "Imagen",
             MaterialType.ASSIGNMENT: "Tarea",
             MaterialType.FILE: "Archivo",
-            MaterialType.ANNOUNCEMENT: "Publicación"
+            MaterialType.ANNOUNCEMENT: "Publicación",
+            MaterialType.NOTEBOOK: "Notebook"  # [FIX v1.0.5]
         }
         return labels.get(self, "Desconocido")
     
@@ -90,7 +92,8 @@ class MaterialType(Enum):
             MaterialType.IMAGE: "🖼️",
             MaterialType.ASSIGNMENT: "✏️",
             MaterialType.FILE: "📎",
-            MaterialType.ANNOUNCEMENT: "📢"
+            MaterialType.ANNOUNCEMENT: "📢",
+            MaterialType.NOTEBOOK: "📓"  # [FIX v1.0.5]
         }
         return icons.get(self, "📎")
     
@@ -110,7 +113,8 @@ class MaterialType(Enum):
             MaterialType.IMAGE: "#E67E22",      # Naranja oscuro
             MaterialType.ASSIGNMENT: "#2ECC71", # Verde
             MaterialType.FILE: "#95A5A6",       # Gris
-            MaterialType.ANNOUNCEMENT: "#3498DB" # Azul (publicaciones)
+            MaterialType.ANNOUNCEMENT: "#3498DB", # Azul (publicaciones)
+            MaterialType.NOTEBOOK: "#F39C12"    # [FIX v1.0.5] Naranja (notebooks)
         }
         return colors.get(self, "#95A5A6")
     

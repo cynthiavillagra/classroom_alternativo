@@ -284,6 +284,11 @@ class ClassroomMapper:
         """
         Detecta el tipo de material basándose en la estructura de la API.
         
+        [FIX v1.0.5] Ahora también detecta por extensión de archivo:
+        - .mkv, .mp4, .avi → VIDEO
+        - .ipynb → NOTEBOOK
+        - .docx, .xlsx, .pdf, .md → DOCUMENT
+        
         Google Classroom tiene diferentes estructuras para diferentes tipos:
         - courseWork: Tareas, quizzes
         - courseWorkMaterials: Materiales de referencia
@@ -302,6 +307,11 @@ class ClassroomMapper:
         # Buscar en materials[]
         materials = api_data.get('materials', [])
         if not materials:
+            # [FIX v1.0.5] Intentar detectar por título
+            title = api_data.get('title', '')
+            type_by_title = self._detect_type_by_filename(title)
+            if type_by_title:
+                return type_by_title
             return MaterialType.FILE
         
         first_material = materials[0]
@@ -309,7 +319,16 @@ class ClassroomMapper:
         # Detectar por tipo de adjunto
         if 'driveFile' in first_material:
             drive_file = first_material['driveFile']
-            mime_type = drive_file.get('driveFile', {}).get('mimeType', '')
+            inner_file = drive_file.get('driveFile', drive_file)
+            
+            # [FIX v1.0.5] Primero intentar por título del archivo
+            file_title = inner_file.get('title', '')
+            type_by_title = self._detect_type_by_filename(file_title)
+            if type_by_title:
+                return type_by_title
+            
+            # Si no, usar MIME type
+            mime_type = inner_file.get('mimeType', '')
             return self._mime_to_material_type(mime_type)
         
         if 'youtubeVideo' in first_material:
@@ -323,9 +342,54 @@ class ClassroomMapper:
         
         return MaterialType.FILE
     
+    def _detect_type_by_filename(self, filename: str) -> MaterialType:
+        """
+        [FIX v1.0.5] Detecta el tipo de material por extensión del archivo.
+        
+        Args:
+            filename: Nombre del archivo
+        
+        Returns:
+            MaterialType o None si no se puede detectar
+        """
+        if not filename:
+            return None
+        
+        filename_lower = filename.lower()
+        
+        # Extensiones de video
+        video_extensions = ['.mkv', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
+        for ext in video_extensions:
+            if filename_lower.endswith(ext):
+                return MaterialType.VIDEO
+        
+        # Jupyter Notebooks
+        if filename_lower.endswith('.ipynb'):
+            return MaterialType.NOTEBOOK
+        
+        # Documentos
+        document_extensions = ['.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.md', '.txt', '.rtf']
+        for ext in document_extensions:
+            if filename_lower.endswith(ext):
+                return MaterialType.DOCUMENT
+        
+        # PDFs (mantener como tipo separado)
+        if filename_lower.endswith('.pdf'):
+            return MaterialType.PDF
+        
+        # Imágenes
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp']
+        for ext in image_extensions:
+            if filename_lower.endswith(ext):
+                return MaterialType.IMAGE
+        
+        return None
+    
     def _mime_to_material_type(self, mime_type: str) -> MaterialType:
         """
         Convierte MIME type a MaterialType.
+        
+        [FIX v1.0.5] Actualizado para incluir más tipos de video y documentos.
         
         Args:
             mime_type: MIME type del archivo
@@ -339,6 +403,20 @@ class ClassroomMapper:
             'application/vnd.google-apps.presentation': MaterialType.DOCUMENT,
             'application/vnd.google-apps.spreadsheet': MaterialType.DOCUMENT,
             'application/vnd.google-apps.form': MaterialType.FORM,
+            # [FIX v1.0.5] Más tipos de documentos
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': MaterialType.DOCUMENT,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': MaterialType.DOCUMENT,
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': MaterialType.DOCUMENT,
+            'application/msword': MaterialType.DOCUMENT,
+            'application/vnd.ms-excel': MaterialType.DOCUMENT,
+            'application/vnd.ms-powerpoint': MaterialType.DOCUMENT,
+            'text/markdown': MaterialType.DOCUMENT,
+            'text/plain': MaterialType.DOCUMENT,
+            # Videos
+            'video/x-matroska': MaterialType.VIDEO,  # .mkv
+            'video/mp4': MaterialType.VIDEO,
+            'video/avi': MaterialType.VIDEO,
+            'video/quicktime': MaterialType.VIDEO,
             'image/': MaterialType.IMAGE,
             'video/': MaterialType.VIDEO,
         }
