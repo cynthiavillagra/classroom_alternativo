@@ -149,6 +149,38 @@
             text-decoration: underline;
         }
 
+        /* [FIX v1.0.2] Estilos para múltiples adjuntos */
+        .material-card__attachments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-border, #e0e0e0);
+        }
+
+        .material-card__attachments .material-card__link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.35rem 0.75rem;
+            background: var(--color-bg-secondary, #f5f5f5);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: background 0.2s ease;
+        }
+
+        .material-card__attachments .material-card__link:hover {
+            background: var(--color-bg-hover, #e8e8e8);
+            text-decoration: none;
+        }
+
+        .no-link {
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
         .loading {
             text-align: center;
             padding: 3rem;
@@ -253,9 +285,12 @@
                             <div class="material-card__description">
                                 ${material.description || 'Sin descripción'}
                             </div>
+                            <!-- [FIX v1.0.2] Mostrar TODOS los recursos/adjuntos -->
+                            <div class="material-card__attachments">
+                                ${renderAttachments(material)}
+                            </div>
                             <div class="material-card__meta">
                                 <span>${formatDate(material.created_at)}</span>
-                                ${material.url ? `<a href="${material.url}" target="_blank" class="material-card__link">Abrir ↗</a>` : ''}
                             </div>
                         </div>
                     `).join('');
@@ -313,6 +348,41 @@
             } catch (e) {
                 return dateStr;
             }
+        }
+
+        // [FIX v1.0.2] Función para renderizar TODOS los adjuntos
+        function renderAttachments(material) {
+            const attachments = material.attachments || [];
+
+            // Si hay adjuntos específicos, mostrarlos
+            if (attachments.length > 0) {
+                return attachments.map((att, index) => {
+                    const icon = getAttachmentIcon(att.type);
+                    const title = att.title || `Recurso ${index + 1}`;
+                    return `<a href="${att.url}" target="_blank" class="material-card__link" title="${title}">
+                        ${icon} ${title.length > 25 ? title.substring(0, 25) + '...' : title}
+                    </a>`;
+                }).join('');
+            }
+
+            // Fallback al URL principal si no hay adjuntos
+            if (material.url) {
+                return `<a href="${material.url}" target="_blank" class="material-card__link">
+                    Abrir ↗
+                </a>`;
+            }
+
+            return '<span class="no-link">Sin recursos</span>';
+        }
+
+        function getAttachmentIcon(type) {
+            const icons = {
+                'file': '📄',
+                'video': '🎬',
+                'link': '🔗',
+                'form': '📋'
+            };
+            return icons[type] || '📎';
         }
 
         function showError(message) {

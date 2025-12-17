@@ -9,7 +9,7 @@ Factory para crear instancias de Material con validaciones y transformaciones.
 # ═══════════════════════════════════════════════════════════════
 # POR QUÉ Material y MaterialType: Entidad y enum para type-safety
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Tuple
 from ..entities.material import Material
 from ..entities.material_type import MaterialType
 
@@ -37,7 +37,8 @@ class MaterialFactory:
         updated_at: datetime,
         description: Optional[str] = None,
         due_date: Optional[datetime] = None,
-        max_points: Optional[int] = None
+        max_points: Optional[int] = None,
+        attachments: Tuple[Dict[str, Any], ...] = ()
     ) -> Material:
         """
         Crea una instancia de Material con validaciones.
@@ -47,12 +48,13 @@ class MaterialFactory:
             course_id: ID del curso al que pertenece
             title: Título del material
             type: Tipo de material (enum)
-            url: URL para acceder al material
+            url: URL para acceder al material (principal)
             created_at: Fecha de creación
             updated_at: Última actualización
             description: Descripción (opcional)
             due_date: Fecha de entrega (opcional)
             max_points: Puntos máximos (opcional)
+            attachments: Tupla de adjuntos [{type, title, url}, ...]
         
         Returns:
             Material: Instancia validada de Material
@@ -79,7 +81,8 @@ class MaterialFactory:
             updated_at=updated_at,
             description=description,
             due_date=due_date,
-            max_points=max_points
+            max_points=max_points,
+            attachments=tuple(attachments) if attachments else ()
         )
     
     @staticmethod
@@ -135,7 +138,8 @@ class MaterialFactory:
             updated_at=updated_at,
             description=data.get('description'),
             due_date=due_date,
-            max_points=data.get('max_points')
+            max_points=data.get('max_points'),
+            attachments=tuple(data.get('attachments', []))
         )
     
     @staticmethod

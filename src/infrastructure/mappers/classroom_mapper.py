@@ -82,6 +82,7 @@ class ClassroomMapper:
         Convierte un material de la API de Google a entidad Material.
         
         Maneja tanto courseWork como courseWorkMaterials.
+        [FIX v1.0.2] Ahora extrae TODOS los adjuntos, no solo el primero.
         
         Args:
             api_data: Respuesta de la API de Google
@@ -93,8 +94,11 @@ class ClassroomMapper:
         # Detectar tipo de material
         material_type = self._detect_material_type(api_data)
         
-        # Extraer URL del material
+        # Extraer URL principal del material
         url = self._extract_material_url(api_data, material_type)
+        
+        # [FIX v1.0.2] Extraer TODOS los adjuntos
+        attachments = self._extract_all_attachments(api_data)
         
         # Extraer fechas
         created_at = self._parse_google_timestamp(
@@ -116,6 +120,7 @@ class ClassroomMapper:
             'description': api_data.get('description'),
             'type': material_type.value,
             'url': url,
+            'attachments': attachments,
             'created_at': created_at.isoformat(),
             'updated_at': updated_at.isoformat(),
             'due_date': due_date.isoformat() if due_date else None,
@@ -209,6 +214,71 @@ class ClassroomMapper:
         if 'form' in material_data:
             return material_data['form'].get('formUrl', '')
         return ''
+    
+    def _extract_all_attachments(self, api_data: Dict[str, Any]) -> list:
+        """
+        [FIX v1.0.2] Extrae TODOS los adjuntos de un material.
+        
+        Un material de Google Classroom puede tener múltiples adjuntos:
+        - Varios PDFs
+        - Links + Videos
+        - Formularios + Documentos
+        
+        Returns:
+            Lista de adjuntos, cada uno con {type, title, url}
+        """
+        attachments = []
+        materials_list = api_data.get('materials', [])
+        
+        for material in materials_list:
+            attachment = self._parse_single_attachment(material)
+            if attachment and attachment.get('url'):
+                attachments.append(attachment)
+        
+        return attachments
+    
+    def _parse_single_attachment(self, material_data: Dict[str, Any]) -> Dict[str, str]:
+        """
+        Parsea un solo attachment y devuelve sus datos.
+        
+        Returns:
+            Dict con {type, title, url} o {} si no es válido
+        """
+        if 'driveFile' in material_data:
+            drive_data = material_data.get('driveFile', {})
+            inner = drive_data.get('driveFile', drive_data)
+            return {
+                'type': 'file',
+                'title': inner.get('title', 'Archivo'),
+                'url': inner.get('alternateLink', drive_data.get('alternateLink', ''))
+            }
+        
+        if 'youtubeVideo' in material_data:
+            video_data = material_data.get('youtubeVideo', {})
+            video_id = video_data.get('id', '')
+            return {
+                'type': 'video',
+                'title': video_data.get('title', 'Video'),
+                'url': f"https://youtube.com/watch?v={video_id}" if video_id else video_data.get('alternateLink', '')
+            }
+        
+        if 'link' in material_data:
+            link_data = material_data.get('link', {})
+            return {
+                'type': 'link',
+                'title': link_data.get('title', 'Enlace'),
+                'url': link_data.get('url', '')
+            }
+        
+        if 'form' in material_data:
+            form_data = material_data.get('form', {})
+            return {
+                'type': 'form',
+                'title': form_data.get('title', 'Formulario'),
+                'url': form_data.get('formUrl', '')
+            }
+        
+        return {}
     
     def _detect_material_type(self, api_data: Dict[str, Any]) -> MaterialType:
         """

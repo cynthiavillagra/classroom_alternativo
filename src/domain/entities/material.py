@@ -11,9 +11,9 @@ Un material puede ser: PDF, video, documento, enlace, formulario, imagen, tarea,
 # ═══════════════════════════════════════════════════════════════
 # POR QUÉ dataclass: Reduce boilerplate para entidades
 # POR QUÉ MaterialType: Enum para type-safety en tipos de material
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from .material_type import MaterialType
 
 
@@ -60,6 +60,14 @@ class Material:
     description: Optional[str] = None
     due_date: Optional[datetime] = None
     max_points: Optional[int] = None
+    
+    # ───────────────────────────────────────────────────────────
+    # [FIX v1.0.2] Paso 2.3: Múltiples adjuntos
+    # ───────────────────────────────────────────────────────────
+    # POR QUÉ attachments: Un material puede tener múltiples recursos
+    # (ej: 2 PDFs, 1 video + 1 link, etc.)
+    # Cada attachment es {type, title, url}
+    attachments: tuple = field(default_factory=tuple)
     
     # ───────────────────────────────────────────────────────────
     # Paso 3: Validaciones en __post_init__
@@ -231,6 +239,8 @@ class Material:
             'type_label': self.get_type_label(),
             'type_icon': self.get_type_icon(),
             'url': self.url,
+            # [FIX v1.0.2] Incluir todos los adjuntos
+            'attachments': list(self.attachments),
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'due_date': self.due_date.isoformat() if self.due_date else None,

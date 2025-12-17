@@ -37,10 +37,30 @@
 | Tests pasados | 39 (100%) |
 | Endpoints API | 8 |
 | Páginas frontend | 4 |
-
 ---
 
 ## 🔧 Historial de Fixes Post-Release
+
+### v1.0.2 — 2025-12-16: Múltiples Recursos por Material
+
+**Problema:** Cuando un material tenía múltiples adjuntos (2 PDFs, 1 link + 1 video, etc.), solo se mostraba un botón "Abrir" que abría únicamente el primero.
+
+**Causa raíz:**
+- El mapper solo extraía el primer adjunto (`materials[0]`)
+- La entidad Material no tenía campo para múltiples recursos
+- El frontend solo renderizaba un link
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `src/domain/entities/material.py` | Campo `attachments: tuple` para múltiples recursos |
+| `src/domain/factories/material_factory.py` | Soporte para attachments |
+| `src/infrastructure/mappers/classroom_mapper.py` | `_extract_all_attachments()` + `_parse_single_attachment()` |
+| `public/materials.html` | `renderAttachments()` + estilos CSS para lista de adjuntos |
+
+**Verificación de seguridad:** ✅ No expone credenciales, stateless confirmado
+
+---
 
 ### v1.0.1 — 2025-12-16: Fix URLs de Materiales
 
@@ -135,7 +155,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.1
+  VERSIÓN:  1.0.2
   FECHA:    2025-12-16
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
