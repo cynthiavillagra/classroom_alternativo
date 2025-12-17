@@ -181,6 +181,17 @@
             font-style: italic;
         }
 
+        /* [FIX v1.0.3] Estilos para links en texto de descripción */
+        .text-link {
+            color: var(--color-primary, #1a73e8);
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .text-link:hover {
+            text-decoration: underline;
+        }
+
         .loading {
             text-align: center;
             padding: 3rem;
@@ -283,7 +294,7 @@
                             </span>
                             <div class="material-card__title">${material.title}</div>
                             <div class="material-card__description">
-                                ${material.description || 'Sin descripción'}
+                                ${linkifyText(material.description) || 'Sin descripción'}
                             </div>
                             <!-- [FIX v1.0.2] Mostrar TODOS los recursos/adjuntos -->
                             <div class="material-card__attachments">
@@ -348,6 +359,23 @@
             } catch (e) {
                 return dateStr;
             }
+        }
+
+        // [FIX v1.0.3] Convierte URLs en texto a links clickeables
+        function linkifyText(text) {
+            if (!text) return '';
+
+            // Regex para detectar URLs (http, https, ftp)
+            const urlRegex = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/gi;
+
+            // Reemplazar URLs por tags <a>
+            return text.replace(urlRegex, (url) => {
+                // Asegurar que tenga protocolo
+                const href = url.startsWith('www.') ? 'https://' + url : url;
+                // Truncar URL larga para mostrar
+                const displayUrl = url.length > 50 ? url.substring(0, 47) + '...' : url;
+                return `<a href="${href}" target="_blank" class="text-link">🔗 ${displayUrl}</a>`;
+            });
         }
 
         // [FIX v1.0.2] Función para renderizar TODOS los adjuntos

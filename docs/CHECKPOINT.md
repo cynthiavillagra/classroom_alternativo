@@ -41,6 +41,19 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.0.3 — 2025-12-17: URLs clickeables en descripciones
+
+**Problema:** Las URLs en el texto de descripción aparecían como texto plano, no como links clickeables.
+
+**Solución:** Función `linkifyText()` que detecta URLs (http://, https://, www.) y las convierte en `<a>` con target="_blank".
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `public/materials.html` | `linkifyText()` + estilos CSS `.text-link` |
+
+---
+
 ### v1.0.2 — 2025-12-16: Múltiples Recursos por Material
 
 **Problema:** Cuando un material tenía múltiples adjuntos (2 PDFs, 1 link + 1 video, etc.), solo se mostraba un botón "Abrir" que abría únicamente el primero.
@@ -155,8 +168,8 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.2
-  FECHA:    2025-12-16
+  VERSIÓN:  1.0.3
+  FECHA:    2025-12-17
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
 ```
