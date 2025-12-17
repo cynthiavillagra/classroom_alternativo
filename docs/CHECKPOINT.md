@@ -41,6 +41,25 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
+
+**Feature:** Ahora puedes elegir entre dos modos de visualización.
+
+**Vistas disponibles:**
+| Vista | Descripción |
+|-------|-------------|
+| 🃏 **Cards** | Materiales como tarjetas (vista original) |
+| 📋 **Lista** | Cada recurso es una fila con: Tipo, Fecha, Nombre, Material, Descripción, Botón Descarga |
+
+**La vista Lista "aplana" los recursos:** si un material tiene 3 PDFs, aparecen 3 filas.
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | Toggle vista + `renderListView()` + `renderCardsView()` + CSS tabla |
+
+---
+
 ### v1.0.7 — 2025-12-17: Fix regresión videos en Drive
 
 **Bug:** Los videos dejaron de ser encontrados porque Drive devolvía DOCUMENT por defecto.

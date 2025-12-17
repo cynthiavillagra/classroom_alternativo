@@ -43,8 +43,16 @@
                     <button class="filter-btn" data-type="form">📋 Formularios</button>
                     <button class="filter-btn" data-type="assignment">✏️ Tareas</button>
                 </div>
-                <div class="filters-bar__stats" id="filterStats">
-                    <span id="materialCount">0 materiales</span>
+                <!-- [FIX v1.0.8] Toggle de vista -->
+                <div class="filters-bar__bottom">
+                    <div class="view-toggle">
+                        <span>Vista:</span>
+                        <button class="view-btn active" data-view="cards" title="Vista Cards">🃏 Cards</button>
+                        <button class="view-btn" data-view="list" title="Vista Lista">📋 Lista</button>
+                    </div>
+                    <div class="filters-bar__stats" id="filterStats">
+                        <span id="materialCount">0 materiales</span>
+                    </div>
                 </div>
             </div>
 
@@ -153,10 +161,132 @@
             font-weight: 500;
         }
 
+        /* [FIX v1.0.8] Toggle de vista */
+        .filters-bar__bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-border, #e0e0e0);
+        }
+
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-toggle span {
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .view-btn {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--color-border, #e0e0e0);
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover {
+            background: var(--color-bg-secondary, #f5f5f5);
+        }
+
+        .view-btn.active {
+            background: var(--color-primary, #1a73e8);
+            color: white;
+            border-color: var(--color-primary, #1a73e8);
+        }
+
+        /* Vista Cards (default) */
         .materials-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 1.5rem;
+        }
+
+        /* [FIX v1.0.8] Vista Lista */
+        .materials-container.view-list {
+            display: block;
+        }
+
+        .resources-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-bg-card, #fff);
+            border-radius: var(--radius-md, 8px);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .resources-table th,
+        .resources-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border, #e0e0e0);
+        }
+
+        .resources-table th {
+            background: var(--color-bg-secondary, #f5f5f5);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
+
+        .resources-table tr:hover {
+            background: var(--color-bg-secondary, #f8f9fa);
+        }
+
+        .resources-table .resource-type {
+            width: 100px;
+        }
+
+        .resources-table .resource-date {
+            width: 120px;
+            white-space: nowrap;
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .resources-table .resource-name {
+            font-weight: 500;
+        }
+
+        .resources-table .resource-material {
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .resources-table .resource-desc {
+            max-width: 300px;
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
+
+        .resources-table .resource-actions {
+            width: 120px;
+            text-align: center;
+        }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.4rem 0.8rem;
+            background: var(--color-primary, #1a73e8);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .btn-download:hover {
+            background: #1557b0;
+            text-decoration: none;
         }
 
         .material-card {
@@ -430,6 +560,9 @@
                             </div>
                         </div>
                     `).join('');
+
+                    // [FIX v1.0.8] Aplicar vista actual
+                    applyCurrentView(data.materials);
                 } else {
                     const noResultMsg = searchQuery
                         ? `🔍 No se encontraron materiales con "${searchQuery}"`
@@ -444,6 +577,123 @@
             } catch (error) {
                 showError(error.message);
             }
+        }
+
+        // [FIX v1.0.8] Variable para almacenar materiales y vista actual
+        let cachedMaterials = [];
+        let currentView = 'cards';
+
+        // [FIX v1.0.8] Aplicar vista actual
+        function applyCurrentView(materials) {
+            cachedMaterials = materials;
+            const container = document.getElementById('materialsContainer');
+
+            if (currentView === 'list') {
+                container.classList.add('view-list');
+                container.innerHTML = renderListView(materials);
+            } else {
+                container.classList.remove('view-list');
+                container.innerHTML = renderCardsView(materials);
+            }
+        }
+
+        // [FIX v1.0.8] Renderizar vista Cards
+        function renderCardsView(materials) {
+            return materials.map(material => `
+                <div class="material-card">
+                    <span class="material-card__type material-card__type--${getTypeClass(material.type)}">
+                        ${getTypeIcon(material.type)} ${material.type || 'Material'}
+                    </span>
+                    <div class="material-card__title">${material.title}</div>
+                    <div class="material-card__description">
+                        ${linkifyText(material.description) || 'Sin descripción'}
+                    </div>
+                    <div class="material-card__attachments">
+                        ${renderAttachments(material)}
+                    </div>
+                    <div class="material-card__meta">
+                        <span>${formatDate(material.created_at)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // [FIX v1.0.8] Renderizar vista Lista (cada recurso es una fila)
+        function renderListView(materials) {
+            // Aplanar todos los recursos: cada attachment es una fila
+            const allResources = [];
+
+            materials.forEach(material => {
+                const attachments = material.attachments || [];
+
+                if (attachments.length > 0) {
+                    attachments.forEach(att => {
+                        allResources.push({
+                            date: material.created_at,
+                            type: att.type || material.type,
+                            name: att.title || 'Recurso',
+                            materialTitle: material.title,
+                            description: material.description || '',
+                            url: att.url
+                        });
+                    });
+                } else if (material.url) {
+                    // Material sin attachments pero con URL
+                    allResources.push({
+                        date: material.created_at,
+                        type: material.type,
+                        name: material.title,
+                        materialTitle: material.title,
+                        description: material.description || '',
+                        url: material.url
+                    });
+                }
+            });
+
+            if (allResources.length === 0) {
+                return '<p class="no-materials">📭 No hay recursos disponibles</p>';
+            }
+
+            return `
+                <table class="resources-table">
+                    <thead>
+                        <tr>
+                            <th class="resource-type">Tipo</th>
+                            <th class="resource-date">Fecha</th>
+                            <th>Recurso</th>
+                            <th>Material</th>
+                            <th class="resource-desc">Descripción</th>
+                            <th class="resource-actions">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allResources.map(res => `
+                            <tr>
+                                <td class="resource-type">
+                                    <span>${getTypeIcon(res.type)} ${res.type}</span>
+                                </td>
+                                <td class="resource-date">${formatDate(res.date)}</td>
+                                <td class="resource-name">
+                                    <a href="${res.url}" target="_blank">${truncateText(res.name, 40)}</a>
+                                </td>
+                                <td class="resource-material">${truncateText(res.materialTitle, 30)}</td>
+                                <td class="resource-desc">${truncateText(res.description, 60)}</td>
+                                <td class="resource-actions">
+                                    <a href="${res.url}" target="_blank" class="btn-download">
+                                        ⬇️ Abrir
+                                    </a>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // [FIX v1.0.8] Truncar texto largo
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         }
 
         // [FIX v1.0.4] Variables de estado para filtros
@@ -480,6 +730,23 @@
                     currentSearchQuery = searchInput.value;
                     loadMaterials(currentFilterType, currentSearchQuery);
                 }
+            });
+
+            // [FIX v1.0.8] Toggle de vista
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Actualizar UI
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Cambiar vista
+                    currentView = btn.dataset.view;
+
+                    // Re-renderizar con materiales cacheados
+                    if (cachedMaterials.length > 0) {
+                        applyCurrentView(cachedMaterials);
+                    }
+                });
             });
         });
 
