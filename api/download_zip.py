@@ -2,27 +2,19 @@
 Vercel Serverless Function: Download ZIP
 Endpoint POST /api/download_zip
 
-[FIX v1.2.3] Archivo en raíz de api/ para compatibilidad con Vercel.
+[FIX v1.2.4] Simplificado para debugging.
 """
 
 from http.server import BaseHTTPRequestHandler
 import json
-import os
-import sys
 import zipfile
 import io
-import urllib.request
-import urllib.error
 import re
 
-# Agregar raíz al path
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
-
-# Cargar .env
+# Imports condicionales para robustez
 try:
-    from dotenv import load_dotenv
-    load_dotenv(os.path.join(ROOT_DIR, '.env'))
+    import urllib.request
+    import urllib.error
 except:
     pass
 
@@ -59,7 +51,6 @@ class handler(BaseHTTPRequestHandler):
                 for file_info in files:
                     url = file_info.get('url', '')
                     name = file_info.get('name', 'archivo')
-                    file_type = file_info.get('type', 'file')
                     
                     # Extraer ID del archivo de Drive
                     file_id = self._extract_drive_file_id(url)
@@ -67,7 +58,7 @@ class handler(BaseHTTPRequestHandler):
                     if file_id:
                         try:
                             # Descargar archivo
-                            file_content, filename = self._download_drive_file(file_id, access_token, name)
+                            file_content, filename = self._download_file(file_id, access_token, name)
                             
                             if file_content:
                                 zip_file.writestr(filename, file_content)
@@ -75,7 +66,7 @@ class handler(BaseHTTPRequestHandler):
                                 error_content = f"No se pudo descargar: {name}\nURL: {url}\n"
                                 zip_file.writestr(f"{name}_ERROR.txt", error_content)
                         except Exception as e:
-                            error_content = f"Error descargando: {name}\nURL: {url}\nError: {str(e)}\n"
+                            error_content = f"Error: {name}\nURL: {url}\nError: {str(e)}\n"
                             zip_file.writestr(f"{name}_ERROR.txt", error_content)
                     else:
                         # No se pudo extraer el ID, guardar link
@@ -93,89 +84,80 @@ class handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/zip')
             self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
-            self.send_header('Content-Length', len(zip_content))
+            self.send_header('Content-Length', str(len(zip_content)))
             self.end_headers()
             self.wfile.write(zip_content)
             
         except Exception as e:
-            import traceback
-            self._send_json({
-                'error': str(e),
-                'traceback': traceback.format_exc()
-            }, 500)
+            self._send_json({'error': str(e)}, 500)
     
     def do_GET(self):
-        """GET no soportado para este endpoint."""
-        self._send_json({'error': 'Use POST method'}, 405)
+        """GET retorna info del endpoint."""
+        self._send_json({
+            'endpoint': '/api/download_zip',
+            'method': 'POST',
+            'status': 'ready'
+        })
     
     def _extract_drive_file_id(self, url):
         """Extrae el ID de archivo de una URL de Google Drive."""
         if not url:
             return None
         
-        # Patrones comunes de URLs de Drive
         patterns = [
             r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)',
             r'drive\.google\.com/open\?id=([a-zA-Z0-9_-]+)',
             r'docs\.google\.com/document/d/([a-zA-Z0-9_-]+)',
             r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9_-]+)',
             r'docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)',
-            r'/d/([a-zA-Z0-9_-]+)(?:/|\?|$)',
+            r'/d/([a-zA-Z0-9_-]+)',
         ]
         
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
                 file_id = match.group(1)
-                if len(file_id) >= 25:
+                if len(file_id) >= 20:
                     return file_id
         
         return None
     
-    def _download_drive_file(self, file_id, access_token, name):
-        """Descarga un archivo de Drive usando el token del usuario."""
-        # Primero obtener metadata
-        metadata_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?fields=name,mimeType'
+    def _download_file(self, file_id, access_token, name):
+        """Descarga un archivo de Drive."""
+        import urllib.request
+        import urllib.error
         
+        # Obtener metadata
         try:
-            meta_req = urllib.request.Request(
-                metadata_url,
-                headers={'Authorization': f'Bearer {access_token}'}
-            )
-            with urllib.request.urlopen(meta_req, timeout=10) as response:
-                metadata = json.loads(response.read().decode('utf-8'))
-                real_name = metadata.get('name', name)
-                mime_type = metadata.get('mimeType', '')
+            meta_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?fields=name,mimeType'
+            meta_req = urllib.request.Request(meta_url, headers={'Authorization': f'Bearer {access_token}'})
+            with urllib.request.urlopen(meta_req, timeout=10) as resp:
+                meta = json.loads(resp.read().decode())
+                real_name = meta.get('name', name)
+                mime = meta.get('mimeType', '')
         except:
             real_name = name
-            mime_type = ''
+            mime = ''
         
-        # Determinar URL de descarga según el tipo
-        if 'google-apps.document' in mime_type:
-            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
-            if not real_name.endswith('.pdf'):
-                real_name = real_name + '.pdf'
-        elif 'google-apps.spreadsheet' in mime_type:
-            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            if not real_name.endswith('.xlsx'):
-                real_name = real_name + '.xlsx'
-        elif 'google-apps.presentation' in mime_type:
-            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
-            if not real_name.endswith('.pdf'):
-                real_name = real_name + '.pdf'
+        # Determinar URL de descarga
+        if 'google-apps.document' in mime:
+            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
+            real_name = real_name + '.pdf' if not real_name.endswith('.pdf') else real_name
+        elif 'google-apps.spreadsheet' in mime:
+            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            real_name = real_name + '.xlsx' if not real_name.endswith('.xlsx') else real_name
+        elif 'google-apps.presentation' in mime:
+            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
+            real_name = real_name + '.pdf' if not real_name.endswith('.pdf') else real_name
         else:
-            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media'
+            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media'
         
-        # Descargar el archivo
+        # Descargar
         try:
-            req = urllib.request.Request(
-                download_url,
-                headers={'Authorization': f'Bearer {access_token}'}
-            )
-            with urllib.request.urlopen(req, timeout=30) as response:
-                content = response.read()
-                return (content, real_name)
-        except Exception as e:
+            req = urllib.request.Request(dl_url, headers={'Authorization': f'Bearer {access_token}'})
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return (resp.read(), real_name)
+        except:
             return (None, real_name)
     
     def _get_cookie(self, name):
@@ -195,5 +177,4 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(data).encode())
     
     def log_message(self, format, *args):
-        """Silenciar logs."""
         pass
