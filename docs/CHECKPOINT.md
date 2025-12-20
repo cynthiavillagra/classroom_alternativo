@@ -60,6 +60,31 @@
 
 ---
 
+### v1.0.9 — 2025-12-20: Descarga Directa de Archivos
+
+**Feature:** Ahora cada recurso tiene dos botones de acción: **Descargar** y **Abrir**.
+
+**Funcionalidades:**
+| Botón | Descripción |
+|-------|-------------|
+| ⬇️ **Descargar** (verde) | Descarga directa del archivo. Convierte automáticamente URLs de Google Drive/Docs. |
+| 🔗 **Abrir** (azul) | Abre el recurso en una nueva pestaña (comportamiento anterior). |
+
+**Conversión automática de URLs para descarga directa:**
+| Tipo de URL | Formato de descarga |
+|-------------|---------------------|
+| Google Drive file | `/uc?export=download&id={fileId}` |
+| Google Docs | `/export?format=pdf` |
+| Google Sheets | `/export?format=xlsx` |
+| Google Slides | `/export/pdf` |
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | `getDownloadUrl()` + botones duales en vista Lista y Cards + CSS nuevos estilos |
+
+---
+
 ### v1.0.7 — 2025-12-17: Fix regresión videos en Drive
 
 **Bug:** Los videos dejaron de ser encontrados porque Drive devolvía DOCUMENT por defecto.
@@ -259,8 +284,8 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.6
-  FECHA:    2025-12-17
+  VERSIÓN:  1.0.9
+  FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
 ```
