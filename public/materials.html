@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Materiales del Curso - Classroom Explorer</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <!-- [FIX v1.1.0] JSZip para crear archivos ZIP en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 
 <body>
@@ -56,6 +59,26 @@
                 </div>
             </div>
 
+            <!-- [FIX v1.1.0] Barra de acciones múltiples -->
+            <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+                <div class="bulk-actions__select">
+                    <input type="checkbox" id="selectAllCheckbox" title="Seleccionar todos">
+                    <label for="selectAllCheckbox">Seleccionar todos</label>
+                    <span id="selectedCount">0 seleccionados</span>
+                </div>
+                <div class="bulk-actions__buttons">
+                    <button id="downloadZipBtn" class="btn btn--success" disabled>
+                        📦 Descargar ZIP
+                    </button>
+                    <button id="copyToDriveBtn" class="btn btn--primary" disabled>
+                        📁 Copiar a mi Drive
+                    </button>
+                    <button id="clearSelectionBtn" class="btn btn--secondary">
+                        ✖ Limpiar selección
+                    </button>
+                </div>
+            </div>
+
             <div class="materials-container" id="materialsContainer">
                 <div class="loading">
                     <span class="loading-spinner">⏳</span>
@@ -93,8 +116,108 @@
             background: var(--color-bg-card, #fff);
             padding: 1rem;
             border-radius: var(--radius-md, 8px);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+        }
+
+        /* [FIX v1.1.0] Estilos para barra de acciones múltiples */
+        .bulk-actions-bar {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md, 8px);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border: 2px solid var(--color-primary, #1a73e8);
+        }
+
+        .bulk-actions__select {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .bulk-actions__select input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-primary, #1a73e8);
+        }
+
+        .bulk-actions__select label {
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .bulk-actions__select span {
+            color: var(--color-primary, #1a73e8);
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .bulk-actions__buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn--success {
+            background: var(--color-success, #34a853);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn--success:hover:not(:disabled) {
+            background: #2d8f47;
+            transform: translateY(-1px);
+        }
+
+        .btn--success:disabled,
+        .btn--primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Checkbox en recursos */
+        .resource-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--color-primary, #1a73e8);
+        }
+
+        .resource-checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        /* Card con checkbox */
+        .material-card--selectable {
+            position: relative;
+        }
+
+        .material-card__checkbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .material-card--selected {
+            border-color: var(--color-primary, #1a73e8);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.3);
         }
 
         .filters-bar__search {
@@ -644,10 +767,23 @@
         let cachedMaterials = [];
         let currentView = 'cards';
 
-        // [FIX v1.0.8] Aplicar vista actual
+        // [FIX v1.1.0] Aplicar vista actual
         function applyCurrentView(materials) {
             cachedMaterials = materials;
             const container = document.getElementById('materialsContainer');
+            const bulkActionsBar = document.getElementById('bulkActionsBar');
+
+            // Mostrar barra de acciones si hay materiales
+            if (materials && materials.length > 0) {
+                bulkActionsBar.style.display = 'flex';
+            } else {
+                bulkActionsBar.style.display = 'none';
+            }
+
+            // Limpiar selección al cambiar de vista
+            if (typeof clearSelection === 'function') {
+                clearSelection();
+            }
 
             if (currentView === 'list') {
                 container.classList.add('view-list');
@@ -679,10 +815,11 @@
             `).join('');
         }
 
-        // [FIX v1.0.8] Renderizar vista Lista (cada recurso es una fila)
+        // [FIX v1.1.0] Renderizar vista Lista con checkboxes
         function renderListView(materials) {
             // Aplanar todos los recursos: cada attachment es una fila
             const allResources = [];
+            let resourceIndex = 0;
 
             materials.forEach(material => {
                 const attachments = material.attachments || [];
@@ -690,6 +827,7 @@
                 if (attachments.length > 0) {
                     attachments.forEach(att => {
                         allResources.push({
+                            id: `resource-${resourceIndex++}`,
                             date: material.created_at,
                             type: att.type || material.type,
                             name: att.title || 'Recurso',
@@ -701,6 +839,7 @@
                 } else if (material.url) {
                     // Material sin attachments pero con URL
                     allResources.push({
+                        id: `resource-${resourceIndex++}`,
                         date: material.created_at,
                         type: material.type,
                         name: material.title,
@@ -711,14 +850,23 @@
                 }
             });
 
+            // Guardar recursos globalmente para descarga
+            window.allResourcesFlat = allResources;
+
             if (allResources.length === 0) {
                 return '<p class="no-materials">📭 No hay recursos disponibles</p>';
             }
+
+            // Mostrar barra de acciones
+            document.getElementById('bulkActionsBar').style.display = 'flex';
 
             return `
                 <table class="resources-table">
                     <thead>
                         <tr>
+                            <th class="resource-checkbox-cell">
+                                <input type="checkbox" id="tableSelectAll" class="resource-checkbox" title="Seleccionar todos">
+                            </th>
                             <th class="resource-type">Tipo</th>
                             <th class="resource-date">Fecha</th>
                             <th>Recurso</th>
@@ -729,7 +877,13 @@
                     </thead>
                     <tbody>
                         ${allResources.map(res => `
-                            <tr>
+                            <tr data-resource-id="${res.id}">
+                                <td class="resource-checkbox-cell">
+                                    <input type="checkbox" class="resource-checkbox resource-select" 
+                                           data-url="${res.url}" 
+                                           data-name="${res.name}"
+                                           data-type="${res.type}">
+                                </td>
                                 <td class="resource-type">
                                     <span>${getTypeIcon(res.type)} ${res.type}</span>
                                 </td>
@@ -986,6 +1140,231 @@
                     <p><small>Verifica que el curso exista y tengas acceso.</small></p>
                 </div>
             `;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // [FIX v1.1.0] Sistema de Selección Múltiple y Acciones en Lote
+        // ═══════════════════════════════════════════════════════════════
+
+        // Variables de estado para selección
+        let selectedResources = new Map(); // url -> {name, type}
+
+        // Inicializar event listeners para acciones múltiples
+        document.addEventListener('DOMContentLoaded', () => {
+            // Checkbox "Seleccionar todos" en barra principal
+            document.getElementById('selectAllCheckbox').addEventListener('change', (e) => {
+                toggleSelectAll(e.target.checked);
+            });
+
+            // Botón limpiar selección
+            document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+                clearSelection();
+            });
+
+            // Botón descargar ZIP
+            document.getElementById('downloadZipBtn').addEventListener('click', () => {
+                downloadSelectedAsZip();
+            });
+
+            // Botón copiar a Drive
+            document.getElementById('copyToDriveBtn').addEventListener('click', () => {
+                copySelectedToDrive();
+            });
+
+            // Delegación de eventos para checkboxes de recursos
+            document.getElementById('materialsContainer').addEventListener('change', (e) => {
+                if (e.target.classList.contains('resource-select')) {
+                    handleResourceCheckboxChange(e.target);
+                }
+                if (e.target.id === 'tableSelectAll') {
+                    toggleSelectAll(e.target.checked);
+                }
+            });
+        });
+
+        // Manejar cambio de checkbox individual
+        function handleResourceCheckboxChange(checkbox) {
+            const url = checkbox.dataset.url;
+            const name = checkbox.dataset.name;
+            const type = checkbox.dataset.type;
+
+            if (checkbox.checked) {
+                selectedResources.set(url, { name, type, url });
+            } else {
+                selectedResources.delete(url);
+            }
+
+            updateSelectionUI();
+        }
+
+        // Seleccionar/deseleccionar todos
+        function toggleSelectAll(checked) {
+            const checkboxes = document.querySelectorAll('.resource-select');
+            checkboxes.forEach(cb => {
+                cb.checked = checked;
+                const url = cb.dataset.url;
+                const name = cb.dataset.name;
+                const type = cb.dataset.type;
+
+                if (checked) {
+                    selectedResources.set(url, { name, type, url });
+                } else {
+                    selectedResources.delete(url);
+                }
+            });
+
+            // Sincronizar checkboxes de "seleccionar todos"
+            document.getElementById('selectAllCheckbox').checked = checked;
+            const tableSelectAll = document.getElementById('tableSelectAll');
+            if (tableSelectAll) tableSelectAll.checked = checked;
+
+            updateSelectionUI();
+        }
+
+        // Limpiar selección
+        function clearSelection() {
+            selectedResources.clear();
+            document.querySelectorAll('.resource-select').forEach(cb => cb.checked = false);
+            document.getElementById('selectAllCheckbox').checked = false;
+            const tableSelectAll = document.getElementById('tableSelectAll');
+            if (tableSelectAll) tableSelectAll.checked = false;
+            updateSelectionUI();
+        }
+
+        // Actualizar UI de selección
+        function updateSelectionUI() {
+            const count = selectedResources.size;
+            document.getElementById('selectedCount').textContent = `${count} seleccionado${count !== 1 ? 's' : ''}`;
+
+            const downloadBtn = document.getElementById('downloadZipBtn');
+            const copyBtn = document.getElementById('copyToDriveBtn');
+
+            downloadBtn.disabled = count === 0;
+            copyBtn.disabled = count === 0;
+
+            // Cambiar texto de botones según cantidad
+            if (count > 0) {
+                downloadBtn.textContent = `📦 Descargar ZIP (${count})`;
+                copyBtn.textContent = `📁 Copiar a Drive (${count})`;
+            } else {
+                downloadBtn.textContent = '📦 Descargar ZIP';
+                copyBtn.textContent = '📁 Copiar a mi Drive';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // [FIX v1.1.0] Descargar archivos seleccionados como ZIP
+        // ═══════════════════════════════════════════════════════════════
+
+        async function downloadSelectedAsZip() {
+            if (selectedResources.size === 0) {
+                alert('No hay archivos seleccionados');
+                return;
+            }
+
+            const downloadBtn = document.getElementById('downloadZipBtn');
+            const originalText = downloadBtn.textContent;
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '⏳ Preparando ZIP...';
+
+            try {
+                const zip = new JSZip();
+                const courseName = document.querySelector('#courseHeader h2')?.textContent?.replace('📖 ', '') || 'materiales';
+                const folder = zip.folder(courseName.replace(/[^a-zA-Z0-9\s]/g, '_'));
+
+                let processed = 0;
+                const total = selectedResources.size;
+                const errors = [];
+
+                for (const [url, resource] of selectedResources) {
+                    try {
+                        downloadBtn.textContent = `⏳ Descargando ${++processed}/${total}...`;
+
+                        // Intentar descargar el archivo
+                        const downloadUrl = getDownloadUrl(url);
+                        const response = await fetch(downloadUrl, { mode: 'cors' });
+
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const fileName = sanitizeFileName(resource.name, resource.type);
+                            folder.file(fileName, blob);
+                        } else {
+                            // Si falla, guardar como archivo de texto con el link
+                            const linkContent = `Este archivo no pudo descargarse automáticamente.\n\nEnlace original: ${url}\nEnlace de descarga: ${downloadUrl}\n`;
+                            folder.file(`${sanitizeFileName(resource.name, 'link')}.txt`, linkContent);
+                            errors.push(resource.name);
+                        }
+                    } catch (err) {
+                        console.error(`Error descargando ${resource.name}:`, err);
+                        // Guardar link como alternativa
+                        const linkContent = `Error al descargar.\n\nEnlace: ${url}\n\nError: ${err.message}`;
+                        folder.file(`${sanitizeFileName(resource.name, 'error')}.txt`, linkContent);
+                        errors.push(resource.name);
+                    }
+                }
+
+                downloadBtn.textContent = '⏳ Generando ZIP...';
+
+                // Generar y descargar el ZIP
+                const content = await zip.generateAsync({ type: 'blob' });
+                const fileName = `${courseName.replace(/[^a-zA-Z0-9\s]/g, '_')}_${new Date().toISOString().split('T')[0]}.zip`;
+                saveAs(content, fileName);
+
+                if (errors.length > 0) {
+                    alert(`ZIP creado. ${errors.length} archivo(s) no pudieron descargarse directamente (se guardaron como links).`);
+                }
+
+                clearSelection();
+
+            } catch (error) {
+                console.error('Error creando ZIP:', error);
+                alert('Error al crear el ZIP: ' + error.message);
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = originalText;
+                updateSelectionUI();
+            }
+        }
+
+        // Sanitizar nombre de archivo
+        function sanitizeFileName(name, type) {
+            let safeName = name.replace(/[<>:"/\\|?*]/g, '_').substring(0, 100);
+
+            // Agregar extensión si no tiene
+            if (!safeName.includes('.')) {
+                const extensions = {
+                    'pdf': '.pdf',
+                    'video': '.mp4',
+                    'document': '.pdf',
+                    'notebook': '.ipynb',
+                    'image': '.jpg'
+                };
+                safeName += extensions[type?.toLowerCase()] || '.txt';
+            }
+
+            return safeName;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // [FIX v1.1.0] Copiar archivos a Google Drive
+        // ═══════════════════════════════════════════════════════════════
+
+        async function copySelectedToDrive() {
+            if (selectedResources.size === 0) {
+                alert('No hay archivos seleccionados');
+                return;
+            }
+
+            // Esta función requiere configuración adicional de Google Picker API
+            // Por ahora mostramos un mensaje informativo
+            const count = selectedResources.size;
+
+            alert(`🚧 Funcionalidad en desarrollo\n\nPara copiar ${count} archivo(s) a tu Drive, se necesita:\n\n1. Configurar Google Picker API\n2. Agregar scope de escritura a Drive\n3. Los usuarios deberán re-autorizar la app\n\n¿Deseas que procedamos con esta configuración?`);
+
+            // TODO: Implementar cuando se configure:
+            // 1. Google Picker para seleccionar carpeta
+            // 2. Endpoint /api/drive/copy en backend
+            // 3. Scope 'https://www.googleapis.com/auth/drive.file'
         }
     </script>
 </body>

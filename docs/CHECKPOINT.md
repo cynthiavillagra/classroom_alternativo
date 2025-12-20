@@ -41,6 +41,29 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
+### v1.1.0 — 2025-12-20: Selección Múltiple y Descarga ZIP
+
+**Feature:** Sistema completo de selección múltiple para descargar varios archivos.
+
+**Funcionalidades:**
+| Función | Descripción |
+|---------|-------------|
+| ☑️ **Checkboxes** | Cada recurso tiene checkbox para selección |
+| 📦 **Descargar ZIP** | Descarga todos los seleccionados en un archivo ZIP |
+| ✅ **Seleccionar todos** | Checkbox maestro para seleccionar/deseleccionar todo |
+| 📁 **Copiar a Drive** | (En desarrollo) Copiar archivos a tu Google Drive |
+
+**Tecnología:**
+- JSZip 3.10.1 para crear ZIP en el navegador
+- FileSaver.js para guardar el archivo
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | Barra de acciones, checkboxes, JSZip, lógica de selección |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -284,7 +307,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.0.9
+  VERSIÓN:  1.1.0
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
