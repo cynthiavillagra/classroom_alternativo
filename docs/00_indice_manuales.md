@@ -85,13 +85,28 @@
 | 26 | `api/routes/materials.py` | [26_materials_routes.md](manual/26_materials_routes.md) | ✅ |
 | 27 | `main.py` | [27_main_server.md](manual/27_main_server.md) | ✅ |
 
+### 8. Frontend Layer (28)
+
+| # | Archivo | Manual | Estado |
+|---|---------|--------|--------|
+| 28 | `public/materials.html` | [28_materials_frontend.md](manual/28_materials_frontend.md) | ✅ |
+
 ---
 
 ## 📊 Resumen
 
-- **Total de manuales**: 27
-- **Orden correcto**: Configuración → Domain → Infrastructure → Application → API
+- **Total de manuales**: 28
+- **Orden correcto**: Configuración → Domain → Infrastructure → Application → API → Frontend
 - **Filosofía**: Entorno configurado ANTES de código
+
+---
+
+## 🆕 Changelog
+
+| Versión | Fecha | Cambio |
+|---------|-------|--------|
+| 3.0 | 2025-12-14 | Índice inicial con 27 manuales |
+| 3.1 | 2025-12-20 | Agregado manual #28: Frontend materials.html |
 
 ---
 
