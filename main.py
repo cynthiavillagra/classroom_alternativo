@@ -317,20 +317,51 @@ class MainRouter(BaseHTTPRequestHandler):
     def _extract_drive_file_id(self, url: str) -> str:
         """Extrae el file ID de una URL de Google Drive."""
         import re
+        from urllib.parse import urlparse, parse_qs
         
-        # Patrones comunes de URLs de Drive
+        # Primero intentar extraer de parámetros de query (?id=...)
+        parsed = urlparse(url)
+        query_params = parse_qs(parsed.query)
+        
+        # Buscar en parámetros comunes
+        for param in ['id', 'fileId']:
+            if param in query_params:
+                return query_params[param][0]
+        
+        # Patrones comunes de URLs de Drive (el ID termina antes de / o ? o fin de string)
         patterns = [
+            # drive.google.com/file/d/ID/view, /preview, /edit, etc.
             r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)',
+            # drive.google.com/open?id=ID
             r'drive\.google\.com/open\?id=([a-zA-Z0-9_-]+)',
+            # docs.google.com/document/d/ID/...
             r'docs\.google\.com/document/d/([a-zA-Z0-9_-]+)',
+            # docs.google.com/spreadsheets/d/ID/...
             r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9_-]+)',
+            # docs.google.com/presentation/d/ID/...
             r'docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)',
+            # drive.google.com/uc?id=ID&export=download
+            r'drive\.google\.com/uc\?.*id=([a-zA-Z0-9_-]+)',
+            # Patrón genérico: /d/ID/ o /d/ID?
+            r'/d/([a-zA-Z0-9_-]+)(?:/|\?|$)',
         ]
         
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
-                return match.group(1)
+                file_id = match.group(1)
+                # Limpiar el ID: remover cualquier sufijo no válido
+                # Los IDs de Drive son típicamente 25-44 caracteres
+                if len(file_id) >= 25:
+                    return file_id
+        
+        # Último intento: buscar cualquier string que parezca un ID de Drive
+        # (44 caracteres alfanuméricos con guiones y guiones bajos)
+        id_pattern = r'([a-zA-Z0-9_-]{25,44})'
+        matches = re.findall(id_pattern, url)
+        if matches:
+            # Devolver el primer match que parezca válido
+            return matches[0]
         
         return None
     
