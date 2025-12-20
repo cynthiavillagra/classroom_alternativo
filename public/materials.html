@@ -1402,25 +1402,45 @@
                         return;
                     }
 
-                    // Crear vista de carpetas
-                    const folderView = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+                    // Vista principal: Mi unidad con navegación completa
+                    const myDriveView = new google.picker.DocsView()
+                        .setIncludeFolders(true)
+                        .setSelectFolderEnabled(true)
+                        .setParent('root')
+                        .setMode(google.picker.DocsViewMode.LIST);
+
+                    // Vista alternativa: Solo carpetas
+                    const foldersOnlyView = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
                         .setSelectFolderEnabled(true)
                         .setIncludeFolders(true)
-                        .setMimeTypes('application/vnd.google-apps.folder');
+                        .setParent('root');
 
-                    // Construir el Picker
+                    // Construir el Picker con navegación
                     const picker = new google.picker.PickerBuilder()
-                        .setTitle('Selecciona la carpeta destino')
-                        .addView(folderView)
+                        .setTitle('📁 Selecciona la carpeta destino')
+                        .addView(myDriveView)
+                        .addView(foldersOnlyView)
                         .setOAuthToken(config.accessToken)
                         .setDeveloperKey(config.apiKey)
+                        .setSize(800, 500)
                         .setCallback((data) => {
                             if (data.action === google.picker.Action.PICKED) {
-                                const folder = data.docs[0];
-                                resolve({
-                                    id: folder.id,
-                                    name: folder.name
-                                });
+                                const selected = data.docs[0];
+                                if (selected.mimeType === 'application/vnd.google-apps.folder' || selected.type === 'folder') {
+                                    resolve({
+                                        id: selected.id,
+                                        name: selected.name
+                                    });
+                                } else {
+                                    if (selected.parentId) {
+                                        resolve({
+                                            id: selected.parentId,
+                                            name: 'Carpeta del archivo'
+                                        });
+                                    } else {
+                                        alert('Por favor selecciona una CARPETA, no un archivo.');
+                                    }
+                                }
                             } else if (data.action === google.picker.Action.CANCEL) {
                                 resolve(null);
                             }
