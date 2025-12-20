@@ -128,6 +128,27 @@
 
 ---
 
+### v1.1.3 — 2025-12-20: Fix Botón Descargar (Cross-Origin)
+
+**Fix:** El botón "Descargar" no funcionaba en archivos de Google Drive.
+
+**Problema:**
+- El atributo HTML `download` no funciona para URLs cross-origin (de otro dominio)
+- Al hacer click en "Descargar", el navegador abría una página de error de Google
+
+**Solución:**
+- Reemplazar atributo `download` por `target="_blank"`
+- La URL de descarga abre en nueva pestaña y Google inicia la descarga automáticamente
+- Agregar parámetro `confirm=t` a URLs de Drive para bypassear confirmación
+- Agregar soporte para Google Colab notebooks
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | `getDownloadUrl()` + `confirm=t`, botones con `target="_blank"` |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -371,7 +392,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.2
+  VERSIÓN:  1.1.3
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

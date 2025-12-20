@@ -897,7 +897,7 @@
                                 <td class="resource-desc">${truncateText(res.description, 60)}</td>
                                 <td class="resource-actions">
                                     <div class="resource-actions-group">
-                                        <a href="${getDownloadUrl(res.url)}" download class="btn-download" title="Descargar archivo">
+                                        <a href="${getDownloadUrl(res.url)}" target="_blank" class="btn-download" title="Descargar archivo (abre en nueva pestaña)">
                                             ⬇️ Descargar
                                         </a>
                                         <a href="${res.url}" target="_blank" class="btn-open" title="Abrir en nueva pestaña">
@@ -912,23 +912,34 @@
             `;
         }
 
-        // [FIX v1.0.9] Convierte URLs de Google Drive a URLs de descarga directa
+        // [FIX v1.1.3] Convierte URLs de Google Drive a URLs de descarga directa
+        // NOTA: El atributo download no funciona cross-origin, pero la URL 
+        // abrirá la descarga de Google en nueva pestaña
         function getDownloadUrl(url) {
             if (!url) return '';
 
-            // Google Drive file URLs: /file/d/{fileId}/view -> /uc?export=download&id={fileId}
+            // Google Drive file URLs: /file/d/{fileId}/view -> /uc?export=download&confirm=t&id={fileId}
+            // confirm=t bypasea la pantalla de confirmación de Google
             const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
             if (driveFileMatch) {
-                return `https://drive.google.com/uc?export=download&id=${driveFileMatch[1]}`;
+                return `https://drive.google.com/uc?export=download&confirm=t&id=${driveFileMatch[1]}`;
             }
 
             // Google Drive open URLs: /open?id={fileId}
             const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
             if (driveOpenMatch) {
-                return `https://drive.google.com/uc?export=download&id=${driveOpenMatch[1]}`;
+                return `https://drive.google.com/uc?export=download&confirm=t&id=${driveOpenMatch[1]}`;
             }
 
-            // Google Docs/Sheets/Slides: export as PDF
+            // Google Colab: descargar como .ipynb
+            if (url.includes('colab.research.google.com')) {
+                const colabMatch = url.match(/drive\/([a-zA-Z0-9_-]+)/);
+                if (colabMatch) {
+                    return `https://drive.google.com/uc?export=download&confirm=t&id=${colabMatch[1]}`;
+                }
+            }
+
+            // Google Docs/Sheets/Slides: export as PDF/XLSX
             if (url.includes('docs.google.com/document')) {
                 const docMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                 if (docMatch) {
@@ -948,7 +959,7 @@
                 }
             }
 
-            // Para otros URLs, devolver el original (el navegador intentará descargarlo)
+            // Para otros URLs, devolver el original
             return url;
         }
 
@@ -1097,11 +1108,12 @@
                     const displayTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
                     const downloadUrl = getDownloadUrl(att.url);
 
+                    // [FIX v1.1.3] Usar target=_blank en lugar de download (no funciona cross-origin)
                     return `<div class="attachment-item">
                         <a href="${att.url}" target="_blank" class="material-card__link" title="Abrir: ${title}">
                             ${icon} ${displayTitle}
                         </a>
-                        <a href="${downloadUrl}" download class="attachment-download" title="Descargar: ${title}">
+                        <a href="${downloadUrl}" target="_blank" class="attachment-download" title="Descargar: ${title}">
                             ⬇️
                         </a>
                     </div>`;
@@ -1115,7 +1127,7 @@
                     <a href="${material.url}" target="_blank" class="material-card__link">
                         🔗 Abrir
                     </a>
-                    <a href="${downloadUrl}" download class="attachment-download" title="Descargar">
+                    <a href="${downloadUrl}" target="_blank" class="attachment-download" title="Descargar">
                         ⬇️
                     </a>
                 </div>`;

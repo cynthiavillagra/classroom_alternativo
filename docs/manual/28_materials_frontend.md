@@ -262,6 +262,7 @@ Usuario hace click:
 | v1.1.0 | 2025-12-20 | Selección múltiple, Descarga ZIP, Copiar a Drive |
 | v1.1.1 | 2025-12-20 | Fix navegación Google Picker + extracción IDs |
 | v1.1.2 | 2025-12-20 | Fix scope Drive: `drive.file` → `drive` |
+| v1.1.3 | 2025-12-20 | Fix descarga cross-origin: `download` → `target="_blank"` |
 
 ---
 
