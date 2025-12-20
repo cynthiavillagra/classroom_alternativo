@@ -308,6 +308,21 @@ GIT CHECKPOINT:
 
 ---
 
+### v1.2.2 — 2025-12-20: Endpoint ZIP para Vercel
+
+**Fix:** El endpoint `/api/download/zip` daba 404 en Vercel.
+
+**Causa:** Vercel necesita archivos separados para cada ruta serverless.
+
+**Solución:** Crear `api/download/zip.py` como archivo serverless dedicado.
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `api/download/zip.py` | Nuevo archivo serverless para Vercel |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -551,7 +566,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.2.1
+  VERSIÓN:  1.2.2
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
