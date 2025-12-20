@@ -1,8 +1,8 @@
 """
 Vercel Serverless Function: Download ZIP
-Endpoint POST /api/download/zip
+Endpoint POST /api/download_zip
 
-[FIX v1.2.2] Archivo separado para Vercel serverless functions.
+[FIX v1.2.3] Archivo en raíz de api/ para compatibilidad con Vercel.
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -16,19 +16,22 @@ import urllib.error
 import re
 
 # Agregar raíz al path
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 # Cargar .env
-from dotenv import load_dotenv
-load_dotenv(os.path.join(ROOT_DIR, '.env'))
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(ROOT_DIR, '.env'))
+except:
+    pass
 
 
 class handler(BaseHTTPRequestHandler):
     """Handler para descargar archivos como ZIP."""
     
     def do_POST(self):
-        """Maneja POST /api/download/zip."""
+        """Maneja POST /api/download_zip."""
         try:
             # Obtener token de cookie
             access_token = self._get_cookie('access_token')
@@ -64,7 +67,7 @@ class handler(BaseHTTPRequestHandler):
                     if file_id:
                         try:
                             # Descargar archivo
-                            file_content, filename = self._download_drive_file(file_id, access_token, name, file_type)
+                            file_content, filename = self._download_drive_file(file_id, access_token, name)
                             
                             if file_content:
                                 zip_file.writestr(filename, file_content)
@@ -105,20 +108,10 @@ class handler(BaseHTTPRequestHandler):
         """GET no soportado para este endpoint."""
         self._send_json({'error': 'Use POST method'}, 405)
     
-    def _extract_drive_file_id(self, url: str) -> str:
+    def _extract_drive_file_id(self, url):
         """Extrae el ID de archivo de una URL de Google Drive."""
         if not url:
             return None
-        
-        from urllib.parse import urlparse, parse_qs
-        
-        # Primero intentar extraer de parámetros de query
-        parsed = urlparse(url)
-        query_params = parse_qs(parsed.query)
-        
-        for param in ['id', 'fileId']:
-            if param in query_params:
-                return query_params[param][0]
         
         # Patrones comunes de URLs de Drive
         patterns = [
@@ -139,7 +132,7 @@ class handler(BaseHTTPRequestHandler):
         
         return None
     
-    def _download_drive_file(self, file_id: str, access_token: str, name: str, file_type: str) -> tuple:
+    def _download_drive_file(self, file_id, access_token, name):
         """Descarga un archivo de Drive usando el token del usuario."""
         # Primero obtener metadata
         metadata_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?fields=name,mimeType'
@@ -149,7 +142,7 @@ class handler(BaseHTTPRequestHandler):
                 metadata_url,
                 headers={'Authorization': f'Bearer {access_token}'}
             )
-            with urllib.request.urlopen(meta_req) as response:
+            with urllib.request.urlopen(meta_req, timeout=10) as response:
                 metadata = json.loads(response.read().decode('utf-8'))
                 real_name = metadata.get('name', name)
                 mime_type = metadata.get('mimeType', '')
@@ -160,13 +153,16 @@ class handler(BaseHTTPRequestHandler):
         # Determinar URL de descarga según el tipo
         if 'google-apps.document' in mime_type:
             download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
-            real_name = real_name.replace('.gdoc', '') + '.pdf'
+            if not real_name.endswith('.pdf'):
+                real_name = real_name + '.pdf'
         elif 'google-apps.spreadsheet' in mime_type:
             download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            real_name = real_name.replace('.gsheet', '') + '.xlsx'
+            if not real_name.endswith('.xlsx'):
+                real_name = real_name + '.xlsx'
         elif 'google-apps.presentation' in mime_type:
             download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
-            real_name = real_name.replace('.gslides', '') + '.pdf'
+            if not real_name.endswith('.pdf'):
+                real_name = real_name + '.pdf'
         else:
             download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media'
         
@@ -179,14 +175,10 @@ class handler(BaseHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=30) as response:
                 content = response.read()
                 return (content, real_name)
-        except urllib.error.HTTPError as e:
-            print(f"[ERROR] Descargando {file_id}: {e}")
-            return (None, real_name)
         except Exception as e:
-            print(f"[ERROR] Descargando {file_id}: {e}")
             return (None, real_name)
     
-    def _get_cookie(self, name: str):
+    def _get_cookie(self, name):
         """Extrae una cookie por nombre."""
         cookie_header = self.headers.get('Cookie', '') if self.headers else ''
         for cookie in cookie_header.split(';'):
@@ -195,7 +187,7 @@ class handler(BaseHTTPRequestHandler):
                 return cookie.split('=', 1)[1]
         return None
     
-    def _send_json(self, data: dict, status: int = 200):
+    def _send_json(self, data, status=200):
         """Envía respuesta JSON."""
         self.send_response(status)
         self.send_header('Content-Type', 'application/json')

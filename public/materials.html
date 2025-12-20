@@ -1353,7 +1353,7 @@
                 downloadBtn.textContent = `⏳ Procesando ${files.length} archivo(s)...`;
 
                 // Llamar al endpoint del backend
-                const response = await fetch('/api/download/zip', {
+                const response = await fetch('/api/download_zip', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

@@ -137,7 +137,7 @@ class MainRouter(BaseHTTPRequestHandler):
         
         if path == '/api/drive/copy':
             self._handle_drive_copy()
-        elif path == '/api/download/zip':
+        elif path == '/api/download_zip':
             self._handle_download_zip()
         else:
             self._send_json({'error': 'Not found'}, 404)

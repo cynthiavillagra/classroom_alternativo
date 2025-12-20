@@ -319,7 +319,26 @@ GIT CHECKPOINT:
 **Archivos modificados:**
 | Archivo | Cambio |
 |---------|--------|
-| `api/download/zip.py` | Nuevo archivo serverless para Vercel |
+| `api/download/zip.py` | Archivo serverless (eliminado en v1.2.3) |
+
+---
+
+### v1.2.3 — 2025-12-20: Fix Ruta Endpoint ZIP para Vercel
+
+**Fix:** El endpoint `/api/download/zip` daba error 500 en Vercel.
+
+**Causa:** Vercel tiene problemas con subdirectorios en `api/`. 
+
+**Solución:**
+- Cambiar ruta de `/api/download/zip` a `/api/download_zip`
+- Crear archivo `api/download_zip.py` (sin subdirectorio)
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `api/download_zip.py` | Nuevo archivo serverless (sin subdirectorio) |
+| `main.py` | Ruta cambiada a `/api/download_zip` |
+| `materials.html` | fetch a `/api/download_zip` |
 
 ---
 
@@ -566,7 +585,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.2.2
+  VERSIÓN:  1.2.3
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

@@ -272,6 +272,7 @@ Usuario hace click:
 | v1.2.0 | 2025-12-20 | ZIP descarga archivos reales (backend proxy) |
 | v1.2.1 | 2025-12-20 | Fix: funciones _get_cookie() faltantes |
 | v1.2.2 | 2025-12-20 | Endpoint ZIP serverless para Vercel |
+| v1.2.3 | 2025-12-20 | Fix: ruta cambiada a `/api/download_zip` (sin subdirectorio) |
 
 ---
 
