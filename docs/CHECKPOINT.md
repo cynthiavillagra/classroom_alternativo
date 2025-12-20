@@ -224,6 +224,23 @@ GIT CHECKPOINT:
 
 ---
 
+### v1.1.7 — 2025-12-20: Mensaje de Advertencia Mejorado
+
+**Mejora:** Mensaje más claro sobre múltiples cuentas de Google.
+
+**Antes:**
+> "Para descargar archivos, usa el navegador con tu cuenta de Google del Classroom activa."
+
+**Después:**
+> "Si tienes varias cuentas de Google en este navegador, la cuenta **principal (primera)** debe ser la del Classroom. Si no, abre una ventana de incógnito y usa solo esa cuenta."
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | Mensaje de advertencia más detallado |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -467,7 +484,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.6
+  VERSIÓN:  1.1.7
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

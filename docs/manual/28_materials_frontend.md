@@ -266,6 +266,7 @@ Usuario hace click:
 | v1.1.4 | 2025-12-20 | Fix URL descarga: usar `drive.usercontent.google.com/u/0/uc` |
 | v1.1.5 | 2025-12-20 | Fix URL descarga: usar `docs.google.com/uc` (auto-detecta cuenta) |
 | v1.1.6 | 2025-12-20 | ZIP con .url + mensaje de advertencia sobre cuenta |
+| v1.1.7 | 2025-12-20 | Mensaje de advertencia mejorado (múltiples cuentas) |
 
 ---
 
