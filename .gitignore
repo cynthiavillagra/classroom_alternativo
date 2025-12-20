@@ -6,8 +6,6 @@
 # 🔐 SEGURIDAD - NUNCA SUBIR CREDENCIALES
 # ─────────────────────────────────────────────────────────────
 .env
-.env.local
-.env.*.local
 *.pem
 *.key
 secrets/

@@ -79,6 +79,11 @@
                         ✖ Limpiar selección
                     </button>
                 </div>
+                <!-- [FIX v1.1.6] Mensaje de advertencia sobre cuenta -->
+                <div class="bulk-actions__warning">
+                    ⚠️ <strong>Importante:</strong> Para descargar archivos, usa el navegador con tu cuenta de Google
+                    del Classroom activa.
+                </div>
             </div>
 
             <div class="materials-container" id="materialsContainer">
@@ -191,6 +196,19 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* [FIX v1.1.6] Mensaje de advertencia */
+        .bulk-actions__warning {
+            width: 100%;
+            margin-top: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            color: #856404;
+            font-size: 0.85rem;
+            text-align: center;
         }
 
         /* Checkbox en recursos */
@@ -1265,7 +1283,8 @@
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // [FIX v1.1.0] Descargar archivos seleccionados como ZIP
+        // [FIX v1.1.6] Descargar archivos seleccionados como ZIP de accesos directos
+        // NOTA: No podemos descargar archivos de Drive por CORS, creamos .url
         // ═══════════════════════════════════════════════════════════════
 
         async function downloadSelectedAsZip() {
@@ -1282,49 +1301,37 @@
             try {
                 const zip = new JSZip();
                 const courseName = document.querySelector('#courseHeader h2')?.textContent?.replace('📖 ', '') || 'materiales';
-                const folder = zip.folder(courseName.replace(/[^a-zA-Z0-9\s]/g, '_'));
+                const safeCourseName = courseName.replace(/[^a-zA-Z0-9\s]/g, '_');
+                const folder = zip.folder(safeCourseName);
 
                 let processed = 0;
                 const total = selectedResources.size;
-                const errors = [];
 
                 for (const [url, resource] of selectedResources) {
-                    try {
-                        downloadBtn.textContent = `⏳ Descargando ${++processed}/${total}...`;
+                    downloadBtn.textContent = `⏳ Procesando ${++processed}/${total}...`;
 
-                        // Intentar descargar el archivo
-                        const downloadUrl = getDownloadUrl(url);
-                        const response = await fetch(downloadUrl, { mode: 'cors' });
+                    const safeName = sanitizeFileName(resource.name, resource.type);
+                    const downloadUrl = getDownloadUrl(url);
 
-                        if (response.ok) {
-                            const blob = await response.blob();
-                            const fileName = sanitizeFileName(resource.name, resource.type);
-                            folder.file(fileName, blob);
-                        } else {
-                            // Si falla, guardar como archivo de texto con el link
-                            const linkContent = `Este archivo no pudo descargarse automáticamente.\n\nEnlace original: ${url}\nEnlace de descarga: ${downloadUrl}\n`;
-                            folder.file(`${sanitizeFileName(resource.name, 'link')}.txt`, linkContent);
-                            errors.push(resource.name);
-                        }
-                    } catch (err) {
-                        console.error(`Error descargando ${resource.name}:`, err);
-                        // Guardar link como alternativa
-                        const linkContent = `Error al descargar.\n\nEnlace: ${url}\n\nError: ${err.message}`;
-                        folder.file(`${sanitizeFileName(resource.name, 'error')}.txt`, linkContent);
-                        errors.push(resource.name);
-                    }
+                    // Crear archivo .url (acceso directo de Windows)
+                    // Este formato funciona en Windows para abrir URLs
+                    const urlFileContent = `[InternetShortcut]\nURL=${downloadUrl}\n`;
+                    folder.file(`${safeName}.url`, urlFileContent);
+
+                    // También crear un archivo de texto con ambos links por si acaso
+                    const infoContent = `Recurso: ${resource.name}\n\nAbrir online:\n${url}\n\nDescargar:\n${downloadUrl}\n\n---\nPara descargar: Abre el link de descarga en un navegador con tu cuenta de Google activa.`;
+                    folder.file(`${safeName}_info.txt`, infoContent);
                 }
 
                 downloadBtn.textContent = '⏳ Generando ZIP...';
 
                 // Generar y descargar el ZIP
                 const content = await zip.generateAsync({ type: 'blob' });
-                const fileName = `${courseName.replace(/[^a-zA-Z0-9\s]/g, '_')}_${new Date().toISOString().split('T')[0]}.zip`;
+                const fileName = `${safeCourseName}_${new Date().toISOString().split('T')[0]}.zip`;
                 saveAs(content, fileName);
 
-                if (errors.length > 0) {
-                    alert(`ZIP creado. ${errors.length} archivo(s) no pudieron descargarse directamente (se guardaron como links).`);
-                }
+                // Mostrar mensaje explicativo
+                alert(`✅ ZIP creado con ${total} acceso(s) directo(s).\n\n📌 IMPORTANTE:\nLos archivos .url son accesos directos.\nHaz doble-click en ellos para descargar cada archivo.\n\n⚠️ Asegúrate de tener tu cuenta de Google del Classroom activa en el navegador.`);
 
                 clearSelection();
 

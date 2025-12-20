@@ -264,6 +264,8 @@ Usuario hace click:
 | v1.1.2 | 2025-12-20 | Fix scope Drive: `drive.file` → `drive` |
 | v1.1.3 | 2025-12-20 | Fix descarga cross-origin: `download` → `target="_blank"` |
 | v1.1.4 | 2025-12-20 | Fix URL descarga: usar `drive.usercontent.google.com/u/0/uc` |
+| v1.1.5 | 2025-12-20 | Fix URL descarga: usar `docs.google.com/uc` (auto-detecta cuenta) |
+| v1.1.6 | 2025-12-20 | ZIP con .url + mensaje de advertencia sobre cuenta |
 
 ---
 

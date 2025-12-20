@@ -171,6 +171,33 @@
 
 ---
 
+### v1.1.5 — 2025-12-20: Fix URL Descarga sin Número de Cuenta
+
+**Fix:** La URL con `/u/0/` no funcionaba si el usuario tenía múltiples cuentas.
+
+**Solución:**
+- Cambiar a `docs.google.com/uc?id=X&export=download`
+- Este endpoint detecta automáticamente la cuenta activa del usuario
+
+---
+
+### v1.1.6 — 2025-12-20: ZIP con Accesos Directos + Advertencia
+
+**Fix:** La descarga ZIP fallaba por restricciones CORS de Google.
+
+**Cambios:**
+1. **ZIP con .url**: El ZIP ahora contiene archivos `.url` (accesos directos de Windows) en lugar de intentar descargar los archivos (que falla por CORS)
+2. **Mensaje de advertencia**: Se agregó aviso visible sobre usar el navegador con la cuenta correcta
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | `downloadSelectedAsZip()` crea archivos .url |
+| `materials.html` | Mensaje de advertencia en barra de acciones |
+| `materials.html` | Estilo CSS para `.bulk-actions__warning` |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -414,7 +441,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.4
+  VERSIÓN:  1.1.6
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
