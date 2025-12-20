@@ -241,6 +241,24 @@ GIT CHECKPOINT:
 
 ---
 
+### v1.1.8 — 2025-12-20: Abrir Notebooks en Google Colab
+
+**Feature:** Los archivos `.ipynb` ahora se abren directamente en Google Colab.
+
+**Cambios:**
+- Nueva función `getOpenUrl(url, type)` que detecta notebooks
+- Botón "🔗 Abrir" cambia a "🚀 Colab" para notebooks
+- URL: `drive.google.com/file/d/ID` → `colab.research.google.com/drive/ID`
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | + función `getOpenUrl()` |
+| `materials.html` | Botón "Abrir" usa `getOpenUrl()` |
+| `materials.html` | `renderAttachments()` soporta Colab |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -484,7 +502,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.7
+  VERSIÓN:  1.1.8
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════
