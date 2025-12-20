@@ -104,6 +104,30 @@
 
 ---
 
+### v1.1.2 — 2025-12-20: Fix Scope de Drive para Copiar Archivos de Classroom
+
+**Fix:** Cambio de scope OAuth para permitir copiar archivos de profesores.
+
+**Problema:**
+- El scope `drive.file` solo permite acceso a archivos creados por la app
+- Los archivos de Classroom (del profesor) daban error "File not found"
+
+**Solución:**
+- Cambiar scope de `drive.file` a `drive` (acceso completo)
+- Los usuarios deben cerrar sesión y volver a autorizar
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `src/infrastructure/config.py` | Scope `drive.file` → `drive` |
+
+**⚠️ IMPORTANTE:** Los usuarios existentes deben:
+1. Cerrar sesión
+2. Volver a iniciar sesión
+3. Aceptar los nuevos permisos
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -347,7 +371,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.1
+  VERSIÓN:  1.1.2
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

@@ -77,9 +77,11 @@ class Config:
         'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
         # Classroom: Ver publicaciones/anuncios (announcements)
         'https://www.googleapis.com/auth/classroom.announcements.readonly',
-        # [FIX v1.1.0] Drive: Copiar archivos al Drive del usuario
-        # Este scope permite crear/editar archivos que la app haya creado o que el usuario seleccione
-        'https://www.googleapis.com/auth/drive.file'
+        # [FIX v1.1.2] Drive: Acceso completo para copiar archivos de Classroom
+        # NOTA: drive.file solo permite acceso a archivos creados por la app
+        # drive permite copiar archivos de Classroom (del profesor)
+        # Los usuarios deben re-autorizar después de este cambio
+        'https://www.googleapis.com/auth/drive'
     ]
     
     # [FIX v1.1.0] Google Picker API Key (para seleccionar carpetas)
