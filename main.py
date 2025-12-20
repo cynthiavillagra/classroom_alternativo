@@ -99,6 +99,9 @@ class MainRouter(BaseHTTPRequestHandler):
         # [REFACTOR] Agregar endpoint para servir documentación
         elif path.startswith('/api/docs'):
             self._serve_docs_api()
+        # [FIX v1.1.0] Endpoint para obtener config de Google Picker
+        elif path == '/api/config/picker':
+            self._serve_picker_config()
         # ───────────────────────────────────────────────────────────
         # [UNIVERSAL] Rutas estáticas - En producción (Vercel/Netlify)
         # estas rutas son manejadas por vercel.json/netlify.toml.
@@ -123,6 +126,18 @@ class MainRouter(BaseHTTPRequestHandler):
             self._serve_static(f'public{path}', 'application/javascript')
         else:
             self._send_not_found()
+    
+    # ───────────────────────────────────────────────────────────
+    # [FIX v1.1.0] Manejo de POST
+    # ───────────────────────────────────────────────────────────
+    def do_POST(self):
+        """Procesa POST requests."""
+        path = urlparse(self.path).path
+        
+        if path == '/api/drive/copy':
+            self._handle_drive_copy()
+        else:
+            self._send_json({'error': 'Not found'}, 404)
     
     # ───────────────────────────────────────────────────────────
     # Paso 2.2: Delegación a handlers
@@ -183,6 +198,175 @@ class MainRouter(BaseHTTPRequestHandler):
             self.wfile.write(content.encode('utf-8'))
         except FileNotFoundError:
             self._send_json({'error': 'File not found'}, 404)
+    
+    # ───────────────────────────────────────────────────────────
+    # [FIX v1.1.0] Endpoint para config de Google Picker
+    # ───────────────────────────────────────────────────────────
+    def _serve_picker_config(self):
+        """
+        Endpoint GET /api/config/picker
+        
+        Devuelve las credenciales necesarias para inicializar Google Picker.
+        El token de acceso se obtiene de la cookie de sesión.
+        """
+        # Obtener token de la cookie
+        cookies = self.headers.get('Cookie', '')
+        access_token = None
+        
+        for cookie in cookies.split(';'):
+            cookie = cookie.strip()
+            if cookie.startswith('access_token='):
+                access_token = cookie.split('=', 1)[1]
+                break
+        
+        if not access_token:
+            self._send_json({'error': 'Not authenticated'}, 401)
+            return
+        
+        # Devolver config para Picker
+        self._send_json({
+            'clientId': Config.GOOGLE_CLIENT_ID,
+            'apiKey': Config.GOOGLE_PICKER_API_KEY,
+            'accessToken': access_token,
+            'appId': Config.GOOGLE_CLIENT_ID.split('.')[0] if Config.GOOGLE_CLIENT_ID else ''
+        })
+    
+    # ───────────────────────────────────────────────────────────
+    # [FIX v1.1.0] Endpoint para copiar archivos a Drive
+    # ───────────────────────────────────────────────────────────
+    def _handle_drive_copy(self):
+        """
+        Endpoint POST /api/drive/copy
+        
+        Body: {
+            "fileUrls": ["url1", "url2", ...],
+            "targetFolderId": "folder_id_from_picker"
+        }
+        
+        Copia archivos de Google Drive del curso al Drive del usuario.
+        """
+        import urllib.request
+        import urllib.error
+        
+        # Obtener token de la cookie
+        cookies = self.headers.get('Cookie', '')
+        access_token = None
+        
+        for cookie in cookies.split(';'):
+            cookie = cookie.strip()
+            if cookie.startswith('access_token='):
+                access_token = cookie.split('=', 1)[1]
+                break
+        
+        if not access_token:
+            self._send_json({'error': 'Not authenticated'}, 401)
+            return
+        
+        # Leer body del POST
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length)
+        
+        try:
+            data = json.loads(body.decode('utf-8'))
+        except json.JSONDecodeError:
+            self._send_json({'error': 'Invalid JSON'}, 400)
+            return
+        
+        file_urls = data.get('fileUrls', [])
+        target_folder_id = data.get('targetFolderId')
+        
+        if not file_urls:
+            self._send_json({'error': 'No files provided'}, 400)
+            return
+        
+        if not target_folder_id:
+            self._send_json({'error': 'No target folder selected'}, 400)
+            return
+        
+        # Copiar cada archivo
+        results = []
+        errors = []
+        
+        for url in file_urls:
+            try:
+                # Extraer file ID de la URL de Drive
+                file_id = self._extract_drive_file_id(url)
+                
+                if not file_id:
+                    errors.append({'url': url, 'error': 'Could not extract file ID'})
+                    continue
+                
+                # Llamar a Drive API para copiar
+                copy_result = self._copy_drive_file(file_id, target_folder_id, access_token)
+                
+                if copy_result.get('error'):
+                    errors.append({'url': url, 'error': copy_result['error']})
+                else:
+                    results.append({'url': url, 'newFileId': copy_result.get('id'), 'name': copy_result.get('name')})
+                    
+            except Exception as e:
+                errors.append({'url': url, 'error': str(e)})
+        
+        self._send_json({
+            'copied': len(results),
+            'failed': len(errors),
+            'results': results,
+            'errors': errors
+        })
+    
+    def _extract_drive_file_id(self, url: str) -> str:
+        """Extrae el file ID de una URL de Google Drive."""
+        import re
+        
+        # Patrones comunes de URLs de Drive
+        patterns = [
+            r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)',
+            r'drive\.google\.com/open\?id=([a-zA-Z0-9_-]+)',
+            r'docs\.google\.com/document/d/([a-zA-Z0-9_-]+)',
+            r'docs\.google\.com/spreadsheets/d/([a-zA-Z0-9_-]+)',
+            r'docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+        
+        return None
+    
+    def _copy_drive_file(self, file_id: str, target_folder_id: str, access_token: str) -> dict:
+        """Copia un archivo de Drive a la carpeta destino."""
+        import urllib.request
+        import urllib.error
+        
+        # API de Drive: files.copy
+        copy_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/copy'
+        
+        # Body con la carpeta destino
+        copy_body = json.dumps({
+            'parents': [target_folder_id]
+        }).encode('utf-8')
+        
+        req = urllib.request.Request(
+            copy_url,
+            data=copy_body,
+            headers={
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            },
+            method='POST'
+        )
+        
+        try:
+            with urllib.request.urlopen(req) as response:
+                return json.loads(response.read().decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8')
+            try:
+                error_json = json.loads(error_body)
+                return {'error': error_json.get('error', {}).get('message', str(e))}
+            except:
+                return {'error': str(e)}
     
     # ───────────────────────────────────────────────────────────
     # Paso 2.3: Servir archivos estáticos

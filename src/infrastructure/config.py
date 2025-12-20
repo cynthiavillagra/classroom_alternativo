@@ -76,8 +76,15 @@ class Config:
         # Classroom: Ver materiales de referencia (courseWorkMaterials)
         'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
         # Classroom: Ver publicaciones/anuncios (announcements)
-        'https://www.googleapis.com/auth/classroom.announcements.readonly'
+        'https://www.googleapis.com/auth/classroom.announcements.readonly',
+        # [FIX v1.1.0] Drive: Copiar archivos al Drive del usuario
+        # Este scope permite crear/editar archivos que la app haya creado o que el usuario seleccione
+        'https://www.googleapis.com/auth/drive.file'
     ]
+    
+    # [FIX v1.1.0] Google Picker API Key (para seleccionar carpetas)
+    # Esta key se obtiene en Google Cloud Console > APIs & Services > Credentials
+    GOOGLE_PICKER_API_KEY: str = os.getenv('GOOGLE_PICKER_API_KEY', '')
     
     # ─────────────────────────────────────────────────────────
     # Caché

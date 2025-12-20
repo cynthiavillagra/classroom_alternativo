@@ -41,9 +41,9 @@
 
 ## 🔧 Historial de Fixes Post-Release
 
-### v1.1.0 — 2025-12-20: Selección Múltiple y Descarga ZIP
+### v1.1.0 — 2025-12-20: Selección Múltiple, Descarga ZIP y Copiar a Drive
 
-**Feature:** Sistema completo de selección múltiple para descargar varios archivos.
+**Feature:** Sistema completo de selección múltiple con dos acciones:
 
 **Funcionalidades:**
 | Función | Descripción |
@@ -51,16 +51,26 @@
 | ☑️ **Checkboxes** | Cada recurso tiene checkbox para selección |
 | 📦 **Descargar ZIP** | Descarga todos los seleccionados en un archivo ZIP |
 | ✅ **Seleccionar todos** | Checkbox maestro para seleccionar/deseleccionar todo |
-| 📁 **Copiar a Drive** | (En desarrollo) Copiar archivos a tu Google Drive |
+| 📁 **Copiar a Drive** | Copia archivos a una carpeta de tu Google Drive |
 
 **Tecnología:**
 - JSZip 3.10.1 para crear ZIP en el navegador
 - FileSaver.js para guardar el archivo
+- Google Picker API para seleccionar carpeta destino
+- Google Drive API para copiar archivos
+
+**Requisitos para "Copiar a Drive":**
+1. Configurar `GOOGLE_PICKER_API_KEY` en el servidor
+2. Habilitar "Google Picker API" en Google Cloud Console
+3. Los usuarios deben re-autorizar (nuevo scope `drive.file`)
 
 **Archivos modificados:**
 | Archivo | Cambio |
 |---------|--------|
-| `materials.html` | Barra de acciones, checkboxes, JSZip, lógica de selección |
+| `materials.html` | Barra de acciones, checkboxes, JSZip, Google Picker |
+| `main.py` | Endpoints `GET /api/config/picker` y `POST /api/drive/copy` |
+| `src/infrastructure/config.py` | Nuevo scope `drive.file` + `GOOGLE_PICKER_API_KEY` |
+| `.env.example` | Nueva variable `GOOGLE_PICKER_API_KEY` |
 
 ---
 

@@ -9,6 +9,8 @@
     <!-- [FIX v1.1.0] JSZip para crear archivos ZIP en el navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- [FIX v1.1.0] Google Picker API para seleccionar carpetas de Drive -->
+    <script src="https://apis.google.com/js/api.js"></script>
 </head>
 
 <body>
@@ -1346,25 +1348,162 @@
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // [FIX v1.1.0] Copiar archivos a Google Drive
+        // [FIX v1.1.0] Copiar archivos a Google Drive con Google Picker
         // ═══════════════════════════════════════════════════════════════
 
+        // Variables para Google Picker
+        let pickerApiLoaded = false;
+        let pickerConfig = null;
+
+        // Cargar Google Picker API
+        function loadPickerApi() {
+            return new Promise((resolve, reject) => {
+                if (pickerApiLoaded) {
+                    resolve();
+                    return;
+                }
+
+                gapi.load('picker', {
+                    callback: () => {
+                        pickerApiLoaded = true;
+                        resolve();
+                    },
+                    onerror: reject
+                });
+            });
+        }
+
+        // Obtener configuración del Picker desde el backend
+        async function getPickerConfig() {
+            if (pickerConfig) return pickerConfig;
+
+            try {
+                const response = await fetch('/api/config/picker');
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener la configuración del Picker');
+                }
+                pickerConfig = await response.json();
+                return pickerConfig;
+            } catch (error) {
+                console.error('Error obteniendo config del Picker:', error);
+                throw error;
+            }
+        }
+
+        // Crear y mostrar el Google Picker para seleccionar carpeta
+        async function showFolderPicker() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    await loadPickerApi();
+                    const config = await getPickerConfig();
+
+                    if (!config.apiKey) {
+                        reject(new Error('API Key de Picker no configurada. Configura GOOGLE_PICKER_API_KEY en el servidor.'));
+                        return;
+                    }
+
+                    // Crear vista de carpetas
+                    const folderView = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+                        .setSelectFolderEnabled(true)
+                        .setIncludeFolders(true)
+                        .setMimeTypes('application/vnd.google-apps.folder');
+
+                    // Construir el Picker
+                    const picker = new google.picker.PickerBuilder()
+                        .setTitle('Selecciona la carpeta destino')
+                        .addView(folderView)
+                        .setOAuthToken(config.accessToken)
+                        .setDeveloperKey(config.apiKey)
+                        .setCallback((data) => {
+                            if (data.action === google.picker.Action.PICKED) {
+                                const folder = data.docs[0];
+                                resolve({
+                                    id: folder.id,
+                                    name: folder.name
+                                });
+                            } else if (data.action === google.picker.Action.CANCEL) {
+                                resolve(null);
+                            }
+                        })
+                        .build();
+
+                    picker.setVisible(true);
+
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        // Copiar archivos seleccionados a Drive
         async function copySelectedToDrive() {
             if (selectedResources.size === 0) {
                 alert('No hay archivos seleccionados');
                 return;
             }
 
-            // Esta función requiere configuración adicional de Google Picker API
-            // Por ahora mostramos un mensaje informativo
-            const count = selectedResources.size;
+            const copyBtn = document.getElementById('copyToDriveBtn');
+            const originalText = copyBtn.textContent;
 
-            alert(`🚧 Funcionalidad en desarrollo\n\nPara copiar ${count} archivo(s) a tu Drive, se necesita:\n\n1. Configurar Google Picker API\n2. Agregar scope de escritura a Drive\n3. Los usuarios deberán re-autorizar la app\n\n¿Deseas que procedamos con esta configuración?`);
+            try {
+                copyBtn.disabled = true;
+                copyBtn.textContent = '⏳ Abriendo selector...';
 
-            // TODO: Implementar cuando se configure:
-            // 1. Google Picker para seleccionar carpeta
-            // 2. Endpoint /api/drive/copy en backend
-            // 3. Scope 'https://www.googleapis.com/auth/drive.file'
+                // Mostrar picker para seleccionar carpeta
+                const targetFolder = await showFolderPicker();
+
+                if (!targetFolder) {
+                    // Usuario canceló
+                    return;
+                }
+
+                copyBtn.textContent = `⏳ Copiando a "${targetFolder.name}"...`;
+
+                // Preparar URLs para copiar
+                const fileUrls = Array.from(selectedResources.values()).map(r => r.url);
+
+                // Llamar al backend para copiar
+                const response = await fetch('/api/drive/copy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fileUrls: fileUrls,
+                        targetFolderId: targetFolder.id
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    let message = `✅ ${result.copied} archivo(s) copiados a "${targetFolder.name}"`;
+                    if (result.failed > 0) {
+                        message += `\n\n⚠️ ${result.failed} archivo(s) no pudieron copiarse.`;
+                        if (result.errors && result.errors.length > 0) {
+                            message += '\n\nErrores:\n' + result.errors.map(e => `- ${e.error}`).join('\n');
+                        }
+                    }
+                    alert(message);
+                    clearSelection();
+                } else {
+                    throw new Error(result.error || 'Error al copiar archivos');
+                }
+
+            } catch (error) {
+                console.error('Error en copySelectedToDrive:', error);
+
+                // Mensaje amigable según el tipo de error
+                if (error.message.includes('API Key')) {
+                    alert(`⚠️ Configuración requerida\n\nPara usar esta función necesitas:\n\n1. Crear una API Key en Google Cloud Console\n2. Habilitar "Google Picker API"\n3. Configurar GOOGLE_PICKER_API_KEY en el servidor\n\nMientras tanto, puedes usar "Descargar ZIP" para bajar los archivos.`);
+                } else {
+                    alert(`❌ Error: ${error.message}`);
+                }
+            } finally {
+                copyBtn.disabled = false;
+                copyBtn.textContent = originalText;
+                updateSelectionUI();
+            }
         }
     </script>
 </body>
