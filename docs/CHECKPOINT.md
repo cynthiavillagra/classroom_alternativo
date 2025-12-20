@@ -270,6 +270,28 @@ GIT CHECKPOINT:
 
 ---
 
+### v1.2.0 — 2025-12-20: Descarga Real de Archivos en ZIP
+
+**Feature:** El ZIP ahora contiene los archivos reales de Google Drive.
+
+**Problema anterior:** CORS bloqueaba fetch directo a Drive desde el frontend.
+
+**Solución implementada:**
+1. Nuevo endpoint POST `/api/download/zip` en backend
+2. El servidor descarga archivos usando el token OAuth del usuario
+3. Crea el ZIP en memoria y lo envía al cliente
+4. Soporta Google Docs, Sheets, Slides (exportados a PDF/XLSX)
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `main.py` | + endpoint `/api/download/zip` |
+| `main.py` | + función `_handle_download_zip()` |
+| `main.py` | + función `_download_drive_file()` |
+| `materials.html` | `downloadSelectedAsZip()` usa backend |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -513,7 +535,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.9
+  VERSIÓN:  1.2.0
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

@@ -1322,8 +1322,8 @@
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // [FIX v1.1.6] Descargar archivos seleccionados como ZIP de accesos directos
-        // NOTA: No podemos descargar archivos de Drive por CORS, creamos .url
+        // [FIX v1.2.0] Descargar archivos reales como ZIP usando backend
+        // El backend descarga los archivos de Drive y crea el ZIP
         // ═══════════════════════════════════════════════════════════════
 
         async function downloadSelectedAsZip() {
@@ -1335,43 +1335,56 @@
             const downloadBtn = document.getElementById('downloadZipBtn');
             const originalText = downloadBtn.textContent;
             downloadBtn.disabled = true;
-            downloadBtn.textContent = '⏳ Preparando ZIP...';
+            downloadBtn.textContent = '⏳ Descargando archivos...';
 
             try {
-                const zip = new JSZip();
                 const courseName = document.querySelector('#courseHeader h2')?.textContent?.replace('📖 ', '') || 'materiales';
-                const safeCourseName = courseName.replace(/[^a-zA-Z0-9\s]/g, '_');
-                const folder = zip.folder(safeCourseName);
 
-                let processed = 0;
-                const total = selectedResources.size;
-
+                // Preparar lista de archivos para el backend
+                const files = [];
                 for (const [url, resource] of selectedResources) {
-                    downloadBtn.textContent = `⏳ Procesando ${++processed}/${total}...`;
-
-                    const safeName = sanitizeFileName(resource.name, resource.type);
-                    const downloadUrl = getDownloadUrl(url);
-
-                    // Crear archivo .url (acceso directo de Windows)
-                    // Este formato funciona en Windows para abrir URLs
-                    const urlFileContent = `[InternetShortcut]\nURL=${downloadUrl}\n`;
-                    folder.file(`${safeName}.url`, urlFileContent);
-
-                    // También crear un archivo de texto con ambos links por si acaso
-                    const infoContent = `Recurso: ${resource.name}\n\nAbrir online:\n${url}\n\nDescargar:\n${downloadUrl}\n\n---\nPara descargar: Abre el link de descarga en un navegador con tu cuenta de Google activa.`;
-                    folder.file(`${safeName}_info.txt`, infoContent);
+                    files.push({
+                        url: url,
+                        name: resource.name,
+                        type: resource.type
+                    });
                 }
 
+                downloadBtn.textContent = `⏳ Procesando ${files.length} archivo(s)...`;
+
+                // Llamar al endpoint del backend
+                const response = await fetch('/api/download/zip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: files,
+                        courseName: courseName
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error del servidor');
+                }
+
+                // Descargar el ZIP
                 downloadBtn.textContent = '⏳ Generando ZIP...';
+                const blob = await response.blob();
 
-                // Generar y descargar el ZIP
-                const content = await zip.generateAsync({ type: 'blob' });
-                const fileName = `${safeCourseName}_${new Date().toISOString().split('T')[0]}.zip`;
-                saveAs(content, fileName);
+                // Obtener nombre del archivo del header o usar default
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let fileName = `${courseName.replace(/[^a-zA-Z0-9\s]/g, '_')}_${new Date().toISOString().split('T')[0]}.zip`;
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="(.+)"/);
+                    if (match) fileName = match[1];
+                }
 
-                // Mostrar mensaje explicativo
-                alert(`✅ ZIP creado con ${total} acceso(s) directo(s).\n\n📌 IMPORTANTE:\nLos archivos .url son accesos directos.\nHaz doble-click en ellos para descargar cada archivo.\n\n⚠️ Asegúrate de tener tu cuenta de Google del Classroom activa en el navegador.`);
+                // Descargar usando FileSaver
+                saveAs(blob, fileName);
 
+                alert(`✅ ZIP descargado con ${files.length} archivo(s).`);
                 clearSelection();
 
             } catch (error) {

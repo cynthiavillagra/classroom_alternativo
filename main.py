@@ -129,6 +129,7 @@ class MainRouter(BaseHTTPRequestHandler):
     
     # ───────────────────────────────────────────────────────────
     # [FIX v1.1.0] Manejo de POST
+    # [FIX v1.2.0] Agregar endpoint /api/download/zip
     # ───────────────────────────────────────────────────────────
     def do_POST(self):
         """Procesa POST requests."""
@@ -136,6 +137,8 @@ class MainRouter(BaseHTTPRequestHandler):
         
         if path == '/api/drive/copy':
             self._handle_drive_copy()
+        elif path == '/api/download/zip':
+            self._handle_download_zip()
         else:
             self._send_json({'error': 'Not found'}, 404)
     
@@ -398,6 +401,151 @@ class MainRouter(BaseHTTPRequestHandler):
                 return {'error': error_json.get('error', {}).get('message', str(e))}
             except:
                 return {'error': str(e)}
+    
+    # ───────────────────────────────────────────────────────────
+    # [FIX v1.2.0] Descargar archivos como ZIP
+    # ───────────────────────────────────────────────────────────
+    def _handle_download_zip(self):
+        """
+        Endpoint POST /api/download/zip
+        
+        Recibe lista de archivos, los descarga de Drive y crea un ZIP.
+        POR QUÉ backend: CORS bloquea fetch directo a Drive desde frontend.
+        """
+        import zipfile
+        import io
+        import urllib.request
+        import urllib.error
+        
+        # Obtener token de cookie
+        cookies = self._get_cookies()
+        access_token = cookies.get('access_token')
+        
+        if not access_token:
+            self._send_json({'error': 'Not authenticated'}, 401)
+            return
+        
+        # Leer body del request
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8'))
+        except Exception as e:
+            self._send_json({'error': f'Invalid request body: {str(e)}'}, 400)
+            return
+        
+        files = data.get('files', [])
+        course_name = data.get('courseName', 'materiales')
+        
+        if not files:
+            self._send_json({'error': 'No files provided'}, 400)
+            return
+        
+        # Crear ZIP en memoria
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for file_info in files:
+                url = file_info.get('url', '')
+                name = file_info.get('name', 'archivo')
+                file_type = file_info.get('type', 'file')
+                
+                # Extraer ID del archivo de Drive
+                file_id = self._extract_drive_file_id(url)
+                
+                if file_id:
+                    try:
+                        # Descargar archivo
+                        file_content, filename = self._download_drive_file(file_id, access_token, name, file_type)
+                        
+                        if file_content:
+                            # Agregar al ZIP
+                            zip_file.writestr(filename, file_content)
+                        else:
+                            # Si falla, guardar info del error
+                            error_content = f"No se pudo descargar: {name}\nURL: {url}\n"
+                            zip_file.writestr(f"{name}_ERROR.txt", error_content)
+                    except Exception as e:
+                        # Guardar info del error
+                        error_content = f"Error descargando: {name}\nURL: {url}\nError: {str(e)}\n"
+                        zip_file.writestr(f"{name}_ERROR.txt", error_content)
+                else:
+                    # No se pudo extraer el ID, guardar link
+                    link_content = f"[InternetShortcut]\nURL={url}\n"
+                    zip_file.writestr(f"{name}.url", link_content)
+        
+        # Enviar ZIP
+        zip_buffer.seek(0)
+        zip_content = zip_buffer.read()
+        
+        # Sanitizar nombre del archivo
+        safe_name = ''.join(c if c.isalnum() or c in ' _-' else '_' for c in course_name)
+        filename = f"{safe_name}.zip"
+        
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/zip')
+        self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+        self.send_header('Content-Length', len(zip_content))
+        self.end_headers()
+        self.wfile.write(zip_content)
+    
+    def _download_drive_file(self, file_id: str, access_token: str, name: str, file_type: str) -> tuple:
+        """
+        Descarga un archivo de Drive usando el token del usuario.
+        
+        Retorna: (contenido_bytes, nombre_archivo)
+        """
+        import urllib.request
+        import urllib.error
+        
+        # Primero obtener metadata para el nombre real
+        metadata_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?fields=name,mimeType'
+        
+        try:
+            meta_req = urllib.request.Request(
+                metadata_url,
+                headers={'Authorization': f'Bearer {access_token}'}
+            )
+            with urllib.request.urlopen(meta_req) as response:
+                metadata = json.loads(response.read().decode('utf-8'))
+                real_name = metadata.get('name', name)
+                mime_type = metadata.get('mimeType', '')
+        except:
+            real_name = name
+            mime_type = ''
+        
+        # Determinar URL de descarga según el tipo
+        if 'google-apps.document' in mime_type:
+            # Google Doc -> exportar como PDF
+            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
+            real_name = real_name.replace('.gdoc', '') + '.pdf'
+        elif 'google-apps.spreadsheet' in mime_type:
+            # Google Sheet -> exportar como XLSX
+            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            real_name = real_name.replace('.gsheet', '') + '.xlsx'
+        elif 'google-apps.presentation' in mime_type:
+            # Google Slides -> exportar como PDF
+            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
+            real_name = real_name.replace('.gslides', '') + '.pdf'
+        else:
+            # Archivo normal -> descarga directa
+            download_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media'
+        
+        # Descargar el archivo
+        try:
+            req = urllib.request.Request(
+                download_url,
+                headers={'Authorization': f'Bearer {access_token}'}
+            )
+            with urllib.request.urlopen(req, timeout=30) as response:
+                content = response.read()
+                return (content, real_name)
+        except urllib.error.HTTPError as e:
+            print(f"[ERROR] Descargando {file_id}: {e}")
+            return (None, real_name)
+        except Exception as e:
+            print(f"[ERROR] Descargando {file_id}: {e}")
+            return (None, real_name)
     
     # ───────────────────────────────────────────────────────────
     # Paso 2.3: Servir archivos estáticos
