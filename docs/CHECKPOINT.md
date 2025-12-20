@@ -250,12 +250,23 @@ GIT CHECKPOINT:
 - Botón "🔗 Abrir" cambia a "🚀 Colab" para notebooks
 - URL: `drive.google.com/file/d/ID` → `colab.research.google.com/drive/ID`
 
+---
+
+### v1.1.9 — 2025-12-20: Fix Detección de Notebooks por Nombre
+
+**Fix:** Los notebooks no se detectaban si el tipo no era "notebook" o la URL no tenía `.ipynb`.
+
+**Cambios:**
+- `getOpenUrl()` ahora recibe también el nombre del archivo
+- Nueva función helper `isNotebookFile(type, url, name)`
+- Detección por: tipo, URL, o nombre del archivo
+
 **Archivos modificados:**
 | Archivo | Cambio |
 |---------|--------|
-| `materials.html` | + función `getOpenUrl()` |
-| `materials.html` | Botón "Abrir" usa `getOpenUrl()` |
-| `materials.html` | `renderAttachments()` soporta Colab |
+| `materials.html` | `getOpenUrl(url, type, name)` |
+| `materials.html` | + función `isNotebookFile()` |
+| `materials.html` | Template corregido con emojis correctos |
 
 ---
 
@@ -502,7 +513,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.8
+  VERSIÓN:  1.1.9
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

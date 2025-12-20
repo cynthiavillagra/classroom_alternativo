@@ -919,8 +919,8 @@
                                         <a href="${getDownloadUrl(res.url)}" target="_blank" class="btn-download" title="Descargar archivo (abre en nueva pestaña)">
                                             ⬇️ Descargar
                                         </a>
-                                        <a href="${getOpenUrl(res.url, res.type)}" target="_blank" class="btn-open" title="${res.type === 'notebook' ? 'Abrir en Google Colab' : 'Abrir en nueva pestaña'}">
-                                            ${res.type === 'notebook' ? '� Colab' : '�🔗 Abrir'}
+                                        <a href="${getOpenUrl(res.url, res.type, res.name)}" target="_blank" class="btn-open" title="${isNotebookFile(res.type, res.url, res.name) ? 'Abrir en Google Colab' : 'Abrir en nueva pestaña'}">
+                                            ${isNotebookFile(res.type, res.url, res.name) ? '🚀 Colab' : '🔗 Abrir'}
                                         </a>
                                     </div>
                                 </td>
@@ -980,13 +980,19 @@
             return url;
         }
 
-        // [FIX v1.1.8] Convierte URLs de notebooks a Google Colab
-        // Para otros tipos de archivo, devuelve la URL original
-        function getOpenUrl(url, type) {
+        // [FIX v1.1.9] Convierte URLs de notebooks a Google Colab
+        // Detecta por: tipo, extensión en URL, o nombre del archivo
+        function getOpenUrl(url, type, name) {
             if (!url) return '';
 
-            // Si es un notebook (.ipynb), abrir en Google Colab
-            if (type?.toLowerCase() === 'notebook' || url.includes('.ipynb')) {
+            // Detectar si es notebook por múltiples criterios
+            const isNotebook =
+                type?.toLowerCase() === 'notebook' ||
+                url.includes('.ipynb') ||
+                name?.toLowerCase().includes('.ipynb');
+
+            // Si es un notebook, abrir en Google Colab
+            if (isNotebook) {
                 // Extraer el ID del archivo de Drive
                 const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
                 if (driveMatch) {
@@ -1001,6 +1007,13 @@
 
             // Para otros tipos, devolver URL original
             return url;
+        }
+
+        // [FIX v1.1.9] Helper para detectar si un archivo es notebook
+        function isNotebookFile(type, url, name) {
+            return type?.toLowerCase() === 'notebook' ||
+                url?.includes('.ipynb') ||
+                name?.toLowerCase().includes('.ipynb');
         }
 
         // [FIX v1.0.8] Truncar texto largo
@@ -1147,10 +1160,10 @@
                     const title = att.title || `Recurso ${index + 1}`;
                     const displayTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
                     const downloadUrl = getDownloadUrl(att.url);
-                    const openUrl = getOpenUrl(att.url, att.type);
-                    const isNotebook = att.type === 'notebook' || att.url?.includes('.ipynb');
+                    const openUrl = getOpenUrl(att.url, att.type, title);
+                    const isNotebook = isNotebookFile(att.type, att.url, title);
 
-                    // [FIX v1.1.8] Notebooks abren en Colab
+                    // [FIX v1.1.9] Notebooks abren en Colab
                     return `<div class="attachment-item">
                         <a href="${openUrl}" target="_blank" class="material-card__link" title="${isNotebook ? 'Abrir en Colab' : 'Abrir'}: ${title}">
                             ${isNotebook ? '🚀' : icon} ${displayTitle}
