@@ -32,11 +32,37 @@
 | Métrica | Valor |
 |---------|-------|
 | Archivos de código | 31 |
-| Manuales técnicos | 27 |
+| Manuales técnicos | 28 |
 | Tests automatizados | 39 |
 | Tests pasados | 39 (100%) |
-| Endpoints API | 8 |
+| Endpoints API | 10 |
 | Páginas frontend | 4 |
+
+---
+
+## 🔧 Prompt de Cambios Estándar
+
+**⚠️ IMPORTANTE:** Para solicitar cualquier cambio o fix, usa este prompt:
+
+```
+Tengo un problema o necesito un cambio [DESCRIBE EL PROBLEMA O CAMBIO].
+
+PASO 1: DIAGNÓSTICO
+• Si es error: Analiza logs, causas comunes (env, bridge, paths).
+• Si es cambio: Análisis de Impacto (Docs, Código, Tests).
+
+PASO 2: EJECUCIÓN ATÓMICA
+• Aplica cambios archivo por archivo.
+• Verifica Seguridad (claves, stateless).
+• Actualiza Docs.
+• Actualiza Manuales.
+• Actualiza README.md.
+• Actualiza docs/CHECKPOINT.md.
+
+GIT CHECKPOINT:
+• git add ., git commit -m "fix/refactor: [descripción]", git push
+```
+
 ---
 
 ## 🔧 Historial de Fixes Post-Release

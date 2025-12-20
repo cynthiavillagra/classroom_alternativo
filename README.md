@@ -307,11 +307,40 @@ Este proyecto está diseñado para funcionar en **cualquier entorno**:
 
 ---
 
-## 🤝 Contribuir
+## 🤝 Contribuir / Hacer Cambios
 
 Este es un proyecto educativo para aprender Clean Architecture y POO.
 
-**Áreas de mejora futuras:**
+### 📋 Metodología para Cambios
+
+**⚠️ IMPORTANTE:** Para solicitar cambios o reportar problemas, usa el siguiente **Prompt de Cambios Estándar**:
+
+```
+Tengo un problema o necesito un cambio [DESCRIBE EL PROBLEMA O CAMBIO].
+
+PASO 1: DIAGNÓSTICO
+• Si es error: Analiza logs, causas comunes (env, bridge, paths).
+• Si es cambio: Análisis de Impacto (Docs, Código, Tests).
+
+PASO 2: EJECUCIÓN ATÓMICA
+• Aplica cambios archivo por archivo.
+• Verifica Seguridad (claves, stateless).
+• Actualiza Docs.
+• Actualiza Manuales.
+• Actualiza README.md.
+• Actualiza docs/CHECKPOINT.md.
+
+GIT CHECKPOINT:
+• git add ., git commit -m "fix/refactor: [descripción]", git push
+```
+
+**¿Por qué este formato?**
+- Asegura diagnóstico antes de actuar
+- Documenta todos los cambios
+- Mantiene la trazabilidad
+- Crea checkpoints en Git
+
+### 📝 Áreas de mejora futuras:
 - [ ] Agregar favoritos (requiere Supabase)
 - [ ] Historial de búsquedas
 - [ ] Modo oscuro
