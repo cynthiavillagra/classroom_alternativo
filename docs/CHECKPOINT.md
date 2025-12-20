@@ -149,6 +149,28 @@
 
 ---
 
+### v1.1.4 — 2025-12-20: Fix Definitivo URL de Descarga
+
+**Fix:** La URL de descarga de Google Drive no funcionaba.
+
+**Análisis del problema:**
+| URL | Resultado |
+|-----|-----------|
+| `drive.google.com/uc?id=X&export=download` | ❌ Redirige a `/download` que falla |
+| `drive.usercontent.google.com/u/0/uc?id=X&export=download` | ✅ Funciona |
+
+**Solución:**
+- Cambiar dominio de `drive.google.com` a `drive.usercontent.google.com`
+- Usar path `/u/0/uc` en lugar de `/uc`
+- **URL final:** `https://drive.usercontent.google.com/u/0/uc?id=FILE_ID&export=download`
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | `getDownloadUrl()` con URL correcta de usercontent |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -392,7 +414,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.3
+  VERSIÓN:  1.1.4
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

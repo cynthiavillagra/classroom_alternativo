@@ -912,30 +912,29 @@
             `;
         }
 
-        // [FIX v1.1.3] Convierte URLs de Google Drive a URLs de descarga directa
-        // NOTA: El atributo download no funciona cross-origin, pero la URL 
-        // abrirá la descarga de Google en nueva pestaña
+        // [FIX v1.1.4] Convierte URLs de Google Drive a URLs de descarga directa
+        // IMPORTANTE: Usar drive.usercontent.google.com/u/0/uc que SÍ funciona
+        // drive.google.com/uc redirige a /download que NO funciona
         function getDownloadUrl(url) {
             if (!url) return '';
 
-            // Google Drive file URLs: /file/d/{fileId}/view -> /uc?export=download&confirm=t&id={fileId}
-            // confirm=t bypasea la pantalla de confirmación de Google
+            // Google Drive file URLs: /file/d/{fileId}/view -> usercontent.google.com/u/0/uc
             const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
             if (driveFileMatch) {
-                return `https://drive.google.com/uc?export=download&confirm=t&id=${driveFileMatch[1]}`;
+                return `https://drive.usercontent.google.com/u/0/uc?id=${driveFileMatch[1]}&export=download`;
             }
 
             // Google Drive open URLs: /open?id={fileId}
             const driveOpenMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
             if (driveOpenMatch) {
-                return `https://drive.google.com/uc?export=download&confirm=t&id=${driveOpenMatch[1]}`;
+                return `https://drive.usercontent.google.com/u/0/uc?id=${driveOpenMatch[1]}&export=download`;
             }
 
             // Google Colab: descargar como .ipynb
             if (url.includes('colab.research.google.com')) {
                 const colabMatch = url.match(/drive\/([a-zA-Z0-9_-]+)/);
                 if (colabMatch) {
-                    return `https://drive.google.com/uc?export=download&confirm=t&id=${colabMatch[1]}`;
+                    return `https://drive.usercontent.google.com/u/0/uc?id=${colabMatch[1]}&export=download`;
                 }
             }
 
