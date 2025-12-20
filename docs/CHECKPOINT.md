@@ -292,6 +292,22 @@ GIT CHECKPOINT:
 
 ---
 
+### v1.2.1 — 2025-12-20: Fix Funciones de Cookie Faltantes
+
+**Fix:** El endpoint `/api/download/zip` fallaba con `_get_cookies() not defined`.
+
+**Causa:** La función `_get_cookies()` no existía en la clase `MainRouter`.
+
+**Solución:** Agregar funciones `_get_cookie()` y `_get_cookies()` al `MainRouter`.
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `main.py` | + función `_get_cookie(name)` |
+| `main.py` | + función `_get_cookies()` |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -535,7 +551,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.2.0
+  VERSIÓN:  1.2.1
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

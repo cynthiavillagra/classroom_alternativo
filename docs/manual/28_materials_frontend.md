@@ -270,6 +270,7 @@ Usuario hace click:
 | v1.1.8 | 2025-12-20 | Notebooks abren en Google Colab (`getOpenUrl()`) |
 | v1.1.9 | 2025-12-20 | Fix detección de notebooks por nombre del archivo |
 | v1.2.0 | 2025-12-20 | ZIP descarga archivos reales (backend proxy) |
+| v1.2.1 | 2025-12-20 | Fix: funciones _get_cookie() faltantes |
 
 ---
 

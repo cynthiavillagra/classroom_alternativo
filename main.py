@@ -590,6 +590,26 @@ class MainRouter(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
     
+    def _get_cookie(self, name: str):
+        """[FIX v1.2.1] Extrae una cookie por nombre."""
+        cookie_header = self.headers.get('Cookie', '') if self.headers else ''
+        for cookie in cookie_header.split(';'):
+            cookie = cookie.strip()
+            if cookie.startswith(f'{name}='):
+                return cookie.split('=', 1)[1]
+        return None
+    
+    def _get_cookies(self):
+        """[FIX v1.2.1] Extrae todas las cookies como diccionario."""
+        cookies = {}
+        cookie_header = self.headers.get('Cookie', '') if self.headers else ''
+        for cookie in cookie_header.split(';'):
+            cookie = cookie.strip()
+            if '=' in cookie:
+                name, value = cookie.split('=', 1)
+                cookies[name.strip()] = value
+        return cookies
+    
     # Silenciar logs por defecto (activar con --verbose)
     def log_message(self, format, *args):
         if os.environ.get('VERBOSE'):
