@@ -15,12 +15,19 @@ Una aplicación web que permite visualizar, filtrar y organizar los materiales d
 
 ## 🎯 Características
 
+### Core
 - ✅ **Autenticación con Google** — Login seguro con OAuth 2.0
 - 📚 **Vista de Cursos** — Lista todos tus cursos activos
 - 📄 **Explorador de Materiales** — Visualiza todos los materiales de tus cursos
-- 🔍 **Filtros Avanzados** — Filtra por tipo, curso, fecha
-- 🎨 **Vistas Múltiples** — Alterna entre vista lista y tarjetas
+- 🔍 **Filtros Avanzados** — Filtra por tipo (PDFs, videos, notebooks, etc.)
+- 🎨 **Vistas Múltiples** — Alterna entre vista Cards y Lista
 - 🚀 **Rápido y Ligero** — Sin base de datos, datos directos de Google API
+
+### Nuevo en v1.1 🆕
+- ☑️ **Selección Múltiple** — Selecciona varios recursos con checkboxes
+- 📦 **Descargar ZIP** — Exporta recursos seleccionados como accesos directos (.url)
+- 📁 **Copiar a Drive** — Copia archivos a tu Google Drive con selector de carpeta
+- ⬇️ **Descarga Directa** — Botones de descarga en cada recurso
 
 ---
 
@@ -140,12 +147,22 @@ OAUTH_REDIRECT_URI=http://localhost:5000/api/auth/callback
 APP_URL=http://localhost:5000
 SESSION_SECRET=genera_un_secret_aleatorio_de_64_caracteres
 ENVIRONMENT=development
+
+# Opcional: Para funcionalidad "Copiar a Drive"
+GOOGLE_PICKER_API_KEY=tu_api_key_aqui
 ```
 
 **Generar SESSION_SECRET:**
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
+
+### Paso 4: Habilitar APIs Adicionales (Opcional)
+
+Para usar "Copiar a Drive":
+1. Habilita **Google Picker API** en Google Cloud Console
+2. Habilita **Google Drive API**
+3. Crea una API Key y agrégala como `GOOGLE_PICKER_API_KEY`
 
 ---
 

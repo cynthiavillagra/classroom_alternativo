@@ -334,4 +334,74 @@ Usando PROMPTS_MAESTROS_V2:
 
 ---
 
+## 🆕 Funcionalidades v1.1 (2025-12-20)
+
+### Selección Múltiple y Acciones en Lote
+
+**Implementado en:** `public/materials.html`
+
+**Componentes:**
+| Componente | Descripción |
+|------------|-------------|
+| `bulk-actions-bar` | Barra de acciones (select all, download, copy) |
+| `resource-checkbox` | Checkbox en cada recurso |
+| `selectedResources` | Map JS para tracking de selección |
+
+**Funciones JavaScript clave:**
+```javascript
+toggleSelectAll(checked)    // Seleccionar/deseleccionar todos
+clearSelection()            // Limpiar selección
+updateSelectionUI()         // Actualizar contadores y botones
+downloadSelectedAsZip()     // Crear ZIP con accesos directos .url
+copySelectedToDrive()       // Copiar a Drive con Google Picker
+```
+
+### Descarga ZIP (v1.1.6)
+
+**Problema resuelto:** CORS bloquea fetch de archivos de Google Drive.
+
+**Solución:** Crear archivos `.url` (accesos directos de Windows) en lugar de intentar descargar:
+
+```javascript
+const urlFileContent = `[InternetShortcut]\nURL=${downloadUrl}\n`;
+folder.file(`${safeName}.url`, urlFileContent);
+```
+
+**Librerías usadas:**
+- JSZip 3.10.1 (CDN)
+- FileSaver.js (CDN)
+
+### Copiar a Drive (v1.1.0 - v1.1.2)
+
+**Backend endpoints:**
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/config/picker` | GET | Config para Google Picker |
+| `/api/drive/copy` | POST | Copiar archivos a carpeta |
+
+**OAuth Scope requerido:**
+```python
+'https://www.googleapis.com/auth/drive'  # v1.1.2: scope completo
+```
+
+**Variable de entorno:**
+```env
+GOOGLE_PICKER_API_KEY=...  # Requiere Google Picker API habilitada
+```
+
+### Descarga Directa (v1.1.3 - v1.1.5)
+
+**Función `getDownloadUrl()`** convierte URLs de Google a formato de descarga:
+
+| Entrada | Salida |
+|---------|--------|
+| `drive.google.com/file/d/ID/view` | `docs.google.com/uc?id=ID&export=download` |
+| `docs.google.com/document/d/ID` | `/export?format=pdf` |
+| `docs.google.com/spreadsheets/d/ID` | `/export?format=xlsx` |
+| `docs.google.com/presentation/d/ID` | `/export/pdf` |
+
+**Nota importante:** El usuario debe tener su cuenta de Google del Classroom activa en el navegador.
+
+---
+
 **Con estos 4 documentos puedes replicar Classroom Explorer desde cero.**
