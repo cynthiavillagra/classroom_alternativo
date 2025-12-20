@@ -74,6 +74,36 @@
 
 ---
 
+### v1.1.1 — 2025-12-20: Fixes de Google Picker y Extracción de IDs
+
+**Fix:** Mejoras en la experiencia de usuario de Copiar a Drive.
+
+**Problemas corregidos:**
+| Problema | Solución |
+|----------|----------|
+| Picker mostraba carpetas planas sin navegación | Vista completa con navegación jerárquica desde "Mi unidad" |
+| Función `showFolderPicker()` incompleta | Corregida con todas las vistas y callbacks |
+| IDs de archivos mal extraídos de URLs | Patrones regex mejorados + extracción de query params |
+
+**Mejoras en Google Picker:**
+- Vista en lista (más fácil de navegar)
+- Tamaño ampliado a 800x500px
+- Navegación desde la raíz de "Mi unidad"
+- Doble-click para entrar en carpetas
+
+**Mejoras en extracción de IDs:**
+- Soporte para parámetros `?id=` y `?fileId=`
+- Patrón genérico `/d/ID/`
+- Validación de longitud de ID (25-44 caracteres)
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | `showFolderPicker()` mejorado con vistas completas |
+| `main.py` | `_extract_drive_file_id()` con más patrones y mejor extracción |
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -317,7 +347,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.1.0
+  VERSIÓN:  1.1.1
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

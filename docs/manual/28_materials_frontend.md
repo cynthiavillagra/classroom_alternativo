@@ -259,6 +259,8 @@ Usuario hace click:
 | v1.0.5 | 2025-12-17 | Filtro para Notebooks |
 | v1.0.8 | 2025-12-17 | Toggle vista Cards/Lista |
 | v1.0.9 | 2025-12-20 | Descarga directa con `getDownloadUrl()` |
+| v1.1.0 | 2025-12-20 | Selección múltiple, Descarga ZIP, Copiar a Drive |
+| v1.1.1 | 2025-12-20 | Fix navegación Google Picker + extracción IDs |
 
 ---
 
