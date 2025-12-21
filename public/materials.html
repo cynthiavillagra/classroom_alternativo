@@ -812,12 +812,21 @@
             cachedMaterials = materials;
             const container = document.getElementById('materialsContainer');
             const bulkActionsBar = document.getElementById('bulkActionsBar');
+            const cardViewWarning = document.getElementById('cardViewWarning');
 
-            // Mostrar barra de acciones si hay materiales
-            if (materials && materials.length > 0) {
-                bulkActionsBar.style.display = 'flex';
-            } else {
+            // [FIX v1.3.2] Mostrar/ocultar warning y barra según vista
+            if (currentView === 'cards') {
+                // Vista Cards: Mostrar warning, ocultar barra de acciones
+                if (cardViewWarning) cardViewWarning.style.display = materials && materials.length > 0 ? 'block' : 'none';
                 bulkActionsBar.style.display = 'none';
+            } else {
+                // Vista Lista: Ocultar warning, mostrar barra si hay materiales
+                if (cardViewWarning) cardViewWarning.style.display = 'none';
+                if (materials && materials.length > 0) {
+                    bulkActionsBar.style.display = 'flex';
+                } else {
+                    bulkActionsBar.style.display = 'none';
+                }
             }
 
             // Limpiar selección al cambiar de vista
