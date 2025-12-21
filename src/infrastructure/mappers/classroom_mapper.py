@@ -370,7 +370,17 @@ class ClassroomMapper:
             
             # Si no, usar MIME type
             mime_type = inner_file.get('mimeType', '')
-            return self._mime_to_material_type(mime_type)
+            type_by_mime = self._mime_to_material_type(mime_type)
+            
+            # [FIX v1.3.4] Si MIME devuelve FILE, intentar por URL
+            if type_by_mime == MaterialType.FILE:
+                url = inner_file.get('alternateLink', drive_file.get('alternateLink', ''))
+                if url:
+                    type_by_url = self._detect_type_by_url(url, file_title)
+                    if type_by_url:
+                        return type_by_url
+            
+            return type_by_mime
         
         if 'youtubeVideo' in first_material:
             return MaterialType.VIDEO

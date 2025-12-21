@@ -48,7 +48,7 @@ class handler(BaseHTTPRequestHandler):
             if file_date:
                 try:
                     from datetime import datetime
-                    dt = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
+                    dt = datetime.fromisoformat(file_date.replace('Z', '-03:00'))
                     date_prefix = dt.strftime('%Y-%m-%d_')
                 except:
                     pass
