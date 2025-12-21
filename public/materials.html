@@ -69,7 +69,8 @@
                     <span id="selectedCount">0 seleccionados</span>
                 </div>
                 <div class="bulk-actions__buttons">
-                    <button id="downloadZipBtn" class="btn btn--success" disabled>
+                    <button id="downloadZipBtn" class="btn btn--success" disabled
+                        title="⚠️ Solo funciona en local. En Vercel próximamente.">
                         📦 Descargar ZIP
                     </button>
                     <button id="copyToDriveBtn" class="btn btn--primary" disabled>
@@ -84,6 +85,10 @@
                     ⚠️ <strong>Importante:</strong> Si tienes varias cuentas de Google en este navegador,
                     la cuenta <strong>principal (primera)</strong> debe ser la del Classroom.
                     Si no, abre una ventana de incógnito y usa solo esa cuenta.
+                </div>
+                <!-- [FIX v1.2.6] Nota sobre descarga ZIP -->
+                <div class="bulk-actions__note" style="font-size: 0.75rem; color: #888; margin-top: 0.5rem;">
+                    📦 <em>Nota: "Descargar ZIP" solo funciona en ejecución local. En Vercel, próximamente.</em>
                 </div>
             </div>
 

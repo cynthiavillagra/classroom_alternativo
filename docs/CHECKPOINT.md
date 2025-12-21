@@ -342,6 +342,23 @@ GIT CHECKPOINT:
 
 ---
 
+### v1.2.6 — 2025-12-20: Nota "Próximamente" para ZIP en Vercel
+
+**Estado:** La descarga ZIP funciona en ejecución **local** pero aún no en Vercel.
+
+**Cambio:** Se agregó nota informativa en la UI indicando:
+- "Descargar ZIP solo funciona en ejecución local"
+- "En Vercel, próximamente"
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `materials.html` | + nota informativa sobre estado de ZIP |
+
+**Pendiente:** Resolver compatibilidad de POST en VercelBridge.
+
+---
+
 ### v1.0.8 — 2025-12-17: Selector de Vista (Cards / Lista)
 
 **Feature:** Ahora puedes elegir entre dos modos de visualización.
@@ -585,7 +602,7 @@ Generado mediante metodología **SDLC V5** usando:
 ```
 ═══════════════════════════════════════════════════
   PROYECTO: Classroom Explorer
-  VERSIÓN:  1.2.3
+  VERSIÓN:  1.2.6
   FECHA:    2025-12-20
   ESTADO:   ✅ LISTO PARA PRODUCCIÓN
 ═══════════════════════════════════════════════════

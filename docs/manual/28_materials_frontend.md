@@ -273,6 +273,7 @@ Usuario hace click:
 | v1.2.1 | 2025-12-20 | Fix: funciones _get_cookie() faltantes |
 | v1.2.2 | 2025-12-20 | Endpoint ZIP serverless para Vercel |
 | v1.2.3 | 2025-12-20 | Fix: ruta cambiada a `/api/download_zip` (sin subdirectorio) |
+| v1.2.6 | 2025-12-20 | Nota: ZIP solo funciona en local (Vercel próximamente) |
 
 ---
 
