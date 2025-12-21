@@ -1385,16 +1385,21 @@
             const tableSelectAll = document.getElementById('tableSelectAll');
             if (tableSelectAll) tableSelectAll.checked = false;
 
-            // [FIX v1.3.3] También limpiar el filtro activo
+            // [FIX v1.3.4] Limpiar el filtro activo (sin recursión)
             currentFilterType = '';
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.type === '') btn.classList.add('active');
             });
 
-            // Recargar materiales sin filtro
+            // Re-renderizar directamente (sin llamar applyCurrentView que causa recursión)
+            const container = document.getElementById('materialsContainer');
             if (cachedMaterials && cachedMaterials.length > 0) {
-                applyCurrentView(cachedMaterials);
+                if (currentView === 'list') {
+                    container.innerHTML = renderListView(cachedMaterials);
+                } else {
+                    container.innerHTML = renderCardsView(cachedMaterials);
+                }
             }
 
             updateSelectionUI();
