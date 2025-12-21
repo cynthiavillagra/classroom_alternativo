@@ -1495,7 +1495,25 @@
 
             } catch (error) {
                 console.error('Error creando ZIP:', error);
-                alert('Error al crear el ZIP: ' + error.message);
+
+                // [FIX v1.3.4] Mostrar mensaje destacado en rojo
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'zipErrorWarning';
+                warningDiv.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#fee;border:3px solid #c00;border-radius:12px;padding:2rem;z-index:9999;max-width:500px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);';
+                warningDiv.innerHTML = `
+                    <div style="font-size:1.5rem;margin-bottom:1rem;color:#c00;">⚠️ Error al descargar ZIP</div>
+                    <div style="color:#333;margin-bottom:1rem;">${error.message}</div>
+                    <div style="background:#fcc;padding:1rem;border-radius:8px;color:#800;font-weight:bold;">
+                        📦 Nota: "Descargar ZIP" funciona en local y Vercel con los archivos reales.
+                        <br><br>
+                        Si ves este error, verifica que estés autenticado y que los archivos existan.
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="margin-top:1rem;padding:0.5rem 2rem;background:#c00;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
+                        Cerrar
+                    </button>
+                `;
+                document.body.appendChild(warningDiv);
+
             } finally {
                 downloadBtn.disabled = false;
                 downloadBtn.textContent = originalText;
