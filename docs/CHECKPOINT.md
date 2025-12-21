@@ -1,6 +1,6 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-21 18:00
+> **Última actualización:** 2025-12-21 18:10
 
 ---
 
@@ -66,6 +66,47 @@ GIT CHECKPOINT:
 ---
 
 ## 🔧 Historial de Fixes Post-Release
+
+### v1.2.8 — 2025-12-21: Prefijo de Fecha en Archivos Descargados y Copiados
+
+**Feature:** Los archivos descargados (ZIP) y copiados a Drive ahora tienen un prefijo con la fecha de subida al Classroom.
+
+**Formato del prefijo:** `año-mes-dia_` (ejemplo: `2024-12-15_documento.pdf`)
+
+**Problema que resuelve:**
+- Facilita organizar archivos cronológicamente
+- Permite identificar rápidamente cuándo se subió cada archivo al Classroom
+- Mantiene el orden temporal al descargar múltiples archivos
+
+**Implementación:**
+
+1. **Frontend (materials.html)**:
+   - Agregado `data-date` a los checkboxes de selección
+   - Modificado `selectedResources` para incluir la fecha
+   - Actualizado `downloadSelectedAsZip()` para enviar las fechas
+   - Actualizado `copySelectedToDrive()` para enviar info completa (no solo URLs)
+
+2. **Backend descarga ZIP (main.py)**:
+   - `_handle_download_zip()`: Extrae la fecha ISO y la formatea como `YYYY-MM-DD_`
+   - Agrega el prefijo a cada archivo antes de agregarlo al ZIP
+   - Maneja errores silenciosamente (sin prefijo si la fecha no es válida)
+
+3. **Backend copia a Drive (main.py)**:
+   - `_handle_drive_copy()`: Soporta nuevo formato `files` y formato viejo `fileUrls` (retrocompatibilidad)
+   - `_copy_drive_file()`: Obtiene metadata del archivo, construye nombre con prefijo de fecha
+   - Usa API de Drive para copiar con el nuevo nombre
+
+**Ejemplo de resultado:**
+- Archivo original: `Guía de Integrales.pdf`
+- Con prefijo: `2024-12-15_Guía de Integrales.pdf`
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `public/materials.html` | Agregado `data-date` a checkboxes, actualizado `selectedResources`, funciones de descarga y copia |
+| `main.py` | `_handle_download_zip()`, `_handle_drive_copy()` y `_copy_drive_file()` con lógica de prefijo de fecha |
+
+---
 
 ### v1.2.7 — 2025-12-21: Fix Filtrado de Documentos (.ppt, .docx, .md, etc.)
 

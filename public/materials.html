@@ -908,7 +908,8 @@
                                     <input type="checkbox" class="resource-checkbox resource-select" 
                                            data-url="${res.url}" 
                                            data-name="${res.name}"
-                                           data-type="${res.type}">
+                                           data-type="${res.type}"
+                                           data-date="${res.date}">
                                 </td>
                                 <td class="resource-type">
                                     <span>${getTypeIcon(res.type)} ${res.type}</span>
@@ -1261,9 +1262,10 @@
             const url = checkbox.dataset.url;
             const name = checkbox.dataset.name;
             const type = checkbox.dataset.type;
+            const date = checkbox.dataset.date; // [FIX v1.2.8] Incluir fecha
 
             if (checkbox.checked) {
-                selectedResources.set(url, { name, type, url });
+                selectedResources.set(url, { name, type, url, date });
             } else {
                 selectedResources.delete(url);
             }
@@ -1279,9 +1281,10 @@
                 const url = cb.dataset.url;
                 const name = cb.dataset.name;
                 const type = cb.dataset.type;
+                const date = cb.dataset.date; // [FIX v1.2.8] Incluir fecha
 
                 if (checked) {
-                    selectedResources.set(url, { name, type, url });
+                    selectedResources.set(url, { name, type, url, date });
                 } else {
                     selectedResources.delete(url);
                 }
@@ -1351,7 +1354,8 @@
                     files.push({
                         url: url,
                         name: resource.name,
-                        type: resource.type
+                        type: resource.type,
+                        date: resource.date // [FIX v1.2.8] Incluir fecha para prefijo
                     });
                 }
 
@@ -1553,8 +1557,12 @@
 
                 copyBtn.textContent = `⏳ Copiando a "${targetFolder.name}"...`;
 
-                // Preparar URLs para copiar
-                const fileUrls = Array.from(selectedResources.values()).map(r => r.url);
+                // [FIX v1.2.8] Preparar información completa de archivos para copiar (no solo URLs)
+                const files = Array.from(selectedResources.values()).map(r => ({
+                    url: r.url,
+                    name: r.name,
+                    date: r.date
+                }));
 
                 // Llamar al backend para copiar
                 const response = await fetch('/api/drive/copy', {
@@ -1563,7 +1571,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        fileUrls: fileUrls,
+                        files: files,  // [FIX v1.2.8] Ahora envía objetos con toda la info
                         targetFolderId: targetFolder.id
                     })
                 });

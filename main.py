@@ -275,10 +275,16 @@ class MainRouter(BaseHTTPRequestHandler):
             self._send_json({'error': 'Invalid JSON'}, 400)
             return
         
-        file_urls = data.get('fileUrls', [])
+        files = data.get('files', [])
+        file_urls = data.get('fileUrls', [])  # Mantener compatibilidad con versión anterior
         target_folder_id = data.get('targetFolderId')
         
-        if not file_urls:
+        # [FIX v1.2.8] Soportar ambos formatos: nuevo (files) y viejo (fileUrls)
+        if not files and file_urls:
+            # Formato viejo: solo URLs
+            files = [{'url': url, 'name': '', 'date': ''} for url in file_urls]
+        
+        if not files:
             self._send_json({'error': 'No files provided'}, 400)
             return
         
@@ -290,17 +296,21 @@ class MainRouter(BaseHTTPRequestHandler):
         results = []
         errors = []
         
-        for url in file_urls:
+        for file_info in files:
             try:
                 # Extraer file ID de la URL de Drive
+                url = file_info.get('url', '')
+                name = file_info.get('name', '')
+                file_date = file_info.get('date', '')
+                
                 file_id = self._extract_drive_file_id(url)
                 
                 if not file_id:
                     errors.append({'url': url, 'error': 'Could not extract file ID'})
                     continue
                 
-                # Llamar a Drive API para copiar
-                copy_result = self._copy_drive_file(file_id, target_folder_id, access_token)
+                # [FIX v1.2.8] Llamar a Drive API para copiar con fecha
+                copy_result = self._copy_drive_file(file_id, target_folder_id, access_token, name, file_date)
                 
                 if copy_result.get('error'):
                     errors.append({'url': url, 'error': copy_result['error']})
@@ -308,7 +318,7 @@ class MainRouter(BaseHTTPRequestHandler):
                     results.append({'url': url, 'newFileId': copy_result.get('id'), 'name': copy_result.get('name')})
                     
             except Exception as e:
-                errors.append({'url': url, 'error': str(e)})
+                errors.append({'url': url if 'url' in file_info else '', 'error': str(e)})
         
         self._send_json({
             'copied': len(results),
@@ -368,22 +378,56 @@ class MainRouter(BaseHTTPRequestHandler):
         
         return None
     
-    def _copy_drive_file(self, file_id: str, target_folder_id: str, access_token: str) -> dict:
-        """Copia un archivo de Drive a la carpeta destino."""
+    def _copy_drive_file(self, file_id: str, target_folder_id: str, access_token: str, original_name: str = '', file_date: str = '') -> dict:
+        """
+        Copia un archivo de Drive a la carpeta destino.
+        
+        [FIX v1.2.8] Ahora acepta original_name y file_date para agregar prefijo.
+        """
         import urllib.request
         import urllib.error
+        
+        # [FIX v1.2.8] Formatear fecha como prefijo año-mes-dia_
+        date_prefix = ''
+        if file_date:
+            try:
+                from datetime import datetime
+                dt = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
+                date_prefix = dt.strftime('%Y-%m-%d_')
+            except:
+                pass
+        
+        # [FIX v1.2.8] Si tenemos un nombre original, obtener metadata para construir nombre con prefijo
+        new_name = None
+        if date_prefix:
+            # Obtener el nombre real del archivo de Drive
+            try:
+                metadata_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?fields=name'
+                meta_req = urllib.request.Request(
+                    metadata_url,
+                    headers={'Authorization': f'Bearer {access_token}'}
+                )
+                with urllib.request.urlopen(meta_req) as response:
+                    metadata = json.loads(response.read().decode('utf-8'))
+                    real_name = metadata.get('name', original_name or '')
+                    if real_name:
+                        new_name = f"{date_prefix}{real_name}"
+            except:
+                # Si falla, usar original_name si está disponible
+                if original_name:
+                    new_name = f"{date_prefix}{original_name}"
         
         # API de Drive: files.copy
         copy_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/copy'
         
-        # Body con la carpeta destino
-        copy_body = json.dumps({
-            'parents': [target_folder_id]
-        }).encode('utf-8')
+        # Body con la carpeta destino y nombre (si se especificó)
+        copy_body = {'parents': [target_folder_id]}
+        if new_name:
+            copy_body['name'] = new_name  # [FIX v1.2.8] Agregar nombre con prefijo
         
         req = urllib.request.Request(
             copy_url,
-            data=copy_body,
+            data=json.dumps(copy_body).encode('utf-8'),
             headers={
                 'Authorization': f'Bearer {access_token}',
                 'Content-Type': 'application/json'
@@ -449,6 +493,18 @@ class MainRouter(BaseHTTPRequestHandler):
                 url = file_info.get('url', '')
                 name = file_info.get('name', 'archivo')
                 file_type = file_info.get('type', 'file')
+                file_date = file_info.get('date', '')  # [FIX v1.2.8] Obtener fecha
+                
+                # [FIX v1.2.8] Formatear fecha como prefijo año-mes-dia_
+                date_prefix = ''
+                if file_date:
+                    try:
+                        from datetime import datetime
+                        # La fecha viene en formato ISO: "2024-12-15T10:30:00.000Z"
+                        dt = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
+                        date_prefix = dt.strftime('%Y-%m-%d_')
+                    except:
+                        pass  # Si falla, no agregar prefijo
                 
                 # Extraer ID del archivo de Drive
                 file_id = self._extract_drive_file_id(url)
@@ -459,8 +515,10 @@ class MainRouter(BaseHTTPRequestHandler):
                         file_content, filename = self._download_drive_file(file_id, access_token, name, file_type)
                         
                         if file_content:
+                            # [FIX v1.2.8] Agregar prefijo de fecha al nombre
+                            prefixed_filename = f"{date_prefix}{filename}"
                             # Agregar al ZIP
-                            zip_file.writestr(filename, file_content)
+                            zip_file.writestr(prefixed_filename, file_content)
                         else:
                             # Si falla, guardar info del error
                             error_content = f"No se pudo descargar: {name}\nURL: {url}\n"
@@ -472,7 +530,8 @@ class MainRouter(BaseHTTPRequestHandler):
                 else:
                     # No se pudo extraer el ID, guardar link
                     link_content = f"[InternetShortcut]\nURL={url}\n"
-                    zip_file.writestr(f"{name}.url", link_content)
+                    prefixed_name = f"{date_prefix}{name}" if date_prefix else name
+                    zip_file.writestr(f"{prefixed_name}.url", link_content)
         
         # Enviar ZIP
         zip_buffer.seek(0)
