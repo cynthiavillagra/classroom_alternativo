@@ -113,22 +113,9 @@ class ListCourseMaterials:
         """
         result = materials
         
-        # [FIX v1.3.5] Filtrar por tipo - buscar en material principal Y attachments
+        # Filtrar por tipo principal del material
         if filter_type:
-            filter_value = filter_type.value  # ej: "image", "presentation"
-            filtered = []
-            for m in result:
-                # 1. Verificar tipo principal
-                if m.type == filter_type:
-                    filtered.append(m)
-                    continue
-                # 2. Verificar en attachments
-                if hasattr(m, 'attachments') and m.attachments:
-                    for att in m.attachments:
-                        if att.get('type') == filter_value:
-                            filtered.append(m)
-                            break
-            result = filtered
+            result = [m for m in result if m.type == filter_type]
         
         # Filtrar por búsqueda (título o descripción)
         if search_query:

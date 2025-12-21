@@ -53,14 +53,25 @@ class handler(BaseHTTPRequestHandler):
                     name = file_info.get('name', 'archivo')
                     file_date = file_info.get('date', '')  # [FIX v1.3.1] Obtener fecha
                     
-                    # [FIX v1.3.5] Formatear fecha sin conversión de timezone
-                    # Extraer directamente YYYY-MM-DD del string para evitar desfase de un día
+                    # [FIX v1.3.6] Formatear prefijo usando hora Argentina (UTC-3)
                     date_prefix = ''
                     if file_date:
-                        import re
-                        date_match = re.match(r'(\d{4}-\d{2}-\d{2})', file_date)
-                        if date_match:
-                            date_prefix = date_match.group(1) + '_'
+                        try:
+                            from datetime import datetime, timedelta, timezone
+                            if file_date.endswith('Z'):
+                                dt_utc = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
+                            else:
+                                dt_utc = datetime.fromisoformat(file_date)
+                            
+                            tz_arg = timezone(timedelta(hours=-3))
+                            dt_arg = dt_utc.astimezone(tz_arg)
+                            date_prefix = dt_arg.strftime('%Y-%m-%d_')
+                        except:
+                            # Fallback regex
+                            import re
+                            date_match = re.match(r'(\d{4}-\d{2}-\d{2})', file_date)
+                            if date_match:
+                                date_prefix = date_match.group(1) + '_'
                     
                     # Extraer ID del archivo de Drive
                     file_id = self._extract_drive_file_id(url)

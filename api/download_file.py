@@ -43,14 +43,30 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json({'error': 'Could not extract file ID from URL'}, 400)
                 return
             
-            # [FIX v1.3.5] Formatear prefijo de fecha sin conversión de timezone
-            # Extraer directamente YYYY-MM-DD del string para evitar desfase de un día
+            # [FIX v1.3.6] Formatear prefijo usando hora Argentina (UTC-3)
+            # Para evitar que archivos subidos a la noche aparezcan con fecha del día siguiente
             date_prefix = ''
             if file_date:
-                # El formato viene como: 2024-12-21T... , tomamos solo los primeros 10 chars
-                date_match = re.match(r'(\d{4}-\d{2}-\d{2})', file_date)
-                if date_match:
-                    date_prefix = date_match.group(1) + '_'
+                try:
+                    from datetime import datetime, timedelta, timezone
+                    # Parsear fecha ISO (asumiendo UTC si termina en Z)
+                    if file_date.endswith('Z'):
+                        # Python < 3.11 no soporta Z con fromisoformat bien a veces, reemplazamos
+                        dt_utc = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
+                    else:
+                        dt_utc = datetime.fromisoformat(file_date)
+                    
+                    # Convertir a UTC-3
+                    tz_arg = timezone(timedelta(hours=-3))
+                    dt_arg = dt_utc.astimezone(tz_arg)
+                    
+                    date_prefix = dt_arg.strftime('%Y-%m-%d_')
+                except Exception as e:
+                    # Fallback a regex si falla el parseo
+                    import re
+                    date_match = re.match(r'(\d{4}-\d{2}-\d{2})', file_date)
+                    if date_match:
+                        date_prefix = date_match.group(1) + '_'
             
             # Descargar archivo
             file_content, filename = self._download_file(file_id, access_token, name)
