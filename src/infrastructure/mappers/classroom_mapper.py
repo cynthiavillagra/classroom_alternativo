@@ -575,15 +575,24 @@ class ClassroomMapper:
             'application/vnd.ms-powerpoint': MaterialType.PRESENTATION,
             # [FIX v1.3.0] Archivos comprimidos
             'application/zip': MaterialType.COMPRESSED,
+            'application/x-zip-compressed': MaterialType.COMPRESSED,  # [FIX v1.3.5]
             'application/x-rar-compressed': MaterialType.COMPRESSED,
             'application/x-7z-compressed': MaterialType.COMPRESSED,
             'application/gzip': MaterialType.COMPRESSED,
+            'application/x-tar': MaterialType.COMPRESSED,  # [FIX v1.3.5]
             # Videos
             'video/x-matroska': MaterialType.VIDEO,  # .mkv
             'video/mp4': MaterialType.VIDEO,
             'video/avi': MaterialType.VIDEO,
             'video/quicktime': MaterialType.VIDEO,
-            'image/': MaterialType.IMAGE,
+            # [FIX v1.3.5] Imágenes específicas
+            'image/jpeg': MaterialType.IMAGE,
+            'image/png': MaterialType.IMAGE,
+            'image/gif': MaterialType.IMAGE,
+            'image/webp': MaterialType.IMAGE,
+            'image/svg+xml': MaterialType.IMAGE,
+            'image/bmp': MaterialType.IMAGE,
+            'image/': MaterialType.IMAGE,  # Fallback para cualquier imagen
             'video/': MaterialType.VIDEO,
         }
         
