@@ -113,9 +113,52 @@ class ListCourseMaterials:
         """
         result = materials
         
-        # Filtrar por tipo principal del material
+        # [FIX v1.3.8] Filtrar por tipo (Lógica Híbrida)
+        # Para tipos de "archivo" (PDF, Imagen, Zip...), buscamos también dentro de los adjuntos.
+        # Para tipos "estructurales" (Tarea, Formulario...), solo miramos el contenedor principal.
+        
         if filter_type:
-            result = [m for m in result if m.type == filter_type]
+            # Tipos que queremos buscar profundamente
+            deep_search_types = [
+                MaterialType.PDF, 
+                MaterialType.VIDEO, 
+                MaterialType.IMAGE, 
+                MaterialType.COMPRESSED, 
+                MaterialType.SPREADSHEET, 
+                MaterialType.PRESENTATION,
+                MaterialType.DOCUMENT  # A veces documentos están dentro de tareas
+            ]
+            
+            # Nota: MaterialType es Enum, comparar con cuidado
+            is_deep_type = filter_type in deep_search_types or filter_type.value in [t.value for t in deep_search_types]
+
+            if is_deep_type:
+                filter_val = filter_type.value
+                filtered = []
+                seen_ids = set()
+                
+                for m in result:
+                    should_add = False
+                    
+                    # 1. Coincide el tipo principal
+                    if m.type == filter_type:
+                        should_add = True
+                    
+                    # 2. Coincide algún adjunto
+                    elif m.attachments:
+                        for att in m.attachments:
+                            if att.get('type') == filter_val:
+                                should_add = True
+                                break
+                    
+                    if should_add and m.id not in seen_ids:
+                        filtered.append(m)
+                        seen_ids.add(m.id)
+                
+                result = filtered
+            else:
+                # Filtro simple para el resto
+                result = [m for m in result if m.type == filter_type]
         
         # Filtrar por búsqueda (título o descripción)
         if search_query:
