@@ -51,6 +51,17 @@ class handler(BaseHTTPRequestHandler):
                 for file_info in files:
                     url = file_info.get('url', '')
                     name = file_info.get('name', 'archivo')
+                    file_date = file_info.get('date', '')  # [FIX v1.3.1] Obtener fecha
+                    
+                    # [FIX v1.3.1] Formatear fecha como prefijo año-mes-dia_
+                    date_prefix = ''
+                    if file_date:
+                        try:
+                            from datetime import datetime
+                            dt = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
+                            date_prefix = dt.strftime('%Y-%m-%d_')
+                        except:
+                            pass  # Si falla, no agregar prefijo
                     
                     # Extraer ID del archivo de Drive
                     file_id = self._extract_drive_file_id(url)
@@ -61,7 +72,9 @@ class handler(BaseHTTPRequestHandler):
                             file_content, filename = self._download_file(file_id, access_token, name)
                             
                             if file_content:
-                                zip_file.writestr(filename, file_content)
+                                # [FIX v1.3.1] Agregar prefijo de fecha
+                                prefixed_filename = f"{date_prefix}{filename}"
+                                zip_file.writestr(prefixed_filename, file_content)
                             else:
                                 error_content = f"No se pudo descargar: {name}\nURL: {url}\n"
                                 zip_file.writestr(f"{name}_ERROR.txt", error_content)
@@ -71,7 +84,8 @@ class handler(BaseHTTPRequestHandler):
                     else:
                         # No se pudo extraer el ID, guardar link
                         link_content = f"[InternetShortcut]\nURL={url}\n"
-                        zip_file.writestr(f"{name}.url", link_content)
+                        prefixed_name = f"{date_prefix}{name}" if date_prefix else name
+                        zip_file.writestr(f"{prefixed_name}.url", link_content)
             
             # Enviar ZIP
             zip_buffer.seek(0)
