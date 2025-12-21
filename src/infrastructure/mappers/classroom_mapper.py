@@ -284,10 +284,25 @@ class ClassroomMapper:
         
         if 'link' in material_data:
             link_data = material_data.get('link', {})
+            url = link_data.get('url', '')
+            title = link_data.get('title', 'Enlace')
+            
+            # [FIX v1.2.9] Detectar el tipo específico por URL
+            # Antes se marcaba todo como 'link' genérico, ahora detectamos:
+            # - Google Docs/Sheets/Slides → document
+            # - YouTube, Vimeo → video
+            # - GitHub notebooks → notebook
+            # etc.
+            detected_type = self._detect_type_by_url(url, title)
+            if detected_type:
+                link_type = detected_type.value
+            else:
+                link_type = 'link'  # Fallback genérico para otros links
+            
             return {
-                'type': 'link',
-                'title': link_data.get('title', 'Enlace'),
-                'url': link_data.get('url', '')
+                'type': link_type,
+                'title': title,
+                'url': url
             }
         
         if 'form' in material_data:

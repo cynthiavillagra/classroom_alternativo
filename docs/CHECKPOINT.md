@@ -1,6 +1,6 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-21 18:10
+> **Última actualización:** 2025-12-21 18:20
 
 ---
 
@@ -66,6 +66,36 @@ GIT CHECKPOINT:
 ---
 
 ## 🔧 Historial de Fixes Post-Release
+
+### v1.2.9 — 2025-12-21: Fix Detección de Tipo para Links (Google Slides, Docs, YouTube)
+
+**Fix:** Los enlaces a Google Slides, Google Docs, Google Sheets y YouTube aparecían como tipo "link" genérico en lugar de su tipo específico.
+
+**Problema:**
+- URL de Google Slides: `docs.google.com/presentation/...` → se marcaba como "link"
+- URL de Google Docs: `docs.google.com/document/...` → se marcaba como "link"
+- URL de YouTube: `youtube.com/watch?v=...` → se marcaba como "link"
+- Esto impedía que aparecieran en los filtros correctos ("Documentos", "Videos")
+
+**Causa raíz:**
+- En `_parse_single_attachment()`, cuando el attachment es de tipo 'link', se devolvía directamente `'type': 'link'` sin analizar la URL
+- La función `_detect_type_by_url()` ya existía y detectaba correctamente estos tipos, pero no se estaba usando para links
+
+**Solución:**
+- Modificar `_parse_single_attachment()` para usar `_detect_type_by_url()` antes de devolver el tipo
+- Ahora detecta automáticamente:
+  - Google Docs/Sheets/Slides → `document`
+  - YouTube, Vimeo, Loom → `video`
+  - GitHub notebooks → `notebook`
+  - Google Forms → `form`
+  - Otros → `link` (fallback)
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `src/infrastructure/mappers/classroom_mapper.py` | `_parse_single_attachment()` ahora usa `_detect_type_by_url()` para links |
+
+---
 
 ### v1.2.8 — 2025-12-21: Prefijo de Fecha en Archivos Descargados y Copiados
 
