@@ -61,25 +61,6 @@ PASO 2: EJECUCIÓN ATÓMICA
 
 GIT CHECKPOINT:
 • git add ., git commit -m "fix/refactor: [descripción]", git push
-```
-
----
-
-## 🔧 Historial de Fixes Post-Release
-
-### v1.3.0 — 2025-12-21: Nuevos Tipos de Material (Presentaciones, Hojas de Cálculo, Comprimidos)
-
-**Feature:** Separación de tipos de materiales en categorías más específicas para mejor organización y filtrado.
-
-**Cambios:**
-
-**Antes:**
-- Todo se agrupaba como "Documento" → .ppt, .xlsx, .docx, .md, todos juntos
-
-**Después:**
-- 📊 **Presentaciones** → .ppt, .pptx, .odp, .key, Google  Slides
-- 📈 **Hojas de cálculo** → .xls, .xlsx, .ods, .csv, Google Sheets
-- 📝 **Documentos** → .doc, .docx, .txt, .md, .rtf, Google Docs
 - 📦 **Comprimidos** → .zip, .rar, .7z, .tar, .gz
 - 🖼️ **Imágenes** → .jpg, .png, .gif, .bmp, .svg
 
