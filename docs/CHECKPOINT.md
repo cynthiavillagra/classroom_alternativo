@@ -1,6 +1,6 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-16 23:34
+> **Última actualización:** 2025-12-21 18:00
 
 ---
 
@@ -66,6 +66,32 @@ GIT CHECKPOINT:
 ---
 
 ## 🔧 Historial de Fixes Post-Release
+
+### v1.2.7 — 2025-12-21: Fix Filtrado de Documentos (.ppt, .docx, .md, etc.)
+
+**Fix:** Los archivos como `.ppt`, `.docx`, `.md`, etc. no aparecían al filtrar por "Documentos".
+
+**Problema:**
+- Los materiales se detectaban correctamente como `DOCUMENT` en el tipo principal
+- PERO los attachments individuales se marcaban genéricamente como `'file'`
+- El mapper `_parse_single_attachment()` no detectaba el tipo específico de cada archivo
+
+**Solución:**
+- Mejorar `_parse_single_attachment()` para detectar el tipo por extensión y MIME type
+- Ahora cada attachment tiene su tipo correcto: `document`, `pdf`, `video`, `notebook`, etc.
+- El filtrado de "Documentos" ahora encuentra todos los archivos relevantes
+
+**Detección aplicada:**
+1. Primero intenta por nombre de archivo (`_detect_type_by_filename()`)
+2. Si falla, intenta por MIME type (`_mime_to_material_type()`)
+3. Solo usa `'file'` como fallback genérico
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `src/infrastructure/mappers/classroom_mapper.py` | `_parse_single_attachment()` ahora detecta tipos específicos |
+
+---
 
 ### v1.1.0 — 2025-12-20: Selección Múltiple, Descarga ZIP y Copiar a Drive
 

@@ -241,16 +241,36 @@ class ClassroomMapper:
         """
         Parsea un solo attachment y devuelve sus datos.
         
+        [FIX] Ahora detecta el tipo específico del archivo (document, pdf, video, etc.)
+        en lugar de solo marcarlo como 'file' genérico.
+        
         Returns:
             Dict con {type, title, url} o {} si no es válido
         """
         if 'driveFile' in material_data:
             drive_data = material_data.get('driveFile', {})
             inner = drive_data.get('driveFile', drive_data)
+            title = inner.get('title', 'Archivo')
+            url = inner.get('alternateLink', drive_data.get('alternateLink', ''))
+            
+            # [FIX] Detectar el tipo específico del archivo
+            # Primero intentar por nombre de archivo
+            detected_type = self._detect_type_by_filename(title)
+            if detected_type:
+                file_type = detected_type.value  # Convertir MaterialType a string
+            else:
+                # Si no, intentar por MIME type
+                mime_type = inner.get('mimeType', '')
+                if mime_type:
+                    detected_type = self._mime_to_material_type(mime_type)
+                    file_type = detected_type.value
+                else:
+                    file_type = 'file'  # Fallback genérico
+            
             return {
-                'type': 'file',
-                'title': inner.get('title', 'Archivo'),
-                'url': inner.get('alternateLink', drive_data.get('alternateLink', ''))
+                'type': file_type,
+                'title': title,
+                'url': url
             }
         
         if 'youtubeVideo' in material_data:
