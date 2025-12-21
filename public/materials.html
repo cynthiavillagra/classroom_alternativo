@@ -1321,13 +1321,26 @@
             updateSelectionUI();
         }
 
-        // Limpiar selección
+        // Limpiar selección Y filtros
         function clearSelection() {
             selectedResources.clear();
             document.querySelectorAll('.resource-select').forEach(cb => cb.checked = false);
             document.getElementById('selectAllCheckbox').checked = false;
             const tableSelectAll = document.getElementById('tableSelectAll');
             if (tableSelectAll) tableSelectAll.checked = false;
+
+            // [FIX v1.3.3] También limpiar el filtro activo
+            currentFilterType = '';
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === '') btn.classList.add('active');
+            });
+
+            // Recargar materiales sin filtro
+            if (cachedMaterials && cachedMaterials.length > 0) {
+                applyCurrentView(cachedMaterials);
+            }
+
             updateSelectionUI();
         }
 

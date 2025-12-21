@@ -501,18 +501,15 @@ class ClassroomMapper:
             # NO devolver DOCUMENT por defecto - dejar que MIME type lo determine
             return None
         
-        # Google Docs, Sheets, Slides → DOCUMENT
-        google_docs_patterns = [
-            'docs.google.com/document',
-            'docs.google.com/spreadsheets',
-            'docs.google.com/presentation',
-            'docs.google.com/forms'
-        ]
-        for pattern in google_docs_patterns:
-            if pattern in url_lower:
-                if 'forms' in pattern:
-                    return MaterialType.FORM
-                return MaterialType.DOCUMENT
+        # [FIX v1.3.3] Google Docs, Sheets, Slides → Tipos específicos
+        if 'docs.google.com/document' in url_lower:
+            return MaterialType.DOCUMENT
+        if 'docs.google.com/spreadsheets' in url_lower:
+            return MaterialType.SPREADSHEET
+        if 'docs.google.com/presentation' in url_lower:
+            return MaterialType.PRESENTATION
+        if 'docs.google.com/forms' in url_lower:
+            return MaterialType.FORM
         
         # GitHub notebooks
         if 'github.com' in url_lower and '.ipynb' in url_lower:
