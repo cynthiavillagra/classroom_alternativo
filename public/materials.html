@@ -1021,11 +1021,11 @@
                 // Construir URL del endpoint
                 const downloadUrl = `/api/download_file?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date || '')}`;
 
-                // Descargar usando fetch
+                // Descargar usando fetch al backend
                 const response = await fetch(downloadUrl);
 
                 if (!response.ok) {
-                    throw new Error('Error en la descarga');
+                    throw new Error('Backend download failed');
                 }
 
                 // Obtener el nombre del archivo del header
@@ -1052,45 +1052,83 @@
                 btn.disabled = false;
 
             } catch (error) {
-                console.error('Error descargando:', error);
-                alert('Error al descargar el archivo. Intenta de nuevo.');
+                console.warn('Fallback: Backend failed, trying frontend fetch...', error);
 
-                // Fallback: abrir URL directa de Google
-                const fallbackUrl = getDownloadUrl(url);
-                window.open(fallbackUrl, '_blank');
+                // [FIX v1.3.9] Fallback Inteligente (Frontend Fetch)
+                try {
+                    const btn = event.target || document.querySelector('.btn-download[disabled]');
+                    if (btn) btn.innerHTML = '⏳ Bajando directo...';
 
-                // Restaurar botón
-                const btn = event.target;
-                btn.innerHTML = '⬇️ Descargar';
-                btn.disabled = false;
+                    // Intentar obtener URL directa para fetch
+                    let directUrl = url;
+                    const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                    if (idMatch) {
+                        directUrl = `https://docs.google.com/uc?export=download&id=${idMatch[1]}`;
+                    }
+
+                    const response = await fetch(directUrl);
+                    if (!response.ok) throw new Error('Frontend fetch failed');
+
+                    const blob = await response.blob();
+                    const objectUrl = window.URL.createObjectURL(blob);
+
+                    // Construir nombre con fecha
+                    const datePrefix = date ? date.split('T')[0] + '_' : '';
+                    let finalName = name;
+                    if (!finalName.includes('.')) {
+                        if (blob.type === 'application/pdf') finalName += '.pdf';
+                        else if (blob.type.includes('image')) finalName += '.jpg'; // Simplificación
+                    }
+
+                    const a = document.createElement('a');
+                    a.href = objectUrl;
+                    a.download = `${datePrefix}${finalName}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(objectUrl);
+
+                    if (btn) {
+                        btn.innerHTML = '⬇️ Descargar';
+                        btn.disabled = false;
+                    }
+
+                } catch (fetchError) {
+                    console.error('Final fallback:', fetchError);
+                    alert('⚠️ Error al renombrar. Se descargará el archivo original.');
+
+                    // Fallback final: Window Open
+                    const fallbackUrl = getDownloadUrl(url);
+                    window.open(fallbackUrl, '_blank');
+
+                    const btn = event.target || document.querySelector('.btn-download[disabled]');
+                    if (btn) {
+                        btn.innerHTML = '⬇️ Descargar';
+                        btn.disabled = false;
+                    }
+                }
             }
         }
+
         // [FIX v1.1.9] Convierte URLs de notebooks a Google Colab
-        // Detecta por: tipo, extensión en URL, o nombre del archivo
         function getOpenUrl(url, type, name) {
             if (!url) return '';
 
-            // Detectar si es notebook por múltiples criterios
+            // Detectar si es notebook
             const isNotebook =
                 type?.toLowerCase() === 'notebook' ||
                 url.includes('.ipynb') ||
                 name?.toLowerCase().includes('.ipynb');
 
-            // Si es un notebook, abrir en Google Colab
             if (isNotebook) {
-                // Extraer el ID del archivo de Drive
                 const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
                 if (driveMatch) {
                     return `https://colab.research.google.com/drive/${driveMatch[1]}`;
                 }
-
-                // Si ya es una URL de Colab, devolverla tal cual
                 if (url.includes('colab.research.google.com')) {
                     return url;
                 }
             }
-
-            // Para otros tipos, devolver URL original
             return url;
         }
 
