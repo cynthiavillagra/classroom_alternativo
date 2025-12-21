@@ -1,0 +1,19 @@
+# INSTRUCCIONES PARA EJECUTAR EN LOCAL
+
+## Paso 1: Detener el servidor actual
+# Si tienes el servidor corriendo, presiona:
+Ctrl+C
+
+## Paso 2: Reiniciar el servidor
+python main.py
+
+## Paso 3: Limpiar caché del navegador
+# Una vez que el servidor esté corriendo:
+# - Presiona Ctrl+F5 en tu navegador (recarga sin caché)
+# - O abre una ventana de incógnito (Ctrl+Shift+N)
+
+## Paso 4: Probar
+# - Ve a la página de materiales
+# - Intenta filtrar por "Documentos"
+# - Verifica que los archivos aparezcan
+# - Descarga un archivo para verificar el prefijo de fecha
