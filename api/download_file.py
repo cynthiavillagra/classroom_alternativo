@@ -43,15 +43,14 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json({'error': 'Could not extract file ID from URL'}, 400)
                 return
             
-            # Formatear prefijo de fecha
+            # [FIX v1.3.5] Formatear prefijo de fecha sin conversión de timezone
+            # Extraer directamente YYYY-MM-DD del string para evitar desfase de un día
             date_prefix = ''
             if file_date:
-                try:
-                    from datetime import datetime
-                    dt = datetime.fromisoformat(file_date.replace('Z', '-03:00'))
-                    date_prefix = dt.strftime('%Y-%m-%d_')
-                except:
-                    pass
+                # El formato viene como: 2024-12-21T... , tomamos solo los primeros 10 chars
+                date_match = re.match(r'(\d{4}-\d{2}-\d{2})', file_date)
+                if date_match:
+                    date_prefix = date_match.group(1) + '_'
             
             # Descargar archivo
             file_content, filename = self._download_file(file_id, access_token, name)
