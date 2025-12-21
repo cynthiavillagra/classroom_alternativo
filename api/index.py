@@ -1,20 +1,26 @@
 """
 Vercel Serverless Function Entry Point
 Punto único de entrada para Vercel.
+
+[FIX v1.2.5] Corregir manejo de POST para /api/download_zip
 """
 
 from http.server import BaseHTTPRequestHandler
 import json
 import os
 import sys
+import io
 
 # Agregar raíz al path
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 # Cargar .env
-from dotenv import load_dotenv
-load_dotenv(os.path.join(ROOT_DIR, '.env'))
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(ROOT_DIR, '.env'))
+except:
+    pass
 
 # Ahora importar desde main
 try:
@@ -31,8 +37,8 @@ except Exception as e:
 class handler(BaseHTTPRequestHandler):
     """Handler HTTP para Vercel Functions."""
     
-    def do_GET(self):
-        """Maneja GET requests."""
+    def _handle_request(self, method='GET'):
+        """Maneja cualquier request HTTP."""
         # Si hubo error al importar, mostrarlo
         if IMPORT_ERROR:
             self.send_response(500)
@@ -53,11 +59,22 @@ class handler(BaseHTTPRequestHandler):
         path_info = raw_path.split('?')[0]
         query_string = raw_path.split('?')[1] if '?' in raw_path else ''
         
+        # Leer body para POST
+        body_input = None
+        content_length = 0
+        if method == 'POST':
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > 0:
+                body_data = self.rfile.read(content_length)
+                body_input = io.BytesIO(body_data)
+        
         environ = {
-            'REQUEST_METHOD': 'GET',
+            'REQUEST_METHOD': method,
             'PATH_INFO': path_info,
             'QUERY_STRING': query_string,
-            'wsgi.input': None,
+            'wsgi.input': body_input,
+            'CONTENT_LENGTH': str(content_length),
+            'CONTENT_TYPE': self.headers.get('Content-Type', ''),
         }
         
         # Agregar headers HTTP (incluyendo cookies!)
@@ -97,13 +114,18 @@ class handler(BaseHTTPRequestHandler):
                 'error': 'Runtime error',
                 'message': str(e),
                 'traceback': traceback.format_exc(),
-                'path_info': path_info
+                'path_info': path_info,
+                'method': method
             })
             self.wfile.write(error_response.encode())
     
+    def do_GET(self):
+        """Maneja GET requests."""
+        self._handle_request('GET')
+    
     def do_POST(self):
         """Maneja POST requests."""
-        self.do_GET()
+        self._handle_request('POST')
     
     def log_message(self, format, *args):
         """Silenciar logs."""

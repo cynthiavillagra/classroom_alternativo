@@ -733,6 +733,8 @@ class VercelBridge:
     
     EN LOCAL:
     - Se usa HTTPServer directamente (en __main__)
+    
+    [FIX v1.2.5] Ahora maneja POST correctamente
     """
     
     def __call__(self, environ, start_response):
@@ -740,7 +742,16 @@ class VercelBridge:
         # Construir request fake para MainRouter
         path = environ.get('PATH_INFO', '/')
         query = environ.get('QUERY_STRING', '')
+        method = environ.get('REQUEST_METHOD', 'GET')
         full_path = f"{path}?{query}" if query else path
+        
+        # Leer body para POST
+        body_data = b''
+        if method == 'POST':
+            wsgi_input = environ.get('wsgi.input')
+            if wsgi_input and hasattr(wsgi_input, 'read'):
+                content_length = int(environ.get('CONTENT_LENGTH', 0))
+                body_data = wsgi_input.read(content_length) if content_length > 0 else b''
         
         # Crear un handler fake que capture la respuesta
         response_body = BytesIO()
@@ -754,10 +765,20 @@ class VercelBridge:
         class FakeHandler(MainRouter):
             def __init__(self):
                 self.path = full_path
-                self.headers = {k[5:].replace('_', '-').title(): v 
-                               for k, v in environ.items() if k.startswith('HTTP_')}
+                # Reconstruir headers desde environ
+                self.headers = {}
+                for k, v in environ.items():
+                    if k.startswith('HTTP_'):
+                        header_name = k[5:].replace('_', '-').title()
+                        self.headers[header_name] = v
+                # Agregar Content-Type y Content-Length para POST
+                if 'CONTENT_TYPE' in environ:
+                    self.headers['Content-Type'] = environ['CONTENT_TYPE']
+                if 'CONTENT_LENGTH' in environ:
+                    self.headers['Content-Length'] = environ['CONTENT_LENGTH']
+                
                 self.wfile = FakeWfile()
-                self.rfile = BytesIO(environ.get('wsgi.input', b'').read() if hasattr(environ.get('wsgi.input'), 'read') else b'')
+                self.rfile = BytesIO(body_data)
             
             def send_response(self, code):
                 response_status[0] = code
@@ -772,7 +793,12 @@ class VercelBridge:
                 pass
         
         handler = FakeHandler()
-        handler.do_GET()
+        
+        # Llamar al método correcto según REQUEST_METHOD
+        if method == 'POST':
+            handler.do_POST()
+        else:
+            handler.do_GET()
         
         # Devolver respuesta WSGI
         status = f"{response_status[0]} OK"
