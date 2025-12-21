@@ -945,9 +945,9 @@
                                 <td class="resource-desc">${truncateText(res.description, 60)}</td>
                                 <td class="resource-actions">
                                     <div class="resource-actions-group">
-                                        <a href="${getDownloadUrl(res.url)}" target="_blank" class="btn-download" title="Descargar archivo (abre en nueva pestaña)">
+                                        <button onclick="downloadSingleFile('${res.url}', '${res.name.replace(/'/g, "\\'")}', '${res.date}')" class="btn-download" title="Descargar archivo con prefijo de fecha">
                                             ⬇️ Descargar
-                                        </a>
+                                        </button>
                                         <a href="${getOpenUrl(res.url, res.type, res.name)}" target="_blank" class="btn-open" title="${isNotebookFile(res.type, res.url, res.name) ? 'Abrir en Google Colab' : 'Abrir en nueva pestaña'}">
                                             ${isNotebookFile(res.type, res.url, res.name) ? '🚀 Colab' : '🔗 Abrir'}
                                         </a>
@@ -1009,6 +1009,62 @@
             return url;
         }
 
+        // [FIX v1.3.3] Descargar archivo individual con prefijo de fecha
+        async function downloadSingleFile(url, name, date) {
+            try {
+                // Mostrar indicador de carga
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '⏳ Descargando...';
+                btn.disabled = true;
+
+                // Construir URL del endpoint
+                const downloadUrl = `/api/download_file?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date || '')}`;
+
+                // Descargar usando fetch
+                const response = await fetch(downloadUrl);
+
+                if (!response.ok) {
+                    throw new Error('Error en la descarga');
+                }
+
+                // Obtener el nombre del archivo del header
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = name;
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                    if (match) filename = match[1];
+                }
+
+                // Convertir a blob y descargar
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+
+                // Restaurar botón
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+            } catch (error) {
+                console.error('Error descargando:', error);
+                alert('Error al descargar el archivo. Intenta de nuevo.');
+
+                // Fallback: abrir URL directa de Google
+                const fallbackUrl = getDownloadUrl(url);
+                window.open(fallbackUrl, '_blank');
+
+                // Restaurar botón
+                const btn = event.target;
+                btn.innerHTML = '⬇️ Descargar';
+                btn.disabled = false;
+            }
+        }
         // [FIX v1.1.9] Convierte URLs de notebooks a Google Colab
         // Detecta por: tipo, extensión en URL, o nombre del archivo
         function getOpenUrl(url, type, name) {
