@@ -1,6 +1,6 @@
 # 📍 Checkpoint de Desarrollo — Classroom Explorer
 
-> **Última actualización:** 2025-12-21 18:20
+> **Última actualización:** 2025-12-21 18:30
 
 ---
 
@@ -66,6 +66,56 @@ GIT CHECKPOINT:
 ---
 
 ## 🔧 Historial de Fixes Post-Release
+
+### v1.3.0 — 2025-12-21: Nuevos Tipos de Material (Presentaciones, Hojas de Cálculo, Comprimidos)
+
+**Feature:** Separación de tipos de materiales en categorías más específicas para mejor organización y filtrado.
+
+**Cambios:**
+
+**Antes:**
+- Todo se agrupaba como "Documento" → .ppt, .xlsx, .docx, .md, todos juntos
+
+**Después:**
+- 📊 **Presentaciones** → .ppt, .pptx, .odp, .key, Google  Slides
+- 📈 **Hojas de cálculo** → .xls, .xlsx, .ods, .csv, Google Sheets
+- 📝 **Documentos** → .doc, .docx, .txt, .md, .rtf, Google Docs
+- 📦 **Comprimidos** → .zip, .rar, .7z, .tar, .gz
+- 🖼️ **Imágenes** → .jpg, .png, .gif, .bmp, .svg
+
+**Implementación Backend:**
+
+1. **MaterialType enum** (`material_type.py`):
+   - Agregados `PRESENTATION`, `SPREADSHEET`, `COMPRESSED`
+   - Cada tipo tiene su icono y color único
+
+2. **Detección por extensión** (`classroom_mapper.py`):
+   - `_detect_type_by_filename()` separa los tipos correctamente
+   - Detección por extensión de archivo
+
+3. **Detección por MIME type** (`classroom_mapper.py`):
+   - `_mime_to_material_type()` actualizado
+   - Google Slides → `PRESENTATION`
+   - Google Sheets → `SPREADSHEET`
+   - PowerPoint, Excel → tipos correctos
+
+**Archivos modificados:**
+| Archivo | Cambio |
+|---------|--------|
+| `src/domain/entities/material_type.py` | Agregados 3 nuevos tipos con labels, iconos y colores |
+| `src/infrastructure/mappers/classroom_mapper.py` | Separada detección de presentaciones, hojas y comprimidos |
+
+**⚠️ IMPORTANTE - Aplicar Cambios:**
+```bash
+# LOCAL: Reiniciar servidor
+Ctrl+C
+python main.py
+
+# VERCEL: Redespelgar
+vercel --prod
+```
+
+---
 
 ### v1.2.9 — 2025-12-21: Fix Detección de Tipo para Links (Google Slides, Docs, YouTube)
 

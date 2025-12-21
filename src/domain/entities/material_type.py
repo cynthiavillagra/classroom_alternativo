@@ -43,7 +43,7 @@ class MaterialType(Enum):
     # y facilita serialización JSON.
     PDF = "pdf"
     VIDEO = "video"
-    DOCUMENT = "document"
+    DOCUMENT = "document"  # Documentos de texto (.docx, .doc, .txt, .md)
     LINK = "link"
     FORM = "form"
     IMAGE = "image"
@@ -51,6 +51,9 @@ class MaterialType(Enum):
     FILE = "file"
     ANNOUNCEMENT = "announcement"  # Publicaciones/Anuncios
     NOTEBOOK = "notebook"  # [FIX v1.0.5] Jupyter Notebooks (.ipynb)
+    PRESENTATION = "presentation"  # [FIX v1.3.0] Presentaciones (.ppt, .pptx)
+    SPREADSHEET = "spreadsheet"  # [FIX v1.3.0] Hojas de cálculo (.xls, .xlsx)
+    COMPRESSED = "compressed"  # [FIX v1.3.0] Archivos comprimidos (.zip, .rar, .7z)
     
     # ───────────────────────────────────────────────────────────
     # Paso 3: Métodos helper para UI
@@ -72,7 +75,10 @@ class MaterialType(Enum):
             MaterialType.ASSIGNMENT: "Tarea",
             MaterialType.FILE: "Archivo",
             MaterialType.ANNOUNCEMENT: "Publicación",
-            MaterialType.NOTEBOOK: "Notebook"  # [FIX v1.0.5]
+            MaterialType.NOTEBOOK: "Notebook",
+            MaterialType.PRESENTATION: "Presentación",  # [FIX v1.3.0]
+            MaterialType.SPREADSHEET: "Hoja de cálculo",  # [FIX v1.3.0]
+            MaterialType.COMPRESSED: "Comprimido"  # [FIX v1.3.0]
         }
         return labels.get(self, "Desconocido")
     
@@ -93,7 +99,10 @@ class MaterialType(Enum):
             MaterialType.ASSIGNMENT: "✏️",
             MaterialType.FILE: "📎",
             MaterialType.ANNOUNCEMENT: "📢",
-            MaterialType.NOTEBOOK: "📓"  # [FIX v1.0.5]
+            MaterialType.NOTEBOOK: "📓",
+            MaterialType.PRESENTATION: "📊",  # [FIX v1.3.0]
+            MaterialType.SPREADSHEET: "📈",  # [FIX v1.3.0]
+            MaterialType.COMPRESSED: "📦"  # [FIX v1.3.0]
         }
         return icons.get(self, "📎")
     
@@ -114,7 +123,10 @@ class MaterialType(Enum):
             MaterialType.ASSIGNMENT: "#2ECC71", # Verde
             MaterialType.FILE: "#95A5A6",       # Gris
             MaterialType.ANNOUNCEMENT: "#3498DB", # Azul (publicaciones)
-            MaterialType.NOTEBOOK: "#F39C12"    # [FIX v1.0.5] Naranja (notebooks)
+            MaterialType.NOTEBOOK: "#F39C12",   # Naranja (notebooks)
+            MaterialType.PRESENTATION: "#E67E22",  # [FIX v1.3.0] Naranja (presentaciones)
+            MaterialType.SPREADSHEET: "#27AE60",  # [FIX v1.3.0] Verde (hojas de cálculo)
+            MaterialType.COMPRESSED: "#95A5A6"    # [FIX v1.3.0] Gris (comprimidos)
         }
         return colors.get(self, "#95A5A6")
     

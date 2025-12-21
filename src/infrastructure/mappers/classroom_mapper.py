@@ -387,6 +387,7 @@ class ClassroomMapper:
     def _detect_type_by_filename(self, filename: str) -> MaterialType:
         """
         [FIX v1.0.5] Detecta el tipo de material por extensión del archivo.
+        [FIX v1.3.0] Separa presentaciones, hojas de cálculo y archivos comprimidos.
         
         Args:
             filename: Nombre del archivo
@@ -409,8 +410,26 @@ class ClassroomMapper:
         if filename_lower.endswith('.ipynb'):
             return MaterialType.NOTEBOOK
         
-        # Documentos
-        document_extensions = ['.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.md', '.txt', '.rtf']
+        # [FIX v1.3.0] Presentaciones (PowerPoint, Google Slides)
+        presentation_extensions = ['.pptx', '.ppt', '.odp', '.key']
+        for ext in presentation_extensions:
+            if filename_lower.endswith(ext):
+                return MaterialType.PRESENTATION
+        
+        # [FIX v1.3.0] Hojas de cálculo (Excel, Google Sheets)
+        spreadsheet_extensions = ['.xlsx', '.xls', '.ods', '.csv']
+        for ext in spreadsheet_extensions:
+            if filename_lower.endswith(ext):
+                return MaterialType.SPREADSHEET
+        
+        # [FIX v1.3.0] Archivos comprimidos
+        compressed_extensions = ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2']
+        for ext in compressed_extensions:
+            if filename_lower.endswith(ext):
+                return MaterialType.COMPRESSED
+        
+        # Documentos de texto (Word, Markdown, Text)
+        document_extensions = ['.docx', '.doc', '.md', '.txt', '.rtf', '.odt']
         for ext in document_extensions:
             if filename_lower.endswith(ext):
                 return MaterialType.DOCUMENT
@@ -515,6 +534,7 @@ class ClassroomMapper:
         Convierte MIME type a MaterialType.
         
         [FIX v1.0.5] Actualizado para incluir más tipos de video y documentos.
+        [FIX v1.3.0] Separar presentaciones y hojas de cálculo.
         
         Args:
             mime_type: MIME type del archivo
@@ -525,18 +545,26 @@ class ClassroomMapper:
         mime_mapping = {
             'application/pdf': MaterialType.PDF,
             'application/vnd.google-apps.document': MaterialType.DOCUMENT,
-            'application/vnd.google-apps.presentation': MaterialType.DOCUMENT,
-            'application/vnd.google-apps.spreadsheet': MaterialType.DOCUMENT,
+            'application/vnd.google-apps.presentation': MaterialType.PRESENTATION,  # [FIX v1.3.0]
+            'application/vnd.google-apps.spreadsheet': MaterialType.SPREADSHEET,  # [FIX v1.3.0]
             'application/vnd.google-apps.form': MaterialType.FORM,
-            # [FIX v1.0.5] Más tipos de documentos
+            # [FIX v1.3.0] Documentos de texto
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': MaterialType.DOCUMENT,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': MaterialType.DOCUMENT,
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation': MaterialType.DOCUMENT,
             'application/msword': MaterialType.DOCUMENT,
-            'application/vnd.ms-excel': MaterialType.DOCUMENT,
-            'application/vnd.ms-powerpoint': MaterialType.DOCUMENT,
             'text/markdown': MaterialType.DOCUMENT,
             'text/plain': MaterialType.DOCUMENT,
+            # [FIX v1.3.0] Hojas de cálculo
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': MaterialType.SPREADSHEET,
+            'application/vnd.ms-excel': MaterialType.SPREADSHEET,
+            'text/csv': MaterialType.SPREADSHEET,
+            # [FIX v1.3.0] Presentaciones
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': MaterialType.PRESENTATION,
+            'application/vnd.ms-powerpoint': MaterialType.PRESENTATION,
+            # [FIX v1.3.0] Archivos comprimidos
+            'application/zip': MaterialType.COMPRESSED,
+            'application/x-rar-compressed': MaterialType.COMPRESSED,
+            'application/x-7z-compressed': MaterialType.COMPRESSED,
+            'application/gzip': MaterialType.COMPRESSED,
             # Videos
             'video/x-matroska': MaterialType.VIDEO,  # .mkv
             'video/mp4': MaterialType.VIDEO,
