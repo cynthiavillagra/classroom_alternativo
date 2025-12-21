@@ -253,19 +253,25 @@ class ClassroomMapper:
             title = inner.get('title', 'Archivo')
             url = inner.get('alternateLink', drive_data.get('alternateLink', ''))
             
-            # [FIX] Detectar el tipo específico del archivo
-            # Primero intentar por nombre de archivo
+            # [FIX v1.3.4] Detectar el tipo específico del archivo
+            # 1. Primero intentar por nombre de archivo
             detected_type = self._detect_type_by_filename(title)
             if detected_type:
-                file_type = detected_type.value  # Convertir MaterialType a string
+                file_type = detected_type.value
             else:
-                # Si no, intentar por MIME type
+                # 2. Si no, intentar por MIME type
                 mime_type = inner.get('mimeType', '')
                 if mime_type:
                     detected_type = self._mime_to_material_type(mime_type)
                     file_type = detected_type.value
                 else:
-                    file_type = 'file'  # Fallback genérico
+                    file_type = 'file'
+            
+            # [FIX v1.3.4] 3. Si aún es genérico, intentar por URL (para Google Slides/Sheets/Docs)
+            if file_type == 'file' and url:
+                detected_by_url = self._detect_type_by_url(url, title)
+                if detected_by_url:
+                    file_type = detected_by_url.value
             
             return {
                 'type': file_type,
