@@ -2,7 +2,7 @@
 Vercel Serverless Function: Download Single File
 Endpoint GET /api/download_file?url=...&name=...&date=...
 
-[FIX v1.3.3] Descarga un archivo individual con prefijo de fecha.
+[FIX v1.3.7] Implementar Streaming para evitar Timeouts y descargar archivos grandes.
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -44,56 +44,68 @@ class handler(BaseHTTPRequestHandler):
                 return
             
             # [FIX v1.3.6] Formatear prefijo usando hora Argentina (UTC-3)
-            # Para evitar que archivos subidos a la noche aparezcan con fecha del día siguiente
             date_prefix = ''
             if file_date:
                 try:
                     from datetime import datetime, timedelta, timezone
-                    # Parsear fecha ISO (asumiendo UTC si termina en Z)
                     if file_date.endswith('Z'):
-                        # Python < 3.11 no soporta Z con fromisoformat bien a veces, reemplazamos
                         dt_utc = datetime.fromisoformat(file_date.replace('Z', '+00:00'))
                     else:
                         dt_utc = datetime.fromisoformat(file_date)
                     
-                    # Convertir a UTC-3
                     tz_arg = timezone(timedelta(hours=-3))
                     dt_arg = dt_utc.astimezone(tz_arg)
-                    
                     date_prefix = dt_arg.strftime('%Y-%m-%d_')
-                except Exception as e:
-                    # Fallback a regex si falla el parseo
+                except Exception:
+                    # Fallback a regex
                     import re
                     date_match = re.match(r'(\d{4}-\d{2}-\d{2})', file_date)
                     if date_match:
                         date_prefix = date_match.group(1) + '_'
             
-            # Descargar archivo
-            file_content, filename = self._download_file(file_id, access_token, name)
+            # [FIX v1.3.7] Implementar Streaming con shutil
+            import urllib.request
+            import shutil
             
-            if not file_content:
-                self._send_json({'error': 'Could not download file'}, 500)
+            # Obtener URL real
+            dl_url, filename = self._get_drive_download_url(file_id, access_token, name)
+            
+            if not dl_url:
+                self._send_json({'error': 'Could not get download URL'}, 500)
                 return
-            
-            # Agregar prefijo de fecha
+
+            # Agregar prefijo y sanitizar
             prefixed_filename = f"{date_prefix}{filename}"
+            # Asegurar ASCII para headers
+            prefixed_filename = prefixed_filename.encode('utf-8').decode('latin-1', 'ignore')
             
-            # Enviar archivo
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/octet-stream')
-            self.send_header('Content-Disposition', f'attachment; filename="{prefixed_filename}"')
-            self.send_header('Content-Length', str(len(file_content)))
-            self.end_headers()
-            self.wfile.write(file_content)
+            try:
+                req = urllib.request.Request(dl_url, headers={'Authorization': f'Bearer {access_token}'})
+                with urllib.request.urlopen(req, timeout=15) as drive_resp:
+                    
+                    self.send_response(200)
+                    self.send_header('Content-Type', drive_resp.headers.get('Content-Type', 'application/octet-stream'))
+                    self.send_header('Content-Disposition', f'attachment; filename="{prefixed_filename}"')
+                    if drive_resp.headers.get('Content-Length'):
+                        self.send_header('Content-Length', drive_resp.headers.get('Content-Length'))
+                    self.end_headers()
+                    
+                    # Streaming (copiar chunks)
+                    shutil.copyfileobj(drive_resp, self.wfile, length=64*1024)
+                    
+            except Exception as e:
+                print(f"Error streaming: {e}")
+                # No podemos enviar error JSON si ya empezamos a streamesar
+                pass
             
         except Exception as e:
-            self._send_json({'error': str(e)}, 500)
+            if not self.wfile.closed:
+                self._send_json({'error': str(e)}, 500)
     
     def _extract_drive_file_id(self, url):
         """Extrae el ID de archivo de una URL de Google Drive."""
         if not url:
             return None
-        
         patterns = [
             r'drive\.google\.com/file/d/([a-zA-Z0-9_-]+)',
             r'drive\.google\.com/open\?id=([a-zA-Z0-9_-]+)',
@@ -102,22 +114,19 @@ class handler(BaseHTTPRequestHandler):
             r'docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)',
             r'/d/([a-zA-Z0-9_-]+)',
         ]
-        
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
                 file_id = match.group(1)
                 if len(file_id) >= 20:
                     return file_id
-        
         return None
     
-    def _download_file(self, file_id, access_token, name):
-        """Descarga un archivo de Drive."""
+    def _get_drive_download_url(self, file_id, access_token, name):
+        """Obtiene la URL directa de descarga y el nombre real."""
         import urllib.request
-        import urllib.error
+        import json
         
-        # Obtener metadata
         try:
             meta_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?fields=name,mimeType'
             meta_req = urllib.request.Request(meta_url, headers={'Authorization': f'Bearer {access_token}'})
@@ -128,27 +137,20 @@ class handler(BaseHTTPRequestHandler):
         except:
             real_name = name
             mime = ''
-        
-        # Determinar URL de descarga
+            
         if 'google-apps.document' in mime:
-            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
+            url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
             real_name = real_name + '.pdf' if not real_name.endswith('.pdf') else real_name
         elif 'google-apps.spreadsheet' in mime:
-            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             real_name = real_name + '.xlsx' if not real_name.endswith('.xlsx') else real_name
         elif 'google-apps.presentation' in mime:
-            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
+            url = f'https://www.googleapis.com/drive/v3/files/{file_id}/export?mimeType=application/pdf'
             real_name = real_name + '.pdf' if not real_name.endswith('.pdf') else real_name
         else:
-            dl_url = f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media'
-        
-        # Descargar
-        try:
-            req = urllib.request.Request(dl_url, headers={'Authorization': f'Bearer {access_token}'})
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                return (resp.read(), real_name)
-        except:
-            return (None, real_name)
+            url = f'https://www.googleapis.com/drive/v3/files/{file_id}?alt=media'
+            
+        return url, real_name
     
     def _get_cookie(self, name):
         """Extrae una cookie por nombre."""
